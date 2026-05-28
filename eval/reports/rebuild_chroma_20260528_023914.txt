@@ -1,0 +1,6 @@
+[rebuild] removing /Users/zhangxun/Documents/BOCHK/data/chroma
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 1171 个 chunks
+[rebuild] sample chunk: content=4218 ctx=4319 → embed will use contextualized_content
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=0 embed_model=text-embedding-v4
+[Index] Chroma 已写入 1171 条，当前总数 1171
+[rebuild] added 1171 chunks, total 1171

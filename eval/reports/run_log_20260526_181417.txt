@@ -1,0 +1,100 @@
+[eval] loaded 24 questions from /Users/zhangxun/Documents/BOCHK/eval/questions.jsonl
+
+========== variant=baseline ==========
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 909 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=911 embed_model=text-embedding-v4
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/k6/2nzpp6hs6pxd0hpld96jpgw00000gn/T/jieba.cache
+Loading model cost 0.279 seconds.
+Prefix dict has been built successfully.
+[Index] BM25 已构建 docs=909 avgdl=301.8 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (13.4s)
+  [q02] r5=1 r10=1 cite=1 filt=1 top5=['hkma_aml_cft_guideline', 'hkma_aml_cft_guideline', 'hkma_aml_cft_guideline']... (21.5s)
+  [q03] r5=1 r10=1 cite=1 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024']... (18.4s)
+Failed to multipart ingest runs: Connection error caused failure to POST https://api.smith.langchain.com/runs/multipart in LangSmith API. Please confirm your internet connection. SSLError(MaxRetryError("HTTPSConnectionPool(host='api.smith.langchain.com', port=443): Max retries exceeded with url: /runs/multipart (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)')))"))
+Content-Length: 1310257
+API Key: lsv2_********************************************cftrace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-3539-7cd3-99d7-0432046acf86; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355d-7d32-bc81-2db4e567ce09; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355e-70b2-bdc5-96134137a281; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355e-70b2-bdc5-96255c51c14b; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355e-70b2-bdc5-9634886c9177; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355e-70b2-bdc5-964081c1f35c; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-355f-7db0-984c-c3e340671231; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-36b7-7811-be9f-672d81d9f01f; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-376a-7541-ae41-70feb58a8151; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-3837-7491-902f-70169f80e680; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-3838-7912-8242-8718c383f80f; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-3838-7912-8242-872f6812b1b2; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-3839-7620-bf3d-403639c8b856; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-383a-7bb3-8f38-de0c83a7cac9; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-383b-7fb3-b4f4-2703c4a76581; trace=019e63c7-3539-7cd3-99d7-0432046acf86,id=019e63c7-385a-7cc2-9b90-aeecdd7f6014
+  [q04] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (22.8s)
+  [q05] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'smelink_sfgs', 'hkmc_sfgs_factsheet']... (14.1s)
+  [q06] r5=0 r10=0 cite=0 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (8.9s)
+  [q07] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'smelink_sfgs']... (32.4s)
+  [q08] r5=1 r10=1 cite=1 filt=1 top5=['hkma_cdi_research_2026', 'bochk_sfgs_product', 'hkma_cdi_research_2026']... (16.6s)
+  [q19] r5=1 r10=1 cite=1 filt=1 top5=['bochk_sfgs_product', 'bochk_loan_services', 'enterprisesg_efs_fixed_assets']... (20.9s)
+  [q20] r5=1 r10=1 cite=1 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020']... (21.7s)
+  [q21] r5=1 r10=1 cite=1 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'smelink_sfgs', 'safe_capital_account_fx_guideline_2024']... (35.4s)
+  [q22] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet']... (27.4s)
+  [q23] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (33.2s)
+  [q24] r5=0 r10=1 cite=1 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (30.7s)
+  [q09] r5=1 r10=1 cite=1 filt=1 top5=['gogba_qianhai_policy', 'gogba_qianhai_policy', 'gogba_enterprise_income_tax_vat']... (20.5s)
+  [q10] r5=1 r10=1 cite=1 filt=1 top5=['gogba_bank_accounts', 'gogba_business_registration', 'safe_capital_account_fx_guideline_2024']... (27.9s)
+  [q11] r5=1 r10=1 cite=1 filt=1 top5=['gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat']... (24.8s)
+  [q12] r5=1 r10=1 cite=1 filt=1 top5=['gogba_business_registration', 'gogba_business_registration', 'gogba_business_registration']... (26.2s)
+  [q13] r5=1 r10=1 cite=1 filt=1 top5=['sbv_credit_institutions', 'sbv_credit_institutions', 'sbv_credit_institutions']... (22.2s)
+  [q14] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020']... (21.5s)
+  [q15] r5=1 r10=1 cite=1 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (31.2s)
+  [q16] r5=0 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020']... (15.5s)
+  [q17] r5=1 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'hkma_fps']... (14.1s)
+  [q18] r5=1 r10=1 cite=1 filt=1 top5=['cips_introduction', 'cips_introduction', 'hkicl_hkd_chats']... (19.6s)
+  → eval_baseline_20260526_182321.json / eval_baseline_20260526_182321.md
+  summary: {'variant': 'baseline', 'n_questions': 24, 'recall@5': 0.75, 'recall@10': 0.8333, 'citation_hit_rate': 0.8333, 'citation_filter_applied_rate': 1.0, 'avg_elapsed_sec': 22.54}
+
+========== variant=step3 ==========
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 909 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=911 embed_model=text-embedding-v4
+[Index] BM25 已构建 docs=909 avgdl=301.8 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (16.1s)
+  [q02] r5=1 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024', 'hkma_aml_cft_guideline']... (23.5s)
+  [q03] r5=1 r10=1 cite=1 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (16.2s)
+  [q04] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (21.3s)
+  [q05] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (19.9s)
+  [q06] r5=0 r10=0 cite=0 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (7.1s)
+  [q07] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (27.9s)
+  [q08] r5=1 r10=1 cite=1 filt=1 top5=['hkma_cdi_research_2026', 'bochk_sfgs_product', 'hkma_cdi_research_2026']... (14.0s)
+  [q19] r5=0 r10=1 cite=1 filt=1 top5=['enterprisesg_efs_fixed_assets', 'bochk_sfgs_product', 'bochk_sfgs_product']... (22.8s)
+  [q20] r5=1 r10=1 cite=1 filt=1 top5=['bochk_sfgs_product', 'bochk_loan_services', 'safe_capital_account_fx_guideline_2024']... (13.5s)
+  [q21] r5=1 r10=1 cite=1 filt=1 top5=['smelink_sfgs', 'hkmc_sfgs_factsheet', 'safe_capital_account_fx_guideline_2024']... (19.9s)
+  [q22] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet']... (34.1s)
+  [q23] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (31.7s)
+  [q24] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (37.8s)
+  [q09] r5=1 r10=1 cite=1 filt=1 top5=['gogba_qianhai_policy', 'gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat']... (28.7s)
+  [q10] r5=1 r10=1 cite=1 filt=1 top5=['gogba_bank_accounts', 'gogba_business_registration', 'safe_capital_account_fx_guideline_2024']... (25.4s)
+  [q11] r5=1 r10=1 cite=1 filt=1 top5=['gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat']... (29.6s)
+  [q12] r5=1 r10=1 cite=1 filt=1 top5=['gogba_business_registration', 'gogba_business_registration', 'gogba_business_registration']... (29.0s)
+  [q13] r5=1 r10=1 cite=1 filt=1 top5=['sbv_credit_institutions', 'sbv_credit_institutions', 'sbv_credit_institutions']... (25.2s)
+  [q14] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (27.4s)
+  [q15] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (25.0s)
+  [q16] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (15.9s)
+  [q17] r5=1 r10=1 cite=1 filt=1 top5=['bochk_business_integrated_account', 'hkma_fps', 'hkma_fps']... (22.7s)
+  [q18] r5=1 r10=1 cite=1 filt=1 top5=['cips_introduction', 'cips_introduction', 'safe_capital_account_fx_guideline_2024']... (23.0s)
+  → eval_step3_20260526_183239.json / eval_step3_20260526_183239.md
+  summary: {'variant': 'step3', 'n_questions': 24, 'recall@5': 0.6667, 'recall@10': 0.7083, 'citation_hit_rate': 0.7083, 'citation_filter_applied_rate': 1.0, 'avg_elapsed_sec': 23.24}
+
+========== variant=full ==========
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 909 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=911 embed_model=text-embedding-v4
+[Index] BM25 已构建 docs=909 avgdl=301.8 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (14.7s)
+  [q02] r5=1 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024', 'hkma_aml_cft_guideline']... (24.7s)
+  [q03] r5=1 r10=1 cite=1 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (17.1s)
+  [q04] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (18.8s)
+  [q05] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (19.2s)
+  [q06] r5=0 r10=0 cite=0 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (7.2s)
+  [q07] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (29.4s)
+  [q08] r5=1 r10=1 cite=0 filt=1 top5=['hkma_cdi_research_2026', 'bochk_sfgs_product', 'hkma_cdi_research_2026']... (16.3s)
+  [q19] r5=0 r10=1 cite=0 filt=1 top5=['enterprisesg_efs_fixed_assets', 'bochk_sfgs_product', 'bochk_sfgs_product']... (24.1s)
+  [q20] r5=1 r10=1 cite=0 filt=1 top5=['bochk_sfgs_product', 'bochk_loan_services', 'safe_capital_account_fx_guideline_2024']... (22.7s)
+  [q21] r5=1 r10=1 cite=1 filt=1 top5=['smelink_sfgs', 'hkmc_sfgs_factsheet', 'safe_capital_account_fx_guideline_2024']... (21.5s)
+  [q22] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet']... (34.0s)
+  [q23] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (24.7s)
+  [q24] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (39.5s)
+  [q09] r5=1 r10=1 cite=1 filt=1 top5=['gogba_qianhai_policy', 'gogba_enterprise_income_tax_vat', 'gogba_qianhai_policy']... (22.1s)
+  [q10] r5=1 r10=1 cite=1 filt=1 top5=['gogba_bank_accounts', 'gogba_business_registration', 'safe_capital_account_fx_guideline_2024']... (30.9s)
+  [q11] r5=1 r10=1 cite=1 filt=1 top5=['gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat']... (21.2s)
+  [q12] r5=1 r10=1 cite=1 filt=1 top5=['gogba_business_registration', 'gogba_business_registration', 'gogba_business_registration']... (35.1s)
+  [q13] r5=1 r10=1 cite=1 filt=1 top5=['sbv_credit_institutions', 'sbv_credit_institutions', 'sbv_credit_institutions']... (18.2s)
+  [q14] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (25.3s)
+  [q15] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (24.8s)
+  [q16] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (18.8s)

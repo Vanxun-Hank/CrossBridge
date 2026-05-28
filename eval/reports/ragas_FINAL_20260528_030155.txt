@@ -1,0 +1,88 @@
+/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py:38: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  import langchain_community.chat_models.vertexai  # noqa
+[ragas] loaded 24 questions, variant=full
+[ragas] collecting RAG outputs ...
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 1171 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=1171 embed_model=text-embedding-v4
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/k6/2nzpp6hs6pxd0hpld96jpgw00000gn/T/jieba.cache
+Loading model cost 0.258 seconds.
+Prefix dict has been built successfully.
+[Index] BM25 已构建 docs=1171 avgdl=371.9 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] ans= 725chars ctx=5 (12.1s)
+  [q02] ans= 436chars ctx=3 (7.0s)
+  [q03] ans= 615chars ctx=5 (14.1s)
+  [q04] ans= 850chars ctx=5 (10.6s)
+  [q05] ans= 535chars ctx=5 (7.8s)
+  [q06] ans= 520chars ctx=5 (12.8s)
+  [q07] ans= 675chars ctx=5 (9.0s)
+  [q08] ans= 735chars ctx=5 (16.7s)
+  [q19] ans= 904chars ctx=5 (9.4s)
+  [q20] ans= 479chars ctx=5 (11.4s)
+  [q21] ans= 446chars ctx=5 (8.1s)
+  [q22] ans= 902chars ctx=5 (12.7s)
+  [q23] ans= 875chars ctx=5 (11.9s)
+  [q24] ans= 847chars ctx=5 (15.9s)
+  [q09] ans= 648chars ctx=5 (12.3s)
+  [q10] ans= 507chars ctx=5 (50.6s)
+  [q11] ans= 765chars ctx=5 (16.4s)
+  [q12] ans= 843chars ctx=5 (22.0s)
+  [q13] ans= 822chars ctx=5 (12.0s)
+  [q14] ans= 909chars ctx=5 (10.3s)
+  [q15] ans= 790chars ctx=3 (18.0s)
+  [q16] ans= 769chars ctx=5 (11.0s)
+  [q17] ans= 471chars ctx=5 (6.6s)
+  [q18] ans= 818chars ctx=3 (15.0s)
+[ragas] cached 24 rows to /Users/zhangxun/Documents/BOCHK/eval/reports/rag_outputs_full.json
+[ragas] running RAGAS scoring on 24 rows ...
+        预计 144-240 次 LLM 调用，~3-5 分钟
+/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py:145: DeprecationWarning: Importing faithfulness from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import faithfulness
+  from ragas.metrics import faithfulness, answer_relevancy
+/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py:145: DeprecationWarning: Importing answer_relevancy from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import answer_relevancy
+  from ragas.metrics import faithfulness, answer_relevancy
+/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py:150: DeprecationWarning: LangchainLLMWrapper is deprecated and will be removed in a future version. Use llm_factory instead: from openai import OpenAI; from ragas.llms import llm_factory; llm = llm_factory('gpt-4o-mini', client=OpenAI(api_key='...'))
+  llm = LangchainLLMWrapper(ChatOpenAI(
+/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py:158: DeprecationWarning: LangchainEmbeddingsWrapper is deprecated and will be removed in a future version. Use the modern embedding providers instead: embedding_factory('openai', model='text-embedding-3-small', client=openai_client) or from ragas.embeddings import OpenAIEmbeddings, GoogleEmbeddings, HuggingFaceEmbeddings
+  embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings(
+Evaluating:   0%|          | 0/48 [00:00<?, ?it/s]Exception raised in Job[7]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '0455d5cb-38cb-9b19-9a51-34338fadb2f2', 'request_id': '0455d5cb-38cb-9b19-9a51-34338fadb2f2'})
+Evaluating:   2%|▏         | 1/48 [00:04<03:08,  4.02s/it]Exception raised in Job[13]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'f7ab2a12-b6ec-94a0-99d9-c0a452576a53', 'request_id': 'f7ab2a12-b6ec-94a0-99d9-c0a452576a53'})
+Exception raised in Job[15]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '8973d622-3e1d-9476-a1a4-79a78d6aa10f', 'request_id': '8973d622-3e1d-9476-a1a4-79a78d6aa10f'})
+Exception raised in Job[5]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '3990e74e-1b6d-9b85-b016-96999091561b', 'request_id': '3990e74e-1b6d-9b85-b016-96999091561b'})
+Exception raised in Job[3]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '42e33be7-2b26-97f4-a170-96f89986c04b', 'request_id': '42e33be7-2b26-97f4-a170-96f89986c04b'})
+Exception raised in Job[1]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '99cfcea9-a6ce-99b4-81e3-bb16f7e769cd', 'request_id': '99cfcea9-a6ce-99b4-81e3-bb16f7e769cd'})
+Evaluating:   4%|▍         | 2/48 [00:19<08:01, 10.47s/it]Exception raised in Job[17]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '53e85638-7422-97cf-bad3-d3d26e3ee04e', 'request_id': '53e85638-7422-97cf-bad3-d3d26e3ee04e'})
+Exception raised in Job[21]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'b63f9513-9a9e-943f-8bde-d00394460251', 'request_id': 'b63f9513-9a9e-943f-8bde-d00394460251'})
+Evaluating:  15%|█▍        | 7/48 [00:38<03:28,  5.08s/it]Exception raised in Job[11]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'dc693917-aedd-9350-bad8-f4a6b07d4c0b', 'request_id': 'dc693917-aedd-9350-bad8-f4a6b07d4c0b'})
+Evaluating:  19%|█▉        | 9/48 [00:41<02:37,  4.03s/it]Exception raised in Job[23]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '4b7c1fb3-04e3-917b-a719-b5e8a6729169', 'request_id': '4b7c1fb3-04e3-917b-a719-b5e8a6729169'})
+Evaluating:  21%|██        | 10/48 [00:46<02:36,  4.12s/it]Exception raised in Job[25]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '047b06b6-dab3-9650-a761-b3d14301d765', 'request_id': '047b06b6-dab3-9650-a761-b3d14301d765'})
+Exception raised in Job[19]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'a159d9e1-1142-954c-97b4-0570d1e5e0a7', 'request_id': 'a159d9e1-1142-954c-97b4-0570d1e5e0a7'})
+Evaluating:  23%|██▎       | 11/48 [01:11<05:18,  8.61s/it]Evaluating:  27%|██▋       | 13/48 [01:26<04:43,  8.11s/it]Evaluating:  40%|███▉      | 19/48 [01:28<01:36,  3.31s/it]Exception raised in Job[9]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'b3a86a45-7b58-9a5f-8fd5-627dab437e16', 'request_id': 'b3a86a45-7b58-9a5f-8fd5-627dab437e16'})
+Evaluating:  42%|████▏     | 20/48 [01:31<01:34,  3.36s/it]Exception raised in Job[35]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'dd52a494-49bf-94c2-a12a-006e501ef4a8', 'request_id': 'dd52a494-49bf-94c2-a12a-006e501ef4a8'})
+Evaluating:  44%|████▍     | 21/48 [01:35<01:32,  3.43s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[29]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '38159b2a-445e-92c8-973f-ffd58bc67404', 'request_id': '38159b2a-445e-92c8-973f-ffd58bc67404'})
+LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[27]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'b8051c72-0e3e-9b91-b5b8-7e466db06044', 'request_id': 'b8051c72-0e3e-9b91-b5b8-7e466db06044'})
+LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[33]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '9ee29e96-e140-9c13-adcb-4162fbc04694', 'request_id': '9ee29e96-e140-9c13-adcb-4162fbc04694'})
+LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[31]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '33c70927-a2e6-9c16-a87e-cfdd3e1b88fb', 'request_id': '33c70927-a2e6-9c16-a87e-cfdd3e1b88fb'})
+Evaluating:  46%|████▌     | 22/48 [01:47<02:08,  4.94s/it]Exception raised in Job[18]: OutputParserException(Failed to parse StringIO from completion {"statements": ["申请中小企业贷款时，需要提交最近的财务报表。", "最近的财务报表通常包括资产负债表、损益表以及现金流量表。", "这些报表应尽可能地反映最新的财务状况。", "申请中小企业贷款时，需要提供过去几年的纳税申报单或税单副本。", "纳税申报单或税单副本证明企业按时缴税且经营合法。", "申请中小企业贷款时，需要至少近几个月的主要业务账户流水。", "银行对账单显示公司的日常交易活动及资金流动情况。", "对于新成立的企业，商业计划书尤为重要。", "商业计划书需详细说明企业的运营模式、市场定位、预期收益等信息。", "根据具体情况还可能要求提供租赁合同、采购订单、销售发票等材料。", "租赁合同、采购订单、销售发票等材料能够进一步证明企业运营状态良好。", "具体所需文件可能会因不同银行的要求而有所差异。", "针对特定类型的贷款产品，额外的资料也可能被要求提供。", "建议在准备过程中与所选择的合作银行保持密切沟通。", "确保所有必需的信息都已准备好是重要的。", "最终操作前，请务必向银行客户经理或专业人士确认具体的文件需求。"]}. Got: 1 validation error for StringIO
+text
+  Field required [type=missing, input_value={'statements': ['申请...体的文件需求。']}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE )
+Evaluating:  54%|█████▍    | 26/48 [01:59<01:27,  3.98s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[37]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '2dfee056-b366-9ca7-8d7b-11d612862639', 'request_id': '2dfee056-b366-9ca7-8d7b-11d612862639'})
+LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[39]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'bb83d641-8c6f-9a1f-8970-ef4ff4c20628', 'request_id': 'bb83d641-8c6f-9a1f-8970-ef4ff4c20628'})
+Evaluating:  58%|█████▊    | 28/48 [02:12<01:33,  4.69s/it]Evaluating:  67%|██████▋   | 32/48 [02:16<00:49,  3.10s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[41]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '34276a57-1a33-97ae-b2f5-27d9ca673b80', 'request_id': '34276a57-1a33-97ae-b2f5-27d9ca673b80'})
+Evaluating:  69%|██████▉   | 33/48 [02:21<00:49,  3.29s/it]Exception raised in Job[47]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'd09ad8e8-fa47-928d-bb87-a8abb37cd7a5', 'request_id': 'd09ad8e8-fa47-928d-bb87-a8abb37cd7a5'})
+Evaluating:  71%|███████   | 34/48 [02:28<00:53,  3.82s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[45]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': 'b9b030ac-ecba-976e-8e0e-b21befd28a4f', 'request_id': 'b9b030ac-ecba-976e-8e0e-b21befd28a4f'})
+Evaluating:  77%|███████▋  | 37/48 [02:32<00:31,  2.87s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Exception raised in Job[43]: BadRequestError(Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: Value error, contents is neither str nor list of str.: input.contents', 'type': 'InvalidParameter', 'param': None, 'code': 'InvalidParameter'}, 'id': '2343d944-61c0-97da-b2fb-c37978f5a098', 'request_id': '2343d944-61c0-97da-b2fb-c37978f5a098'})
+Evaluating:  79%|███████▉  | 38/48 [02:34<00:27,  2.77s/it]Evaluating:  81%|████████▏ | 39/48 [02:39<00:27,  3.10s/it]Evaluating:  83%|████████▎ | 40/48 [02:46<00:31,  3.98s/it]Evaluating:  85%|████████▌ | 41/48 [02:52<00:31,  4.50s/it]Evaluating:  88%|████████▊ | 42/48 [02:57<00:26,  4.46s/it]Evaluating:  90%|████████▉ | 43/48 [03:00<00:20,  4.15s/it]Evaluating:  92%|█████████▏| 44/48 [03:02<00:14,  3.57s/it]Evaluating:  94%|█████████▍| 45/48 [03:04<00:09,  3.09s/it]Evaluating:  96%|█████████▌| 46/48 [03:06<00:05,  2.74s/it]Evaluating:  98%|█████████▊| 47/48 [03:09<00:03,  3.03s/it]Evaluating: 100%|██████████| 48/48 [04:01<00:00, 17.21s/it]Evaluating: 100%|██████████| 48/48 [04:01<00:00,  5.03s/it]
+[ragas] raw scores cached to /Users/zhangxun/Documents/BOCHK/eval/reports/ragas_scores_full.json
+[ragas] reports: /Users/zhangxun/Documents/BOCHK/eval/reports/ragas_full_20260528_031135.json, /Users/zhangxun/Documents/BOCHK/eval/reports/ragas_full_20260528_031135.md

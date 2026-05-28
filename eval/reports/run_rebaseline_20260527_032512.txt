@@ -1,0 +1,20 @@
+[eval] loaded 24 questions from /Users/zhangxun/Documents/BOCHK/eval/questions.jsonl
+
+========== variant=full ==========
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 1171 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=911 embed_model=text-embedding-v4
+[Index] 跳过已存在 909 条 chunk
+[Index] Chroma 已写入 262 条，当前总数 1173
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/k6/2nzpp6hs6pxd0hpld96jpgw00000gn/T/jieba.cache
+Loading model cost 0.286 seconds.
+Prefix dict has been built successfully.
+[Index] BM25 已构建 docs=1171 avgdl=320.9 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'hkicl_hkd_fps_rules_2025']... (17.4s)
+  [q02] r5=1 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024', 'hkma_aml_cft_guideline']... (28.4s)
+  [q03] r5=1 r10=1 cite=1 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (20.1s)
+  [q04] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020']... (20.2s)
+  [q05] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (14.2s)
+  [q06] r5=0 r10=0 cite=0 filt=1 top5=['safe_trade_investment_facilitation', 'hkmc_sfgs_application_procedures_lender', 'safe_capital_account_fx_guideline_2024']... (10.1s)
+  [q07] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (30.2s)

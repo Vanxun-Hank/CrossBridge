@@ -1,0 +1,46 @@
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# ---- Secrets ----
+.env
+.env.local
+*.key
+*.pem
+secrets.json
+
+# ---- OS / IDE ----
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# ---- Project artifacts ----
+nohup.out
+*.log
+.playwright-mcp/
+chatraw-01-*.png
+step5-*.png
+chatraw-02-*.png
+
+# ---- Third-party (clone separately per README) ----
+chatraw-fork/
+
+# ---- Raw source documents (大且与 .md 冗余；re-ingest 时再处理) ----
+data/raw/
+data/chroma.bak_pre_context/
+data/chunks.jsonl.bak_pre_context
+
+# ---- Crawl/snapshot artifacts (未投产) ----
+data/crawl_*.jsonl
+data/snapshot_existing_*.json
+
+# ---- RAGAS 原始 cache (regenerable) ----
+eval/reports/ragas_scores_*.json
+
+# ---- Server-side runtime data (will be regenerated) ----
+chatraw-fork/backend/data/

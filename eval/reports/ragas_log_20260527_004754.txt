@@ -1,0 +1,55 @@
+[ragas] loaded 24 questions, variant=full
+[ragas] collecting RAG outputs ...
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 909 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=911 embed_model=text-embedding-v4
+Building prefix dict from the default dictionary ...
+Loading model from cache /var/folders/k6/2nzpp6hs6pxd0hpld96jpgw00000gn/T/jieba.cache
+Loading model cost 0.281 seconds.
+Prefix dict has been built successfully.
+[Index] BM25 已构建 docs=909 avgdl=301.8 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] ans= 830chars ctx=5 (13.4s)
+  [q02] ans=1385chars ctx=5 (20.5s)
+  [q03] ans= 691chars ctx=5 (12.2s)
+  [q04] ans=1359chars ctx=5 (20.1s)
+  [q05] ans=1128chars ctx=5 (16.9s)
+  [q06] ans= 341chars ctx=5 (7.3s)
+  [q07] ans=1627chars ctx=5 (25.5s)
+  [q08] ans= 801chars ctx=4 (12.7s)
+  [q19] ans=1576chars ctx=5 (22.2s)
+  [q20] ans=1339chars ctx=5 (19.0s)
+  [q21] ans= 824chars ctx=5 (17.7s)
+  [q22] ans=2373chars ctx=5 (34.8s)
+  [q23] ans=1528chars ctx=5 (24.0s)
+  [q24] ans=1871chars ctx=5 (29.5s)
+  [q09] ans=1296chars ctx=5 (21.1s)
+  [q10] ans=1890chars ctx=5 (27.7s)
+  [q11] ans=1408chars ctx=5 (19.3s)
+  [q12] ans=1740chars ctx=5 (24.7s)
+  [q13] ans=1311chars ctx=5 (18.4s)
+  [q14] ans=1423chars ctx=5 (22.9s)
+  [q15] ans=1219chars ctx=5 (23.1s)
+  [q16] ans= 840chars ctx=5 (14.8s)
+  [q17] ans=1008chars ctx=5 (16.7s)
+  [q18] ans=1297chars ctx=3 (19.5s)
+[ragas] collected 24 rows, running RAGAS scoring ...
+        预计 144-240 次 LLM 调用，~3-5 分钟
+Traceback (most recent call last):
+  File "/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py", line 232, in <module>
+    main()
+    ~~~~^^
+  File "/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py", line 226, in main
+    scores = run_ragas_scoring(rows)
+  File "/Users/zhangxun/Documents/BOCHK/eval/run_ragas.py", line 121, in run_ragas_scoring
+    from ragas import evaluate as ragas_evaluate
+  File "/Users/zhangxun/Documents/BOCHK/.venv/lib/python3.14/site-packages/ragas/__init__.py", line 5, in <module>
+    from ragas.evaluation import aevaluate, evaluate
+  File "/Users/zhangxun/Documents/BOCHK/.venv/lib/python3.14/site-packages/ragas/evaluation.py", line 31, in <module>
+    from ragas.llms import llm_factory
+  File "/Users/zhangxun/Documents/BOCHK/.venv/lib/python3.14/site-packages/ragas/llms/__init__.py", line 1, in <module>
+    from ragas.llms.base import (
+    ...<7 lines>...
+    )
+  File "/Users/zhangxun/Documents/BOCHK/.venv/lib/python3.14/site-packages/ragas/llms/base.py", line 12, in <module>
+    from langchain_community.chat_models.vertexai import ChatVertexAI
+ModuleNotFoundError: No module named 'langchain_community.chat_models.vertexai'

@@ -1,0 +1,38 @@
+[eval] loaded 24 questions from /Users/zhangxun/Documents/BOCHK/eval/questions.jsonl
+
+========== variant=full ==========
+[KB] 已从 /Users/zhangxun/Documents/BOCHK/data/processed/chunks.jsonl 加载 1171 个 chunks
+[Index] Chroma 已连接 persist_dir=/Users/zhangxun/Documents/BOCHK/data/chroma collection=crossbridge count=1173 embed_model=text-embedding-v4
+Building prefix dict from the default dictionary ...
+Dumping model to file cache /var/folders/k6/2nzpp6hs6pxd0hpld96jpgw00000gn/T/jieba.cache
+Loading model cost 0.245 seconds.
+Prefix dict has been built successfully.
+[Index] BM25 已构建 docs=1171 avgdl=320.9 jieba=on
+[Rerank] 已就绪 model=gte-rerank-v2
+  [q01] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'hkicl_hkd_fps_rules_2025']... (17.6s)
+  [q02] r5=1 r10=1 cite=1 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024', 'hkma_aml_cft_guideline']... (22.8s)
+  [q03] r5=1 r10=1 cite=1 filt=1 top5=['safe_trade_investment_facilitation', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (16.6s)
+  [q04] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020']... (21.9s)
+  [q05] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (10.9s)
+  [q06] r5=0 r10=0 cite=0 filt=1 top5=['safe_trade_investment_facilitation', 'hkmc_sfgs_application_procedures_lender', 'safe_capital_account_fx_guideline_2024']... (9.9s)
+  [q07] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_factsheet']... (26.1s)
+  [q08] r5=1 r10=1 cite=1 filt=1 top5=['hkma_cdi_research_2026', 'bochk_sfgs_product', 'hkma_cdi_research_2026']... (16.9s)
+  [q19] r5=1 r10=1 cite=1 filt=1 top5=['enterprisesg_efs_fixed_assets', 'bochk_sfgs_product', 'bochk_sfgs_product']... (540.4s)
+  [q20] r5=1 r10=1 cite=1 filt=1 top5=['bochk_sfgs_product', 'hkmc_sfgs_application_procedures_lender', 'bochk_loan_services']... (17.0s)
+  [q21] r5=1 r10=1 cite=1 filt=1 top5=['smelink_sfgs', 'hkmc_sfgs_factsheet', 'safe_capital_account_fx_guideline_2024']... (25.1s)
+  [q22] r5=1 r10=1 cite=1 filt=1 top5=['hkma_sfgs_insight_2025', 'hkmc_sfgs_factsheet', 'hkmc_sfgs_application_procedures_lender']... (35.9s)
+  [q23] r5=1 r10=1 cite=1 filt=1 top5=['hkmc_sfgs_application_procedures', 'hkma_sfgs_insight_2025', 'hkmc_sfgs_application_procedures_lender']... (27.8s)
+  [q24] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024', 'safe_trade_investment_facilitation']... (36.5s)
+  [q09] r5=1 r10=1 cite=1 filt=1 top5=['gogba_qianhai_policy', 'gogba_enterprise_income_tax_vat', 'gogba_qianhai_policy']... (22.4s)
+  [q10] r5=1 r10=1 cite=1 filt=1 top5=['gogba_bank_accounts', 'gogba_business_registration', 'safe_capital_account_fx_guideline_2024']... (30.8s)
+  [q11] r5=1 r10=1 cite=1 filt=1 top5=['gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat', 'gogba_enterprise_income_tax_vat']... (19.0s)
+  [q12] r5=1 r10=1 cite=1 filt=1 top5=['gogba_business_registration', 'gogba_business_registration', 'gogba_business_registration']... (29.5s)
+  [q13] r5=1 r10=1 cite=1 filt=1 top5=['sbv_credit_institutions', 'sbv_credit_institutions', 'sbv_credit_institutions']... (21.2s)
+  [q14] r5=0 r10=0 cite=0 filt=1 top5=['safe_current_account_fx_guideline_2020', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (22.6s)
+  [q15] r5=0 r10=0 cite=0 filt=1 top5=['fia_vietnam_taxation_customs', 'safe_capital_account_fx_guideline_2024', 'safe_capital_account_fx_guideline_2024']... (32.6s)
+  [q16] r5=0 r10=0 cite=0 filt=1 top5=['safe_capital_account_fx_guideline_2024', 'safe_current_account_fx_guideline_2020', 'safe_capital_account_fx_guideline_2024']... (19.9s)
+  [q17] r5=1 r10=1 cite=1 filt=1 top5=['hkicl_hkd_fps_rules_2025', 'hkma_fps', 'hkicl_hkd_fps_rules_2025']... (23.7s)
+  [q18] r5=1 r10=1 cite=0 filt=1 top5=['cips_introduction', 'cips_introduction', 'cips_indirect_participant_guide_2025']... (24.0s)
+
+[eval] reports written: /Users/zhangxun/Documents/BOCHK/eval/reports/eval_full_20260527_122103.json, /Users/zhangxun/Documents/BOCHK/eval/reports/eval_full_20260527_122103.md
+[eval] summary: {'variant': 'full', 'n_questions': 24, 'recall@5': 0.7083, 'recall@10': 0.7083, 'citation_hit_rate': 0.6667, 'citation_filter_applied_rate': 1.0, 'avg_elapsed_sec': 44.63}

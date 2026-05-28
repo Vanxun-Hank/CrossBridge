@@ -1,0 +1,39 @@
+# CrossBridge AI MVP 依赖
+# 安装: pip install -r requirements.txt
+
+# --- 核心(必装)---
+streamlit>=1.30
+numpy>=1.24
+jieba>=0.42            # 中文分词/规则 fallback
+
+# --- LangChain + LangSmith tracing ---
+langchain>=0.3
+langchain-core>=0.3
+langchain-openai>=0.2
+langchain-text-splitters>=0.3   # files/ingestion.py 用
+langsmith>=0.1
+
+# --- Chunking & 持久化向量库（Step 1 + Step 2）---
+tiktoken>=0.7                   # token-aware splitter
+langchain-chroma>=1.0
+chromadb>=1.0
+
+# --- 千问 / 阿里云百炼 OpenAI-compatible API ---
+# 需要配置:
+#   export DASHSCOPE_API_KEY=...
+#   export QWEN_BASE_URL=https://cn-hongkong.dashscope.aliyuncs.com/compatible-mode/v1
+#   export QWEN_MODEL=qwen-plus
+#   export QWEN_EMBEDDING_MODEL=text-embedding-v4
+#   export QWEN_EMBEDDING_DIMENSIONS=1024
+#
+# LangSmith tracing:
+#   export LANGSMITH_TRACING=true
+#   export LANGSMITH_API_KEY=...
+#   export LANGSMITH_PROJECT=CrossBridge-RAG
+
+# --- 后续可选 ---
+requests>=2.31         # 爬虫
+# beautifulsoup4>=4.12 # 爬虫
+pypdf>=6.0             # PDF 解析
+# crawl4ai>=0.8        # 可选：HTML 页面清洗更强；未安装时 scripts/crawl_sources.py 会退回 requests + 内置解析器
+# pdfplumber>=0.10     # 更复杂 PDF 解析

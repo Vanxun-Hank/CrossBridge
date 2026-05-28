@@ -1,0 +1,125 @@
+[Context] 用 qwen-plus 给 1171 chunks 生成 context (并发 8)
+  [Context] 50/1171 done (ok=50 fail=0)
+  [Context] 100/1171 done (ok=100 fail=0)
+  [Context] 150/1171 done (ok=150 fail=0)
+  [Context] 200/1171 done (ok=200 fail=0)
+  [Context] 250/1171 done (ok=250 fail=0)
+  [Context] 300/1171 done (ok=300 fail=0)
+  [Context] 350/1171 done (ok=350 fail=0)
+  [Context] 400/1171 done (ok=400 fail=0)
+  [Context] 450/1171 done (ok=450 fail=0)
+  [Context] 500/1171 done (ok=500 fail=0)
+  [Context] 550/1171 done (ok=550 fail=0)
+  [Context] 600/1171 done (ok=600 fail=0)
+  [Context] 650/1171 done (ok=650 fail=0)
+  [Context] 700/1171 done (ok=700 fail=0)
+  [Context] 750/1171 done (ok=750 fail=0)
+  [Context] 800/1171 done (ok=800 fail=0)
+  [Context] 850/1171 done (ok=850 fail=0)
+  [Context] 900/1171 done (ok=900 fail=0)
+  [Context] 950/1171 done (ok=950 fail=0)
+  [Context] 1000/1171 done (ok=1000 fail=0)
+  [Context] 1050/1171 done (ok=1050 fail=0)
+  [Context] 1100/1171 done (ok=1100 fail=0)
+  [Context] 1150/1171 done (ok=1150 fail=0)
+  [Context] 1171/1171 done (ok=1171 fail=0)
+[Context] 完成：1171 成功 / 0 失败
+[ingestion] wrote 1171 chunks across 76 docs -> data/processed/chunks.jsonl
+[ingestion] chunk_size=800 overlap=120 started_at=2026-05-27T18:32:59.542914+00:00
+
+[ingestion] chunks per doc:
+    82  hkma_aml_cft_guideline
+     6  hkma_payment_systems
+     3  bochk_remittance_charges
+     6  safe_trade_investment_facilitation
+     8  hkmc_sfgs_factsheet
+     1  bochk_trade_finance
+     5  hkma_banking_made_easy
+     7  gogba_business_registration
+    13  hktdc_vietnam_manufacturing_partnership
+     1  investhk_setting_up_business
+     3  hkma_cdi_about
+     4  hkma_cdi_launch
+     1  hkma_cdi_digitalisation_circular
+     4  hkma_fps
+     2  hkicl_hkd_chats
+     2  cips_introduction
+    81  safe_current_account_fx_guideline_2020
+   461  safe_capital_account_fx_guideline_2024
+     4  safe_trade_fx_optimization_2024
+     9  sbv_export_payment_risk
+     1  bochk_sme_loan
+     4  bochk_sfgs_product
+    32  bochk_business_integrated_account
+     1  bochk_remote_account_opening
+     2  hkmc_sfgs_overview
+     1  hkmc_sfgs_statistics
+     1  tid_bud_fund
+     7  cr_incorporation_local_limited_company
+    12  cr_local_company_incorporation_faq
+     2  ird_business_registration
+    10  ird_profits_tax
+     6  ird_territorial_source_principle
+     1  gogba_bank_accounts
+    12  gogba_enterprise_income_tax_vat
+    15  gogba_qianhai_policy
+     1  mas_sme_financing
+    46  sbv_credit_institutions
+     2  bsp_financial_inclusion
+     1  bot_sme_finance
+     1  bochk_loan_services
+     1  boc_singapore_corporate_banking
+     1  boc_singapore_corporate_loans
+     1  boc_singapore_trade_finance
+     1  boc_singapore_invoice_financing
+     2  boc_singapore_rmb_corporate_banking
+     1  boc_thailand_corporate_saving
+     1  boc_thailand_advising_lc
+     1  boc_thailand_performance_guarantee
+     1  boc_thailand_overview
+     2  boc_global_trade_finance_international_orgs
+     1  boc_global_domestic_lc
+     2  boc_global_purchase_order_financing
+     3  hkma_sfgs_insight_2025
+     3  hkma_sfgs_extension_2024
+     3  hkma_sfgs_90_product
+     3  hkma_sfgs_partial_principal_repayment
+     2  smelink_sfgs
+     1  enterprisesg_efs
+     1  enterprisesg_efs_faq
+     2  enterprisesg_efs_fixed_assets
+    15  hkma_cdi_research_2026
+    10  sbv_cross_border_payments_vi
+    14  sbv_circular_20_2022_current_account_transfers
+     5  sbv_circular_15_2024_payment_services
+     8  sbv_payment_system_supervision_circular_20_2018
+    17  fia_vietnam_taxation_customs
+     4  hkma_system_linkages
+    39  hkicl_hkd_fps_rules_2025
+     5  cips_indirect_participant_guide_2025
+    12  hktdc_vietnam_manufacturing_background
+     1  hkmc_sfgs_application_procedures_lender
+     3  hkma_wmc_overview
+     6  hkma_wmc_northbound_banks
+     6  hkma_wmc_southbound_banks
+   131  hkicl_hkd_clearing_house_rules_2026
+     1  hkmc_sfgs_application_procedures
+
+[ingestion] 3 个随机 chunk 样本（请肉眼审）：
+========================================================================================
+
+[safe_current_account_fx_guideline_2020__c0080]
+  region=['Mainland China', 'cross-border']  topic=['current account', 'foreign exchange', 'trade payment']
+  authority=regulator  lang=zh-CN  p.86
+  content: ## Page 86  86 附 10 国家外汇管理局 XX 分（支）局 核查通知书 编号： ： （被核查单位或个人名称） 根据《国家外汇管理局关于印发货物贸易外汇管理法规有关问题的通知》（汇 发〔2012〕38 号）、《国家外汇管理局关于印发〈经常项目外汇业务指引（2020 年版）〉的通知》（汇发〔2020〕14 号）及相关规定，因 （原因）， 现对你单位 （个人） 年 月 日至 年 月 日期间发生 /办理的相关业务进行核查，核查方式为： □书面报告 □约见法人代表或其授权人/负责人/境内个人 □现场调查 □其他 收到本通知后，请将回执联反馈外汇局，并...
+
+[hkma_aml_cft_guideline__c0051]
+  region=['Hong Kong', 'cross-border']  topic=['AML/CFT', 'customer due diligence', 'banking compliance']
+  authority=regulator  lang=en  §5.5 p.56
+  content: ## Page 56  54  (a) the size and complexity of its business; (b) the ML/TF risks arising from its business; (c) the nature of its systems and controls; (d) the monitoring procedures that already exist to satisfy other business needs; and (e) the nature of the products and service...
+
+[safe_capital_account_fx_guideline_2024__c0334]
+  region=['Mainland China', 'cross-border']  topic=['capital account', 'foreign exchange', 'cross-border investment']
+  authority=regulator  lang=zh-CN  §1.2
+  content: 110 （4）债券市场资金专户内的资金不得用于投资中国债券市场以外的其他用 途。 （5）同一境外机构投资者的 QFII/RQFII 境内专用账户内资金与债券市场资 金专户内资金可在境内直接双向划转并用于境内证券投资，后续交易及资金使 用、汇兑等遵循划转后渠道的相关管理要求。 （6）境外机构投资者投资中国债券市场汇出与汇入资金币种原则上应保持 一致，不得进行人民币与外币之间的跨币种套利。同时汇入“人民币+外币”进行 投资的，累计汇出外币金额不得超过累计汇入外币金额的 1.2 倍（投资清盘汇出 除外）。长期投资中国债券市场的，上述比例可适当放宽。具体而言，以...
+========================================================================================

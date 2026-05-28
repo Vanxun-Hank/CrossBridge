@@ -1,0 +1,1139 @@
+{
+  "summary": {
+    "variant": "full",
+    "n_questions": 24,
+    "recall@5": 0.7083,
+    "recall@10": 0.7083,
+    "citation_hit_rate": 0.6667,
+    "citation_filter_applied_rate": 1.0,
+    "avg_elapsed_sec": 22.66
+  },
+  "per_question": [
+    {
+      "id": "q01",
+      "scenario": "compliance_cross_border_payment",
+      "question": "香港银行接收跨境付款时反洗钱审核的核心要求是什么",
+      "expected_doc_ids": [
+        "hkma_aml_cft_guideline"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "hkicl_hkd_fps_rules_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "hkicl_hkd_fps_rules_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "citation_doc_ids": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "hkicl_hkd_fps_rules_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 15.95
+    },
+    {
+      "id": "q02",
+      "scenario": "compliance_cross_border_payment",
+      "question": "客户尽职调查 EDD 强化版具体要做哪些步骤",
+      "expected_doc_ids": [
+        "hkma_aml_cft_guideline"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "citation_doc_ids": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline",
+        "safe_capital_account_fx_guideline_2024",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 23.92
+    },
+    {
+      "id": "q03",
+      "scenario": "compliance_cross_border_payment",
+      "question": "汇发〔2023〕28号 文件内容",
+      "expected_doc_ids": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 16.49
+    },
+    {
+      "id": "q04",
+      "scenario": "compliance_cross_border_payment",
+      "question": "中国企业向越南供应商付汇的合规审核流程",
+      "expected_doc_ids": [
+        "safe_trade_fx_optimization_2024",
+        "safe_trade_investment_facilitation",
+        "sbv_export_payment_risk"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 4,
+      "elapsed_sec": 23.5
+    },
+    {
+      "id": "q05",
+      "scenario": "sme_loan",
+      "question": "SFGS 80% 担保产品申请条件有哪些",
+      "expected_doc_ids": [
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "smelink_sfgs",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "smelink_sfgs",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 14.22
+    },
+    {
+      "id": "q06",
+      "scenario": "sme_loan",
+      "question": "SFGS_09/2024 文件编号对应的政策是什么",
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_trade_investment_facilitation",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_trade_investment_facilitation",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "safe_trade_investment_facilitation",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 10.64
+    },
+    {
+      "id": "q07",
+      "scenario": "sme_loan",
+      "question": "SFGS 80% 担保和 90% 担保产品的区别",
+      "expected_doc_ids": [
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "smelink_sfgs",
+        "hkmc_sfgs_overview",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "smelink_sfgs",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 26.27
+    },
+    {
+      "id": "q08",
+      "scenario": "sme_loan",
+      "question": "中银香港的 SME 贷款产品有哪些",
+      "expected_doc_ids": [
+        "bochk_loan_services",
+        "bochk_sfgs_product",
+        "bochk_sme_loan"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkma_cdi_research_2026",
+        "bochk_sfgs_product",
+        "hkma_cdi_research_2026",
+        "hkmc_sfgs_overview",
+        "hkma_cdi_research_2026"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkma_cdi_research_2026",
+        "bochk_sfgs_product",
+        "hkma_cdi_research_2026",
+        "hkmc_sfgs_overview",
+        "hkma_cdi_research_2026",
+        "bochk_loan_services",
+        "hkma_sfgs_90_product",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "hkma_cdi_research_2026",
+        "bochk_sfgs_product",
+        "hkma_cdi_research_2026",
+        "hkma_cdi_research_2026",
+        "bochk_loan_services",
+        "hkma_sfgs_90_product",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 18.73
+    },
+    {
+      "id": "q19",
+      "scenario": "sme_loan",
+      "question": "申请 SME 贷款需要拿什么资产做抵押 有没有无抵押的选项",
+      "expected_doc_ids": [
+        "bochk_loan_services",
+        "bochk_sme_loan",
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "enterprisesg_efs_fixed_assets",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "smelink_sfgs",
+        "bochk_loan_services"
+      ],
+      "retrieved_doc_ids_top10": [
+        "enterprisesg_efs_fixed_assets",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "smelink_sfgs",
+        "bochk_loan_services",
+        "safe_capital_account_fx_guideline_2024",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "enterprisesg_efs_fixed_assets",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "smelink_sfgs",
+        "bochk_loan_services",
+        "safe_capital_account_fx_guideline_2024",
+        "hkmc_sfgs_application_procedures_lender",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 21.85
+    },
+    {
+      "id": "q20",
+      "scenario": "sme_loan",
+      "question": "申请 SME 贷款要提交哪些财务证明材料 公司账务文件",
+      "expected_doc_ids": [
+        "bochk_loan_services",
+        "bochk_sme_loan",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "bochk_sfgs_product",
+        "hkmc_sfgs_application_procedures_lender",
+        "bochk_loan_services",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "bochk_sfgs_product",
+        "hkmc_sfgs_application_procedures_lender",
+        "bochk_loan_services",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "bochk_sfgs_product",
+        "hkmc_sfgs_application_procedures_lender",
+        "bochk_loan_services",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 3,
+      "elapsed_sec": 19.57
+    },
+    {
+      "id": "q21",
+      "scenario": "sme_loan",
+      "question": "中小企业最高可以申请多少贷款额度 担保产品上限是多少",
+      "expected_doc_ids": [
+        "bochk_sme_loan",
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "smelink_sfgs",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "smelink_sfgs",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "hkmc_sfgs_overview"
+      ],
+      "citation_doc_ids": [
+        "smelink_sfgs",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 3,
+      "elapsed_sec": 18.29
+    },
+    {
+      "id": "q22",
+      "scenario": "sme_loan",
+      "question": "我公司香港注册 年营业额 5000 万港币 去年利润 800 万 想申请 SFGS 担保贷款 大概能贷多少 还需要补充哪些财务证明文件",
+      "expected_doc_ids": [
+        "bochk_sfgs_product",
+        "bochk_sme_loan",
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "smelink_sfgs"
+      ],
+      "citation_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "smelink_sfgs"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 33.32
+    },
+    {
+      "id": "q23",
+      "scenario": "sme_loan",
+      "question": "申请 SFGS 担保贷款的完整流程是什么 从提交申请到拿到钱大概要多久",
+      "expected_doc_ids": [
+        "bochk_sfgs_product",
+        "hkma_sfgs_extension_2024",
+        "hkmc_sfgs_factsheet",
+        "smelink_sfgs"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 22.33
+    },
+    {
+      "id": "q24",
+      "scenario": "sme_loan",
+      "question": "公司在香港注册 在深圳和东莞各有一个工厂 想做跨境业务扩张融资 可以申请哪些贷款产品 有什么硬性资格要求",
+      "expected_doc_ids": [
+        "boc_global_purchase_order_financing",
+        "bochk_loan_services",
+        "bochk_sme_loan",
+        "bochk_trade_finance",
+        "hkmc_sfgs_factsheet"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 6,
+      "elapsed_sec": 36.03
+    },
+    {
+      "id": "q09",
+      "scenario": "gba_market_entry",
+      "question": "深圳前海企业税收优惠政策",
+      "expected_doc_ids": [
+        "gogba_qianhai_policy"
+      ],
+      "retrieved_doc_ids_top5": [
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy"
+      ],
+      "retrieved_doc_ids_top10": [
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 4,
+      "elapsed_sec": 23.4
+    },
+    {
+      "id": "q10",
+      "scenario": "gba_market_entry",
+      "question": "在大湾区开公司银行账户的流程和需要的资料",
+      "expected_doc_ids": [
+        "gogba_bank_accounts",
+        "gogba_business_registration"
+      ],
+      "retrieved_doc_ids_top5": [
+        "gogba_bank_accounts",
+        "gogba_business_registration",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "gogba_bank_accounts",
+        "gogba_business_registration",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "gogba_bank_accounts",
+        "gogba_business_registration",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 27.2
+    },
+    {
+      "id": "q11",
+      "scenario": "gba_market_entry",
+      "question": "大湾区企业所得税和增值税适用税率",
+      "expected_doc_ids": [
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "retrieved_doc_ids_top5": [
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "retrieved_doc_ids_top10": [
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 24.27
+    },
+    {
+      "id": "q12",
+      "scenario": "gba_market_entry",
+      "question": "GoGBA 企业 business registration 流程",
+      "expected_doc_ids": [
+        "gogba_business_registration"
+      ],
+      "retrieved_doc_ids_top5": [
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration"
+      ],
+      "retrieved_doc_ids_top10": [
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_bank_accounts",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "citation_doc_ids": [
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_bank_accounts",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 36.07
+    },
+    {
+      "id": "q13",
+      "scenario": "vietnam_supplier",
+      "question": "越南央行 SBV 对信贷机构的监管要求",
+      "expected_doc_ids": [
+        "sbv_credit_institutions"
+      ],
+      "retrieved_doc_ids_top5": [
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions"
+      ],
+      "retrieved_doc_ids_top10": [
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "citation_doc_ids": [
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "sbv_credit_institutions",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 2,
+      "elapsed_sec": 27.14
+    },
+    {
+      "id": "q14",
+      "scenario": "vietnam_supplier",
+      "question": "向越南供应商付款的外汇合规要求",
+      "expected_doc_ids": [
+        "sbv_credit_institutions",
+        "sbv_export_payment_risk"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "citation_doc_ids": [
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 4,
+      "elapsed_sec": 20.82
+    },
+    {
+      "id": "q15",
+      "scenario": "vietnam_supplier",
+      "question": "在越南投资合作建厂的合规要点",
+      "expected_doc_ids": [
+        "hktdc_vietnam_manufacturing_partnership"
+      ],
+      "retrieved_doc_ids_top5": [
+        "fia_vietnam_taxation_customs",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "retrieved_doc_ids_top10": [
+        "fia_vietnam_taxation_customs",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_trade_investment_facilitation"
+      ],
+      "citation_doc_ids": [
+        "fia_vietnam_taxation_customs",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_trade_investment_facilitation"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 6,
+      "elapsed_sec": 29.43
+    },
+    {
+      "id": "q16",
+      "scenario": "remittance_compare",
+      "question": "电汇 TT 汇款的费用和到账时间",
+      "expected_doc_ids": [
+        "bochk_remittance_charges"
+      ],
+      "retrieved_doc_ids_top5": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "retrieved_doc_ids_top10": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": false,
+      "recall@10": false,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 3,
+      "elapsed_sec": 16.12
+    },
+    {
+      "id": "q17",
+      "scenario": "remittance_compare",
+      "question": "Faster Payment System FPS 转账的特点和限额",
+      "expected_doc_ids": [
+        "hkma_fps",
+        "hkma_payment_systems"
+      ],
+      "retrieved_doc_ids_top5": [
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025"
+      ],
+      "retrieved_doc_ids_top10": [
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025"
+      ],
+      "citation_doc_ids": [
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": true,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 20.63
+    },
+    {
+      "id": "q18",
+      "scenario": "remittance_compare",
+      "question": "CIPS 跨境人民币清算系统的功能和参与机构",
+      "expected_doc_ids": [
+        "cips_introduction"
+      ],
+      "retrieved_doc_ids_top5": [
+        "cips_introduction",
+        "cips_introduction",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025"
+      ],
+      "retrieved_doc_ids_top10": [
+        "cips_introduction",
+        "cips_introduction",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "citation_doc_ids": [
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "recall@5": true,
+      "recall@10": true,
+      "citation_hit": false,
+      "citation_filter_applied": true,
+      "rerank_used": true,
+      "query_variants_count": 1,
+      "elapsed_sec": 17.63
+    }
+  ]
+}
