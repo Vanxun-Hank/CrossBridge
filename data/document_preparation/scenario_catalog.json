@@ -1,0 +1,1734 @@
+{
+  "catalog_status": "source_verified_pending_human_review",
+  "catalog_version": "20260531_f2_v2",
+  "issuer": "Bank of China (Hong Kong)",
+  "note_en": "This material catalogue only organises public-source hints and general suggested-preparation items. It is not the bank's official required-document list; actual requirements are subject to BOCHK relationship-manager confirmation and final approval.",
+  "note_zh": "本材料目录仅整理公开来源提示与一般性建议预备项，不代表银行正式必交清单；实际所需文件以 BOCHK 客户经理确认及最终审批为准。",
+  "product_overlay_generated_at": "2026-05-31T15:10:09.411159+00:00",
+  "product_overlay_source_catalog_version": "20260531T050029Z",
+  "product_overlays": {
+    "bochk_back_to_back_lc": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_back_to_back_lc_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Original Letter of Credit (master L/C)",
+          "label_zh": "原信用证（master L/C）",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+              "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+              "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "中间商凭原信用证开立涉及同批货物的另一张信用证。",
+      "product_description_en": "Back-to-back L/C for intermediaries.",
+      "product_id": "bochk_back_to_back_lc",
+      "product_name": "背对背信用证",
+      "product_name_en": "Back-to-Back L/C",
+      "required_documents": [
+        "原信用证（master L/C）"
+      ],
+      "required_documents_en": [
+        "Original Letter of Credit (master L/C)"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Back-to-Back L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_export_bills_advance": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_export_bills_advance_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Export collection documents",
+          "label_zh": "出口托收单据",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "货物装运后，凭出口托收单据获得现金垫款。",
+      "product_description_en": "Cash advance against export bills after shipment.",
+      "product_id": "bochk_export_bills_advance",
+      "product_name": "出口押汇",
+      "product_name_en": "Export Bills Advance",
+      "required_documents": [
+        "出口托收单据"
+      ],
+      "required_documents_en": [
+        "Export collection documents"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills Advance",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_export_bills_collection": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_export_bills_collection_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Export documents",
+          "label_zh": "出口单据",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "向银行提交单据后寄送买方银行，付款或承兑后放单。",
+      "product_description_en": "Send export documents to the buyer's bank for release on payment or acceptance.",
+      "product_id": "bochk_export_bills_collection",
+      "product_name": "出口托收",
+      "product_name_en": "Export Bills for Collection",
+      "required_documents": [
+        "出口单据"
+      ],
+      "required_documents_en": [
+        "Export documents"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_export_bills_lc_collection": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_export_bills_lc_collection_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Export documents under the Letter of Credit",
+          "label_zh": "信用证项下出口单据",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "信用证项下出口汇票托收及按请求提供审单服务。",
+      "product_description_en": "Collection and optional document checking for export bills under L/C.",
+      "product_id": "bochk_export_bills_lc_collection",
+      "product_name": "信用证项下出口汇票托收",
+      "product_name_en": "Export Bills Under L/C for Collection",
+      "required_documents": [
+        "信用证项下出口单据"
+      ],
+      "required_documents_en": [
+        "Export documents under the Letter of Credit"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills Under L/C for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_export_bills_lc_negotiation_discount": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_export_bills_lc_negotiation_discount_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Export documents under the Letter of Credit",
+          "label_zh": "信用证项下出口单据",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "提交符合信用证条款的出口单据后获得融资。",
+      "product_description_en": "Advance against export documents compliant with L/C terms.",
+      "product_id": "bochk_export_bills_lc_negotiation_discount",
+      "product_name": "信用证项下出口汇票议付／贴现",
+      "product_name_en": "Negotiation / Discount of Export Bills Under L/C",
+      "required_documents": [
+        "信用证项下出口单据"
+      ],
+      "required_documents_en": [
+        "Export documents under the Letter of Credit"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Negotiation / Discount of Export Bills Under L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_export_invoice_discounting": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_export_invoice_discounting_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Invoice",
+          "label_zh": "发票",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+              "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+            }
+          ]
+        },
+        {
+          "code": "product_bochk_export_invoice_discounting_doc_2",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Evidence of delivery of goods",
+          "label_zh": "货物交付证明",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+              "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+            }
+          ]
+        }
+      ],
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$500",
+      "fee_text_en": "Handling fee: 1/4% of financing amount, minimum HK$500",
+      "has_published_documents": true,
+      "has_published_fee": true,
+      "product_description": "交付货物后凭发票和交付证明取得短期贷款。",
+      "product_description_en": "Short-term financing against an invoice and evidence of delivery.",
+      "product_id": "bochk_export_invoice_discounting",
+      "product_name": "出口发票贴现",
+      "product_name_en": "Export Invoice Discounting",
+      "required_documents": [
+        "发票",
+        "货物交付证明"
+      ],
+      "required_documents_en": [
+        "Invoice",
+        "Evidence of delivery of goods"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Export Invoice Discounting",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_factoring": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "BOCHK 贸易服务概览列出的保理服务。",
+      "product_description_en": "Factoring service listed by BOCHK.",
+      "product_id": "bochk_factoring",
+      "product_name": "保理",
+      "product_name_en": "Factoring",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Factoring",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_foreign_exchange_services": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "BOCHK 贸易服务概览列出的外汇服务。",
+      "product_description_en": "Foreign-exchange service listed by BOCHK.",
+      "product_id": "bochk_foreign_exchange_services",
+      "product_name": "外汇服务",
+      "product_name_en": "Foreign Exchange Services",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Foreign Exchange Services",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_forfaiting": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "BOCHK 贸易服务概览列出的福费廷服务。",
+      "product_description_en": "Forfaiting service listed by BOCHK.",
+      "product_id": "bochk_forfaiting",
+      "product_name": "福费廷",
+      "product_name_en": "Forfaiting",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Forfaiting",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_guarantee_bond_standby_lc": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "BOCHK 贸易服务概览列出的担保、保函及备用信用证服务。",
+      "product_description_en": "Guarantee, bond and standby L/C service listed by BOCHK.",
+      "product_id": "bochk_guarantee_bond_standby_lc",
+      "product_name": "担保／保函／备用信用证",
+      "product_name_en": "Guarantee / Bond / Standby L/C",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Guarantee / Bond / Standby L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_import_bills_collection": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "供应商通过银行寄送单据，满足付款条款后放单。",
+      "product_description_en": "Import collection with release of documents after payment terms are fulfilled.",
+      "product_id": "bochk_import_bills_collection",
+      "product_name": "进口托收",
+      "product_name_en": "Import Bills for Collection",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Import Bills for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_import_invoice_financing": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_import_invoice_financing_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Supplier invoice",
+          "label_zh": "供应商发票",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+              "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+              "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+              "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+            }
+          ]
+        }
+      ],
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$500",
+      "fee_text_en": "Handling fee: 1/4% of financing amount, minimum HK$500",
+      "has_published_documents": true,
+      "has_published_fee": true,
+      "product_description": "赊账采购项下凭供应商发票申请融资。",
+      "product_description_en": "Open-account import financing against a supplier invoice.",
+      "product_id": "bochk_import_invoice_financing",
+      "product_name": "进口发票融资",
+      "product_name_en": "Import Invoice Financing",
+      "required_documents": [
+        "供应商发票"
+      ],
+      "required_documents_en": [
+        "Supplier invoice"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Import Invoice Financing",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_import_loan": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "进口托收项下即时付款资金不足时取得货物或单据。",
+      "product_description_en": "Import-collection financing when immediate liquidity is insufficient.",
+      "product_id": "bochk_import_loan",
+      "product_name": "进口贷款",
+      "product_name_en": "Import Loan",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Import Loan",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_lc_advising_confirmation": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "信用证通知及按请求加具保兑。",
+      "product_description_en": "L/C advising and confirmation service.",
+      "product_id": "bochk_lc_advising_confirmation",
+      "product_name": "信用证通知及保兑",
+      "product_name_en": "L/C Advising and Confirmation",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "L/C Advising and Confirmation",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_lc_issuance": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "根据买方指示向供应商开立信用证。",
+      "product_description_en": "Issue an L/C to the supplier on the buyer's instructions.",
+      "product_id": "bochk_lc_issuance",
+      "product_name": "信用证开立",
+      "product_name_en": "L/C Issuance",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "L/C Issuance",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_lc_transfer": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_lc_transfer_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Letter of Credit marked as transferable",
+          "label_zh": "标明可转让的信用证",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "在信用证可转让时全部或部分转让给供应商。",
+      "product_description_en": "Transfer all or part of a transferable L/C to suppliers.",
+      "product_id": "bochk_lc_transfer",
+      "product_name": "信用证转让",
+      "product_name_en": "L/C Transfer",
+      "required_documents": [
+        "标明可转让的信用证"
+      ],
+      "required_documents_en": [
+        "Letter of Credit marked as transferable"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "L/C Transfer",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_packing_loan": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_packing_loan_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Letter of Credit",
+          "label_zh": "信用证",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+              "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+            }
+          ]
+        }
+      ],
+      "fee_text": "手续费：融资金额的 1/8%，最低 HK$350",
+      "fee_text_en": "Handling fee: 1/8% of financing amount, minimum HK$350",
+      "has_published_documents": true,
+      "has_published_fee": true,
+      "product_description": "以信用证作担保的装运前生产成本融资。",
+      "product_description_en": "Pre-shipment production-cost financing secured by an L/C.",
+      "product_id": "bochk_packing_loan",
+      "product_name": "打包贷款",
+      "product_name_en": "Packing Loan",
+      "required_documents": [
+        "信用证"
+      ],
+      "required_documents_en": [
+        "Letter of Credit"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Packing Loan",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_pre_shipment_financing": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_pre_shipment_financing_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Purchase order or sales contract",
+          "label_zh": "采购订单或销售合同",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+              "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+              "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+              "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+            }
+          ]
+        }
+      ],
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$450",
+      "fee_text_en": "Handling fee: 1/4% of financing amount, minimum HK$450",
+      "has_published_documents": true,
+      "has_published_fee": true,
+      "product_description": "收到采购订单后的原材料及营运开支融资。",
+      "product_description_en": "Financing for raw materials and overheads after receipt of a purchase order.",
+      "product_id": "bochk_pre_shipment_financing",
+      "product_name": "装运前融资",
+      "product_name_en": "Pre-shipment Financing",
+      "required_documents": [
+        "采购订单或销售合同"
+      ],
+      "required_documents_en": [
+        "Purchase order or sales contract"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Pre-shipment Financing",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_sfgs_80_guarantee_product": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "经 BOCHK 申请的中小企融资担保计划八成担保产品。",
+      "product_description_en": "BOCHK application path for the SFGS 80% Guarantee Product.",
+      "product_id": "bochk_sfgs_80_guarantee_product",
+      "product_name": "中小企融资担保计划 - 八成担保产品",
+      "product_name_en": "SME Financing Guarantee Scheme - 80% Guarantee Product",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:25.332544+00:00",
+      "source_content_hash": "91f7d716df24afa297aee233ed4ffd4eb6d62e0bb09bcb7f1c7b29b718323bc2",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:25.332544+00:00",
+          "source_checked_at": "2026-05-31T05:00:25.332544+00:00",
+          "source_content_hash": "91f7d716df24afa297aee233ed4ffd4eb6d62e0bb09bcb7f1c7b29b718323bc2",
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:29.565452+00:00",
+          "source_checked_at": "2026-05-31T05:00:29.565452+00:00",
+          "source_content_hash": "93f713a5c081b623638e071b4384fe1ff16c3a03160222f05106b76ffe20e125",
+          "source_url": "https://www.hkmc.com.hk/files/product/6/SFGS%20Factsheet_Eng%20eff%2023%20Sep%202024.pdf"
+        }
+      ],
+      "source_title": "SME Financing Guarantee Scheme - 80% Guarantee Product",
+      "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_shipping_guarantee": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "货物早于装运单据到达时，由银行加签提货担保。",
+      "product_description_en": "Countersigned shipping guarantee when goods arrive before shipping documents.",
+      "product_id": "bochk_shipping_guarantee",
+      "product_name": "提货担保",
+      "product_name_en": "Shipping Guarantee",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Shipping Guarantee",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_small_business_loan_unsecured": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "灵活无抵押小企业贷款。",
+      "product_description_en": "Flexible unsecured SME loan.",
+      "product_id": "bochk_small_business_loan_unsecured",
+      "product_name": "中银「小企业贷款」无抵押贷款",
+      "product_name_en": "BOC \"Small Business Loan\" Unsecured Loan",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:24.728753+00:00",
+      "source_content_hash": "d90ee783874ea1dd67a61eabc8c0718fea83d229bc0cd7c6001fb9470488ae4c",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:24.728753+00:00",
+          "source_checked_at": "2026-05-31T05:00:24.728753+00:00",
+          "source_content_hash": "d90ee783874ea1dd67a61eabc8c0718fea83d229bc0cd7c6001fb9470488ae4c",
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html"
+        }
+      ],
+      "source_title": "BOC \"Small Business Loan\" Unsecured Loan",
+      "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_supply_chain_document_checking": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "供应链融资方案中的贸易单据审查服务。",
+      "product_description_en": "Trade-document checking service under the supply-chain solution.",
+      "product_id": "bochk_supply_chain_document_checking",
+      "product_name": "供应链审单服务",
+      "product_name_en": "Supply Chain Document Checking Service",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Document Checking Service",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_supply_chain_finance_solution": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "面向核心买方和供应商的综合供应链融资方案。",
+      "product_description_en": "Comprehensive supply-chain solution for anchor buyers and suppliers.",
+      "product_id": "bochk_supply_chain_finance_solution",
+      "product_name": "供应链融资方案",
+      "product_name_en": "Supply Chain Finance Solution",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Finance Solution",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_supply_chain_invoice_payment": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_supply_chain_invoice_payment_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Invoice",
+          "label_zh": "发票",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+              "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+            }
+          ]
+        },
+        {
+          "code": "product_bochk_supply_chain_invoice_payment_doc_2",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Anchor buyer payment undertaking",
+          "label_zh": "核心买方付款承诺",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+              "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "核心买方确认付款后，BOCHK 无追索权购买供应商应收账款并提前付款。",
+      "product_description_en": "Early supplier payment by non-recourse purchase of receivables after the anchor buyer's undertaking.",
+      "product_id": "bochk_supply_chain_invoice_payment",
+      "product_name": "供应链发票付款",
+      "product_name_en": "Supply Chain Invoice Payment",
+      "required_documents": [
+        "发票",
+        "核心买方付款承诺"
+      ],
+      "required_documents_en": [
+        "Invoice",
+        "Anchor buyer payment undertaking"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment",
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Invoice Payment",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_supply_chain_pre_shipment_financing": {
+      "checklist_items": [
+        {
+          "code": "product_bochk_supply_chain_pre_shipment_financing_doc_1",
+          "evidence_level": "official_product_document_hint",
+          "label_en": "Purchase Order (PO) provided by the anchor buyer or Sales Order (SO) confirmed by the anchor buyer",
+          "label_zh": "核心买方提供的采购订单（PO）或经核心买方确认的销售订单（SO）",
+          "source_refs": [
+            {
+              "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+              "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+              "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+            }
+          ]
+        }
+      ],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": true,
+      "has_published_fee": false,
+      "product_description": "供应商在核心买方确认付款前取得短期融资。",
+      "product_description_en": "Conditional short-term financing before anchor-buyer payment confirmation.",
+      "product_id": "bochk_supply_chain_pre_shipment_financing",
+      "product_name": "供应链装运前融资",
+      "product_name_en": "SC Pre-shipment Financing",
+      "required_documents": [
+        "核心买方提供的采购订单（PO）或经核心买方确认的销售订单（SO）"
+      ],
+      "required_documents_en": [
+        "Purchase Order (PO) provided by the anchor buyer or Sales Order (SO) confirmed by the anchor buyer"
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_fulfillment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "SC Pre-shipment Financing",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    },
+    "bochk_trust_receipt_facilities": {
+      "checklist_items": [],
+      "fee_text": "",
+      "fee_text_en": "",
+      "has_published_documents": false,
+      "has_published_fee": false,
+      "product_description": "信用证项下付款前取得货物或装运单据。",
+      "product_description_en": "Take possession of goods or shipping documents under an L/C before payment.",
+      "product_id": "bochk_trust_receipt_facilities",
+      "product_name": "信托收据融资",
+      "product_name_en": "Trust Receipt Facilities",
+      "required_documents": [],
+      "required_documents_en": [],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "import_payment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Trust Receipt Facilities",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "unknown_label_en": "Subject to relationship-manager confirmation",
+      "unknown_label_zh": "需客户经理确认"
+    }
+  },
+  "scenarios": [
+    {
+      "checklist": {
+        "bank_to_confirm": {
+          "items": [
+            {
+              "code": "imp_conf_proof",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Additional transaction proof",
+              "label_zh": "额外交易证明",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            },
+            {
+              "code": "imp_conf_sof",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Source-of-funds explanation",
+              "label_zh": "资金来源说明",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            },
+            {
+              "code": "imp_conf_edd",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Enhanced due-diligence materials",
+              "label_zh": "加强尽职调查材料",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            }
+          ],
+          "label_en": "Subject to bank confirmation",
+          "label_zh": "需银行确认"
+        },
+        "public_source_hint": {
+          "items": [
+            {
+              "code": "imp_pay_purpose",
+              "evidence_level": "public_source_hint",
+              "label_en": "Statement of payment purpose",
+              "label_zh": "付款用途说明",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_pay_background",
+              "evidence_level": "public_source_hint",
+              "label_en": "Transaction background",
+              "label_zh": "交易背景说明",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_pay_remitter",
+              "evidence_level": "public_source_hint",
+              "label_en": "Remitter details",
+              "label_zh": "汇款人资料",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_pay_beneficiary",
+              "evidence_level": "public_source_hint",
+              "label_en": "Beneficiary details",
+              "label_zh": "收款人资料",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            }
+          ],
+          "label_en": "Public-source hints",
+          "label_zh": "公开来源提示"
+        },
+        "suggested_preparation": {
+          "items": [
+            {
+              "code": "imp_prep_invoice",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Supplier invoice",
+              "label_zh": "供应商发票",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_prep_contract",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Purchase contract or order",
+              "label_zh": "采购合同或订单",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_prep_bank",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Beneficiary bank details",
+              "label_zh": "收款银行资料",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            },
+            {
+              "code": "imp_prep_summary",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Amount / currency / date summary",
+              "label_zh": "金额、币种、日期摘要",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+            }
+          ],
+          "label_en": "Suggested preparation",
+          "label_zh": "建议预备"
+        }
+      },
+      "code": "import_payment",
+      "label_en": "Import Payment",
+      "label_zh": "进口付款",
+      "summary_en": "Material-preparation pack for paying overseas suppliers / import procurement",
+      "summary_zh": "向海外供应商付款 / 进口采购的材料准备包"
+    },
+    {
+      "checklist": {
+        "bank_to_confirm": {
+          "items": [
+            {
+              "code": "exp_conf_proof",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Additional transaction proof",
+              "label_zh": "额外交易证明",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            },
+            {
+              "code": "exp_conf_sof",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Source / use-of-funds explanation",
+              "label_zh": "资金来源 / 用途说明",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            },
+            {
+              "code": "exp_conf_edd",
+              "evidence_level": "bank_to_confirm",
+              "label_en": "Enhanced due-diligence materials",
+              "label_zh": "加强尽职调查材料",
+              "source_note_en": "Need and scope must be confirmed with the relationship manager.",
+              "source_note_zh": "是否需要及具体范围需由客户经理确认。",
+              "source_url": ""
+            }
+          ],
+          "label_en": "Subject to bank confirmation",
+          "label_zh": "需银行确认"
+        },
+        "public_source_hint": {
+          "items": [
+            {
+              "code": "exp_hint_order",
+              "evidence_level": "public_source_hint",
+              "label_en": "Export / purchase order background",
+              "label_zh": "出口订单 / 采购订单背景",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_hint_buyer",
+              "evidence_level": "public_source_hint",
+              "label_en": "Buyer details",
+              "label_zh": "买方资料",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_hint_goods",
+              "evidence_level": "public_source_hint",
+              "label_en": "Goods and delivery arrangement",
+              "label_zh": "货物及交付安排",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_hint_settlement",
+              "evidence_level": "public_source_hint",
+              "label_en": "Settlement-method statement",
+              "label_zh": "结算方式说明",
+              "source_note_en": "Public-page summary hint; not a formal required document.",
+              "source_note_zh": "公开页面摘要提示，不等于正式必交材料。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ],
+          "label_en": "Public-source hints",
+          "label_zh": "公开来源提示"
+        },
+        "suggested_preparation": {
+          "items": [
+            {
+              "code": "exp_prep_invoice",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Export invoice",
+              "label_zh": "出口发票",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_prep_transport",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Transport / delivery documents",
+              "label_zh": "运输 / 交付单据",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_prep_contract",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Sales contract or order",
+              "label_zh": "销售合同或订单",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            },
+            {
+              "code": "exp_prep_summary",
+              "evidence_level": "suggested_preparation",
+              "label_en": "Amount / currency / date summary",
+              "label_zh": "金额、币种、日期摘要",
+              "source_note_en": "General workbench suggestion; not a formal BOCHK requirement.",
+              "source_note_zh": "工作台一般性建议，不代表 BOCHK 正式必交要求。",
+              "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+            }
+          ],
+          "label_en": "Suggested preparation",
+          "label_zh": "建议预备"
+        }
+      },
+      "code": "export_fulfillment",
+      "label_en": "Export Fulfilment",
+      "label_zh": "出口履约",
+      "summary_en": "Material-preparation pack for export-order fulfilment / receiving payment",
+      "summary_zh": "出口订单履约 / 收汇的材料准备包"
+    }
+  ],
+  "templates": [
+    {
+      "code": "supplier_payment_form",
+      "fields": [
+        {
+          "code": "applicant_name",
+          "core": true,
+          "label_en": "Company name",
+          "label_zh": "企业名称",
+          "type": "text"
+        },
+        {
+          "code": "supplier_name",
+          "core": true,
+          "label_en": "Supplier name",
+          "label_zh": "供应商名称",
+          "type": "text"
+        },
+        {
+          "code": "beneficiary_account_name",
+          "core": true,
+          "label_en": "Beneficiary account name",
+          "label_zh": "收款户名",
+          "type": "text"
+        },
+        {
+          "code": "beneficiary_bank",
+          "core": true,
+          "label_en": "Beneficiary bank",
+          "label_zh": "收款银行",
+          "type": "text"
+        },
+        {
+          "code": "beneficiary_bank_country",
+          "core": true,
+          "label_en": "Beneficiary bank country / region",
+          "label_zh": "收款银行国家 / 地区",
+          "type": "text"
+        },
+        {
+          "code": "beneficiary_account_reference",
+          "label_en": "Masked account reference",
+          "label_zh": "合成账号参考",
+          "type": "text"
+        },
+        {
+          "code": "swift_bic",
+          "core": true,
+          "label_en": "SWIFT / BIC",
+          "label_zh": "SWIFT / BIC",
+          "type": "text"
+        },
+        {
+          "code": "invoice_no",
+          "core": true,
+          "label_en": "Invoice no.",
+          "label_zh": "发票号",
+          "type": "text"
+        },
+        {
+          "code": "invoice_amount",
+          "core": true,
+          "label_en": "Invoice amount",
+          "label_zh": "发票金额",
+          "type": "text"
+        },
+        {
+          "code": "invoice_currency",
+          "core": true,
+          "label_en": "Invoice currency",
+          "label_zh": "发票币种",
+          "type": "text"
+        },
+        {
+          "code": "payment_amount",
+          "core": true,
+          "label_en": "Payment amount",
+          "label_zh": "付款金额",
+          "type": "text"
+        },
+        {
+          "code": "payment_currency",
+          "core": true,
+          "label_en": "Payment currency",
+          "label_zh": "付款币种",
+          "type": "text"
+        },
+        {
+          "code": "payment_date",
+          "core": true,
+          "label_en": "Payment date",
+          "label_zh": "付款日期",
+          "type": "date"
+        },
+        {
+          "code": "contract_order_reference",
+          "label_en": "Contract or order reference",
+          "label_zh": "合同或订单号",
+          "type": "text"
+        },
+        {
+          "code": "goods_summary",
+          "label_en": "Goods summary",
+          "label_zh": "货物摘要",
+          "type": "textarea"
+        },
+        {
+          "code": "source_of_funds_summary",
+          "label_en": "Source-of-funds summary",
+          "label_zh": "资金来源摘要",
+          "type": "textarea"
+        },
+        {
+          "code": "charge_bearer",
+          "core": true,
+          "label_en": "Charge bearer",
+          "label_zh": "费用承担方式",
+          "options": [
+            "PENDING_CONFIRMATION",
+            "OUR",
+            "SHA",
+            "BEN"
+          ],
+          "type": "select"
+        },
+        {
+          "code": "payment_purpose",
+          "core": true,
+          "label_en": "Payment purpose",
+          "label_zh": "付款用途",
+          "type": "text"
+        },
+        {
+          "code": "notes",
+          "label_en": "Notes",
+          "label_zh": "备注",
+          "type": "textarea"
+        }
+      ],
+      "label_en": "Supplier Payment Preparation Form",
+      "label_zh": "供应商付款准备表",
+      "scenario_codes": [
+        "import_payment"
+      ]
+    },
+    {
+      "code": "export_fulfillment_form",
+      "fields": [
+        {
+          "code": "exporter_name",
+          "core": true,
+          "label_en": "Exporter",
+          "label_zh": "出口企业",
+          "type": "text"
+        },
+        {
+          "code": "buyer_name",
+          "core": true,
+          "label_en": "Buyer",
+          "label_zh": "买方",
+          "type": "text"
+        },
+        {
+          "code": "buyer_country",
+          "core": true,
+          "label_en": "Buyer country / region",
+          "label_zh": "买方国家 / 地区",
+          "type": "text"
+        },
+        {
+          "code": "order_reference",
+          "core": true,
+          "label_en": "Order reference",
+          "label_zh": "订单引用",
+          "type": "text"
+        },
+        {
+          "code": "invoice_reference",
+          "label_en": "Invoice reference",
+          "label_zh": "发票引用",
+          "type": "text"
+        },
+        {
+          "code": "goods_summary",
+          "core": true,
+          "label_en": "Goods summary",
+          "label_zh": "货物摘要",
+          "type": "textarea"
+        },
+        {
+          "code": "amount",
+          "core": true,
+          "label_en": "Amount",
+          "label_zh": "金额",
+          "type": "text"
+        },
+        {
+          "code": "currency",
+          "core": true,
+          "label_en": "Currency",
+          "label_zh": "币种",
+          "type": "text"
+        },
+        {
+          "code": "expected_delivery_date",
+          "core": true,
+          "label_en": "Expected delivery date",
+          "label_zh": "预计交付日期",
+          "type": "date"
+        },
+        {
+          "code": "settlement_method",
+          "core": true,
+          "label_en": "Settlement method",
+          "label_zh": "结算方式",
+          "type": "text"
+        },
+        {
+          "code": "delivery_proof_reference",
+          "label_en": "Delivery-proof reference",
+          "label_zh": "交付证明引用",
+          "type": "text"
+        },
+        {
+          "code": "notes",
+          "label_en": "Notes",
+          "label_zh": "备注",
+          "type": "textarea"
+        }
+      ],
+      "label_en": "Export Fulfilment Preparation Form",
+      "label_zh": "出口履约准备表",
+      "scenario_codes": [
+        "export_fulfillment"
+      ]
+    },
+    {
+      "code": "financing_cover_sheet",
+      "fields": [
+        {
+          "code": "applicant_name",
+          "core": true,
+          "label_en": "Applicant company name",
+          "label_zh": "申请企业名称",
+          "type": "text"
+        },
+        {
+          "code": "product_name",
+          "label_en": "Intended product",
+          "label_zh": "拟申请产品",
+          "type": "text"
+        },
+        {
+          "code": "financing_purpose",
+          "core": true,
+          "label_en": "Financing purpose",
+          "label_zh": "融资用途",
+          "type": "text"
+        },
+        {
+          "code": "counterparty",
+          "core": true,
+          "label_en": "Counterparty",
+          "label_zh": "交易对手",
+          "type": "text"
+        },
+        {
+          "code": "invoice_order_reference",
+          "core": true,
+          "label_en": "Invoice or order reference",
+          "label_zh": "发票或订单引用",
+          "type": "text"
+        },
+        {
+          "code": "requested_amount",
+          "core": true,
+          "label_en": "Requested amount",
+          "label_zh": "拟融资金额",
+          "type": "text"
+        },
+        {
+          "code": "planned_drawdown_date",
+          "core": true,
+          "label_en": "Planned drawdown date",
+          "label_zh": "拟提款日期",
+          "type": "date"
+        },
+        {
+          "code": "use_of_funds",
+          "core": true,
+          "label_en": "Use of funds",
+          "label_zh": "资金用途",
+          "type": "textarea"
+        },
+        {
+          "code": "notes",
+          "label_en": "Notes",
+          "label_zh": "备注",
+          "type": "textarea"
+        }
+      ],
+      "label_en": "Financing Material Cover Sheet",
+      "label_zh": "融资材料封面表",
+      "scenario_codes": [
+        "import_payment",
+        "export_fulfillment"
+      ]
+    }
+  ]
+}

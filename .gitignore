@@ -26,6 +26,7 @@ nohup.out
 chatraw-01-*.png
 step5-*.png
 chatraw-02-*.png
+function1-*.png
 
 # ---- Third-party (clone separately per README) ----
 chatraw-fork/
@@ -44,3 +45,20 @@ eval/reports/ragas_scores_*.json
 
 # ---- Server-side runtime data (will be regenerated) ----
 chatraw-fork/backend/data/
+data/crossbridge_app.db
+data/crossbridge_app.db-shm
+data/crossbridge_app.db-wal
+data/crossbridge_document_preparation.db
+data/crossbridge_document_preparation.db-shm
+data/crossbridge_document_preparation.db-wal
+data/official_products/*.bak
+eval/reports/function1_eval_*.json
+eval/reports/function1_eval_*.md
+eval/reports/function1_official_catalog_eval_*.json
+eval/reports/function1_official_catalog_eval_*.md
+eval/reports/function2_eval_*.json
+eval/reports/function2_eval_*.md
+
+# 内部规划文档（含 pitch 策略 + 私人备忘，不公开）
+PROGRESS.md
+PROJECT_MEMORY.md

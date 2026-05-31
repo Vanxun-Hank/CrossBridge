@@ -1,0 +1,18 @@
+[Unit]
+Description=CrossBridge AI - Function 1 loan-matching API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/crossbridge
+Environment=CROSSBRIDGE_CATALOG_MODE=official
+ExecStart=/opt/crossbridge/venv/bin/uvicorn server.business.app:app --host 127.0.0.1 --port 8081
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

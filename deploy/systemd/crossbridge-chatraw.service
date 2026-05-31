@@ -1,0 +1,16 @@
+[Unit]
+Description=CrossBridge AI - ChatRaw UI
+After=network-online.target crossbridge-fastapi.service crossbridge-business.service crossbridge-documents.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/crossbridge/chatraw-fork/backend
+ExecStart=/opt/crossbridge/venv/bin/python main.py
+Restart=on-failure
+RestartSec=5
+Environment=PORT=51111
+
+[Install]
+WantedBy=multi-user.target

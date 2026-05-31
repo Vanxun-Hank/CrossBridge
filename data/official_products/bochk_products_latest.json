@@ -1,0 +1,3021 @@
+{
+  "catalog_status": "source_verified_pending_human_review",
+  "catalog_version": "20260531T050029Z",
+  "extraction_mode": "deterministic_official_text_fallback",
+  "generated_at": "2026-05-31T05:00:29.730698+00:00",
+  "issuer": "Bank of China (Hong Kong)",
+  "products": [
+    {
+      "active": true,
+      "application_thresholds": [
+        "适用于经营 2 年或以上的企业"
+      ],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": [
+            "适用于经营 2 年或以上的企业"
+          ]
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": "促销利率：网上渠道申请可享年利率减 25 个基点（截止 2026-03-31），以 BOCHK 最新公告为准"
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": 2000000
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": "最高 HK$2,000,000"
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": "分期贷款、循环贷款或两者组合"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730499+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+          "value": "最长 60 个月"
+        }
+      },
+      "id": "bochk_small_business_loan_unsecured",
+      "interest_rate_text": "促销利率：网上渠道申请可享年利率减 25 个基点（截止 2026-03-31），以 BOCHK 最新公告为准",
+      "loan_limit_max_hkd": 2000000,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": "最高 HK$2,000,000",
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": "Promotional rate: 25 bps annualised interest-rate discount for online applications (until 2026-03-31); subject to BOCHK's latest announcement",
+          "loan_limit_text": "Up to HK$2,000,000",
+          "product_description": "Flexible unsecured SME loan.",
+          "product_name": "BOC \"Small Business Loan\" Unsecured Loan",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": "Up to 60 months"
+        }
+      },
+      "max_requested_amount_hkd": 2000000,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "灵活无抵押小企业贷款。",
+      "product_name": "中银「小企业贷款」无抵押贷款",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": "分期贷款、循环贷款或两者组合",
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade",
+        "overseas_investment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:24.728753+00:00",
+      "source_content_hash": "d90ee783874ea1dd67a61eabc8c0718fea83d229bc0cd7c6001fb9470488ae4c",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:24.728753+00:00",
+          "source_checked_at": "2026-05-31T05:00:24.728753+00:00",
+          "source_content_hash": "d90ee783874ea1dd67a61eabc8c0718fea83d229bc0cd7c6001fb9470488ae4c",
+          "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html"
+        }
+      ],
+      "source_title": "BOC \"Small Business Loan\" Unsecured Loan",
+      "source_url": "https://www.bochk.com/en/loan/loan/unsecured.html",
+      "tenor_text": "最长 60 个月"
+    },
+    {
+      "active": true,
+      "application_thresholds": [
+        "适用于在香港经营至少 1 年的企业",
+        "申请期以 HKMC 不时公布为准"
+      ],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": [
+            "适用于在香港经营至少 1 年的企业",
+            "申请期以 HKMC 不时公布为准"
+          ]
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": "促销利率：网上渠道申请可享年利率减 25 个基点（截止 2026-06-30），以 BOCHK 最新公告为准；标准利率以 BOCHK 最终审批为准"
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": 18000000
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": "最高 HK$18,000,000"
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": "非循环融资分期偿还；每次偿还本金间隔不超过 3 个月"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730538+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+          "value": "最长 10 年"
+        }
+      },
+      "id": "bochk_sfgs_80_guarantee_product",
+      "interest_rate_text": "促销利率：网上渠道申请可享年利率减 25 个基点（截止 2026-06-30），以 BOCHK 最新公告为准；标准利率以 BOCHK 最终审批为准",
+      "loan_limit_max_hkd": 18000000,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": "最高 HK$18,000,000",
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": "Promotional rate: 25 bps annualised interest-rate discount for online applications (until 2026-06-30); subject to BOCHK's latest announcement. Standard rate is subject to BOCHK final approval.",
+          "loan_limit_text": "Up to HK$18,000,000",
+          "product_description": "BOCHK application path for the SFGS 80% Guarantee Product.",
+          "product_name": "SME Financing Guarantee Scheme - 80% Guarantee Product",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": "Up to 10 years"
+        }
+      },
+      "max_requested_amount_hkd": 18000000,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "经 BOCHK 申请的中小企融资担保计划八成担保产品。",
+      "product_name": "中小企融资担保计划 - 八成担保产品",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": "非循环融资分期偿还；每次偿还本金间隔不超过 3 个月",
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade",
+        "overseas_investment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:25.332544+00:00",
+      "source_content_hash": "91f7d716df24afa297aee233ed4ffd4eb6d62e0bb09bcb7f1c7b29b718323bc2",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:25.332544+00:00",
+          "source_checked_at": "2026-05-31T05:00:25.332544+00:00",
+          "source_content_hash": "91f7d716df24afa297aee233ed4ffd4eb6d62e0bb09bcb7f1c7b29b718323bc2",
+          "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:29.565452+00:00",
+          "source_checked_at": "2026-05-31T05:00:29.565452+00:00",
+          "source_content_hash": "93f713a5c081b623638e071b4384fe1ff16c3a03160222f05106b76ffe20e125",
+          "source_url": "https://www.hkmc.com.hk/files/product/6/SFGS%20Factsheet_Eng%20eff%2023%20Sep%202024.pdf"
+        }
+      ],
+      "source_title": "SME Financing Guarantee Scheme - 80% Guarantee Product",
+      "source_url": "https://www.bochk.com/dam/smeinone/loan/en.html",
+      "tenor_text": "最长 10 年"
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730548+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_import_loan",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Import-collection financing when immediate liquidity is insufficient.",
+          "product_name": "Import Loan",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "进口托收项下即时付款资金不足时取得货物或单据。",
+      "product_name": "进口贷款",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Import Loan",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$500",
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": [
+            "供应商发票"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730555+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_import_invoice_financing",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Open-account import financing against a supplier invoice.",
+          "product_name": "Import Invoice Financing",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "赊账采购项下凭供应商发票申请融资。",
+      "product_name": "进口发票融资",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "供应商发票"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Import Invoice Financing",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": "可于信托收据到期日还款"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730563+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_trust_receipt_facilities",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Take possession of goods or shipping documents under an L/C before payment.",
+          "product_name": "Trust Receipt Facilities",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "信用证项下付款前取得货物或装运单据。",
+      "product_name": "信托收据融资",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "working_capital"
+      ],
+      "repayment_method_text": "可于信托收据到期日还款",
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Trust Receipt Facilities",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+      "fee_text": "手续费：融资金额的 1/8%，最低 HK$350",
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "信用证"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730569+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_packing_loan",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Pre-shipment production-cost financing secured by an L/C.",
+          "product_name": "Packing Loan",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "以信用证作担保的装运前生产成本融资。",
+      "product_name": "打包贷款",
+      "public_guidance": [],
+      "purposes": [
+        "order_fulfillment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "信用证"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Packing Loan",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$450",
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": "装运后可通过出口发票贴现、出口押汇或信用证项下出口汇票议付／贴现等方式还款"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "采购订单或销售合同"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730575+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_pre_shipment_financing",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Financing for raw materials and overheads after receipt of a purchase order.",
+          "product_name": "Pre-shipment Financing",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "收到采购订单后的原材料及营运开支融资。",
+      "product_name": "装运前融资",
+      "public_guidance": [],
+      "purposes": [
+        "order_fulfillment",
+        "working_capital"
+      ],
+      "repayment_method_text": "装运后可通过出口发票贴现、出口押汇或信用证项下出口汇票议付／贴现等方式还款",
+      "required_documents": [
+        "采购订单或销售合同"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Pre-shipment Financing",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+      "fee_text": "手续费：融资金额的 1/4%，最低 HK$500",
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "发票",
+            "货物交付证明"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730580+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": "短期贷款；公开页面未列明具体天数"
+        }
+      },
+      "id": "bochk_export_invoice_discounting",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Short-term financing against an invoice and evidence of delivery.",
+          "product_name": "Export Invoice Discounting",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": "Short-term loan; the public page does not state a specific number of days"
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "交付货物后凭发票和交付证明取得短期贷款。",
+      "product_name": "出口发票贴现",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "发票",
+        "货物交付证明"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        },
+        {
+          "extracted_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_checked_at": "2026-05-31T05:00:28.864772+00:00",
+          "source_content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+          "source_url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+        }
+      ],
+      "source_title": "Export Invoice Discounting",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": "短期贷款；公开页面未列明具体天数"
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730586+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        }
+      },
+      "id": "bochk_supply_chain_finance_solution",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Comprehensive supply-chain solution for anchor buyers and suppliers.",
+          "product_name": "Supply Chain Finance Solution",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "面向核心买方和供应商的综合供应链融资方案。",
+      "product_name": "供应链融资方案",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "order_fulfillment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Finance Solution",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730591+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_lc_issuance",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Issue an L/C to the supplier on the buyer's instructions.",
+          "product_name": "L/C Issuance",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "根据买方指示向供应商开立信用证。",
+      "product_name": "信用证开立",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "L/C Issuance",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": [
+            "原信用证（master L/C）"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730597+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_back_to_back_lc",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Back-to-back L/C for intermediaries.",
+          "product_name": "Back-to-Back L/C",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "中间商凭原信用证开立涉及同批货物的另一张信用证。",
+      "product_name": "背对背信用证",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "order_fulfillment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "原信用证（master L/C）"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Back-to-Back L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": "付款交单（D/P）或承兑交单（D/A）"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730601+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_import_bills_collection",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Import collection with release of documents after payment terms are fulfilled.",
+          "product_name": "Import Bills for Collection",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "供应商通过银行寄送单据，满足付款条款后放单。",
+      "product_name": "进口托收",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment"
+      ],
+      "repayment_method_text": "付款交单（D/P）或承兑交单（D/A）",
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Import Bills for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730606+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+          "value": null
+        }
+      },
+      "id": "bochk_shipping_guarantee",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Countersigned shipping guarantee when goods arrive before shipping documents.",
+          "product_name": "Shipping Guarantee",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "货物早于装运单据到达时，由银行加签提货担保。",
+      "product_name": "提货担保",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.824189+00:00",
+          "source_content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+        }
+      ],
+      "source_title": "Shipping Guarantee",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/import.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730611+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_lc_advising_confirmation",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "L/C advising and confirmation service.",
+          "product_name": "L/C Advising and Confirmation",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "信用证通知及按请求加具保兑。",
+      "product_name": "信用证通知及保兑",
+      "public_guidance": [],
+      "purposes": [
+        "order_fulfillment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "L/C Advising and Confirmation",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "标明可转让的信用证"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730615+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_lc_transfer",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Transfer all or part of a transferable L/C to suppliers.",
+          "product_name": "L/C Transfer",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "在信用证可转让时全部或部分转让给供应商。",
+      "product_name": "信用证转让",
+      "public_guidance": [],
+      "purposes": [
+        "order_fulfillment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "标明可转让的信用证"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "L/C Transfer",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": "付款交单（D/P）或承兑交单（D/A）"
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "出口单据"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730620+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_export_bills_collection",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Send export documents to the buyer's bank for release on payment or acceptance.",
+          "product_name": "Export Bills for Collection",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "向银行提交单据后寄送买方银行，付款或承兑后放单。",
+      "product_name": "出口托收",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": "付款交单（D/P）或承兑交单（D/A）",
+      "required_documents": [
+        "出口单据"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "出口托收单据"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730624+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_export_bills_advance",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Cash advance against export bills after shipment.",
+          "product_name": "Export Bills Advance",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "货物装运后，凭出口托收单据获得现金垫款。",
+      "product_name": "出口押汇",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "出口托收单据"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills Advance",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "信用证项下出口单据"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730628+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_export_bills_lc_collection",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Collection and optional document checking for export bills under L/C.",
+          "product_name": "Export Bills Under L/C for Collection",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "信用证项下出口汇票托收及按请求提供审单服务。",
+      "product_name": "信用证项下出口汇票托收",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "信用证项下出口单据"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Export Bills Under L/C for Collection",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": [
+            "信用证项下出口单据"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730633+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+          "value": null
+        }
+      },
+      "id": "bochk_export_bills_lc_negotiation_discount",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Advance against export documents compliant with L/C terms.",
+          "product_name": "Negotiation / Discount of Export Bills Under L/C",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "提交符合信用证条款的出口单据后获得融资。",
+      "product_name": "信用证项下出口汇票议付／贴现",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "信用证项下出口单据"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.390582+00:00",
+          "source_content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+        }
+      ],
+      "source_title": "Negotiation / Discount of Export Bills Under L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/export.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730637+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        }
+      },
+      "id": "bochk_guarantee_bond_standby_lc",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Guarantee, bond and standby L/C service listed by BOCHK.",
+          "product_name": "Guarantee / Bond / Standby L/C",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "BOCHK 贸易服务概览列出的担保、保函及备用信用证服务。",
+      "product_name": "担保／保函／备用信用证",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade",
+        "overseas_investment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Guarantee / Bond / Standby L/C",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730642+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        }
+      },
+      "id": "bochk_forfaiting",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Forfaiting service listed by BOCHK.",
+          "product_name": "Forfaiting",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "BOCHK 贸易服务概览列出的福费廷服务。",
+      "product_name": "福费廷",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Forfaiting",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730646+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        }
+      },
+      "id": "bochk_factoring",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Factoring service listed by BOCHK.",
+          "product_name": "Factoring",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "BOCHK 贸易服务概览列出的保理服务。",
+      "product_name": "保理",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Factoring",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730651+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+          "value": null
+        }
+      },
+      "id": "bochk_foreign_exchange_services",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Foreign-exchange service listed by BOCHK.",
+          "product_name": "Foreign Exchange Services",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "BOCHK 贸易服务概览列出的外汇服务。",
+      "product_name": "外汇服务",
+      "public_guidance": [],
+      "purposes": [
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade",
+        "overseas_investment"
+      ],
+      "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_checked_at": "2026-05-31T05:00:26.013972+00:00",
+          "source_content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+          "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+        }
+      ],
+      "source_title": "Foreign Exchange Services",
+      "source_url": "https://www.bochk.com/en/corporate/tradefinance/overview.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": [
+            "发票",
+            "核心买方付款承诺"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730656+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        }
+      },
+      "id": "bochk_supply_chain_invoice_payment",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Early supplier payment by non-recourse purchase of receivables after the anchor buyer's undertaking.",
+          "product_name": "Supply Chain Invoice Payment",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "核心买方确认付款后，BOCHK 无追索权购买供应商应收账款并提前付款。",
+      "product_name": "供应链发票付款",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "发票",
+        "核心买方付款承诺"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Invoice Payment",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "tenor_text": null
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "export_trade",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": [
+            "核心买方提供的采购订单（PO）或经核心买方确认的销售订单（SO）"
+          ]
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730661+00:00",
+          "reason": null,
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": "短期融资；公开页面未列明具体天数"
+        }
+      },
+      "id": "bochk_supply_chain_pre_shipment_financing",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Conditional short-term financing before anchor-buyer payment confirmation.",
+          "product_name": "SC Pre-shipment Financing",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": "Short-term financing; the public page does not state a specific number of days"
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "供应商在核心买方确认付款前取得短期融资。",
+      "product_name": "供应链装运前融资",
+      "public_guidance": [],
+      "purposes": [
+        "order_fulfillment",
+        "working_capital"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [
+        "核心买方提供的采购订单（PO）或经核心买方确认的销售订单（SO）"
+      ],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "SC Pre-shipment Financing",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "tenor_text": "短期融资；公开页面未列明具体天数"
+    },
+    {
+      "active": true,
+      "application_thresholds": [],
+      "business_scenario": "overseas_procurement",
+      "demo_only": false,
+      "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+      "fee_text": null,
+      "field_extractions": {
+        "application_thresholds": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "interest_rate_text": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_max_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_min_hkd": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "loan_limit_text": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "repayment_method_text": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        },
+        "required_documents": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": []
+        },
+        "tenor_text": {
+          "extracted_at": "2026-05-31T05:00:29.730665+00:00",
+          "reason": "官方页面未明确列明",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+          "value": null
+        }
+      },
+      "id": "bochk_supply_chain_document_checking",
+      "interest_rate_text": null,
+      "loan_limit_max_hkd": null,
+      "loan_limit_min_hkd": null,
+      "loan_limit_text": null,
+      "localization": {
+        "en": {
+          "application_thresholds": [],
+          "fee_text": null,
+          "interest_rate_text": null,
+          "loan_limit_text": null,
+          "product_description": "Trade-document checking service under the supply-chain solution.",
+          "product_name": "Supply Chain Document Checking Service",
+          "public_guidance": [],
+          "repayment_method_text": null,
+          "required_documents": [],
+          "tenor_text": null
+        }
+      },
+      "max_requested_amount_hkd": null,
+      "min_annual_turnover_hkd": null,
+      "min_requested_amount_hkd": null,
+      "product_description": "供应链融资方案中的贸易单据审查服务。",
+      "product_name": "供应链审单服务",
+      "public_guidance": [],
+      "purposes": [
+        "procurement_payment",
+        "order_fulfillment"
+      ],
+      "repayment_method_text": null,
+      "required_documents": [],
+      "review_notes": [
+        "Only explicitly published official-source terms are populated; absent terms remain null."
+      ],
+      "review_status": "source_verified_pending_human_review",
+      "scenarios": [
+        "overseas_procurement",
+        "cross_border_ecommerce",
+        "export_trade"
+      ],
+      "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "source_refs": [
+        {
+          "extracted_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_checked_at": "2026-05-31T05:00:27.942267+00:00",
+          "source_content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+          "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+        }
+      ],
+      "source_title": "Supply Chain Document Checking Service",
+      "source_url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+      "tenor_text": null
+    }
+  ],
+  "qwen_page_extractions": {},
+  "sources": [
+    {
+      "checked_at": "2026-05-31T05:00:24.728753+00:00",
+      "content_hash": "d90ee783874ea1dd67a61eabc8c0718fea83d229bc0cd7c6001fb9470488ae4c",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "unsecured",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_unsecured.html",
+      "url": "https://www.bochk.com/en/loan/loan/unsecured.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:25.332544+00:00",
+      "content_hash": "91f7d716df24afa297aee233ed4ffd4eb6d62e0bb09bcb7f1c7b29b718323bc2",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "sfgs",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_sfgs.html",
+      "url": "https://www.bochk.com/dam/smeinone/loan/en.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:26.013972+00:00",
+      "content_hash": "94011334bbba97bb2aaa87600275ae435ed475df83504e6c031e2f763feb2251",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "overview",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_overview.html",
+      "url": "https://www.bochk.com/en/corporate/tradefinance/overview.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:26.824189+00:00",
+      "content_hash": "f2d70e415cf09f56169e47c2b26b2ceddb3a520f03cb16ea119615fe67bd06a6",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "import",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_import.html",
+      "url": "https://www.bochk.com/en/corporate/tradefinance/import.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:27.390582+00:00",
+      "content_hash": "48bfdfaf4ee28009672bca24fd62dc47398fef4e92069f5a66b11c03751ac15d",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "export",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_export.html",
+      "url": "https://www.bochk.com/en/corporate/tradefinance/export.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:27.942267+00:00",
+      "content_hash": "f88fc17723eca4c6caf4657bc586aed13ff6476fe3e38dd56b3ea6d6e4202f13",
+      "content_type": "text/html",
+      "http_status": 200,
+      "id": "supply_chain",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_supply_chain.html",
+      "url": "https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:28.864772+00:00",
+      "content_hash": "2d5c0ea17269a47c8f9dab6547d90c0feee9347ac737c96cbdac9a163d864ef0",
+      "content_type": "application/pdf",
+      "http_status": 200,
+      "id": "tariffs",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_tariffs.pdf",
+      "url": "https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf"
+    },
+    {
+      "checked_at": "2026-05-31T05:00:29.565452+00:00",
+      "content_hash": "93f713a5c081b623638e071b4384fe1ff16c3a03160222f05106b76ffe20e125",
+      "content_type": "application/pdf",
+      "http_status": 200,
+      "id": "sfgs_factsheet",
+      "raw_file_path": "data/raw/official_products/20260531T050024Z_sfgs_factsheet.pdf",
+      "url": "https://www.hkmc.com.hk/files/product/6/SFGS%20Factsheet_Eng%20eff%2023%20Sep%202024.pdf"
+    }
+  ]
+}

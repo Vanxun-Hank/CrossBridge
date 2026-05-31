@@ -14,6 +14,10 @@
 - **Per-doc Chunk Cap**: 防大文档（HKMA AML 82 chunks）独占 top-K
 - **Citation Gating**: `trust_tier ∈ {regulator, central_bank, government, official_dev, bank}` AND `document_type ∉ {hub_page}` 双维门控，hub/导航页只作 context 不作 citation
 - **Graceful Fallback**: rerank API 失败 → RRF 顺序；citation filter 全空 → 三路退化（trusted_clean / fallback_trusted_hub / fallback_all）
+- **Function 1 Loan Matching**: 独立 FastAPI + SQLite/Alembic + BOCHK 官方公开来源目录；企业画像草稿、最多 3 轮 AI 澄清、Python 确定性匹配、来源链接、用户确认后才保存长期画像
+- **Function 1 Public Detail Crawl**: 抓取 7 个 BOCHK 官方来源（产品页、进出口详情页、收费表 PDF），分开展示公开手续费、适用说明、材料提示与待客户经理确认字段
+- **Function 2 Document Preparation**: 独立 FastAPI + SQLite/Alembic 材料准备工作台；按进口付款 / 出口履约场景组织三档清单、产品公开材料、可编辑模板、实时校验和打印稿
+- **Bilingual Workspace**: Function 1 / Function 2 工作区全部可见文字跟随 ChatRaw Settings language 切换，中英文模式不混排
 
 ---
 
@@ -44,8 +48,15 @@ files/
 
 server/
   api.py                     OpenAI-compatible HTTP wrapper（FastAPI），把 rag_engine 包成 /v1/chat/completions 端点
+  business/                  Function 1 独立业务服务（FastAPI + SQLAlchemy + Alembic）
+  document_preparation/      Function 2 独立材料准备服务（FastAPI + SQLAlchemy + Alembic）
+
+migrations/
+  versions/                  Function 1 SQLite schema migration
 
 data/
+  official_products/         Function 1 BOCHK 官方公开来源结构化目录
+  document_preparation/      Function 2 场景基础包 + 产品叠加材料快照
   processed/chunks.jsonl     1171 chunks (76 篇官方文档，含 Contextual Retrieval 前缀)
   chroma/                    Chroma 持久化向量库
   *.md                       76 篇官方源文档（HKMA / SAFE / BOCHK / HKMC / GoGBA / HKTDC / SBV / FIA 等）
@@ -77,12 +88,33 @@ uvicorn server.api:app --host 127.0.0.1 --port 8080
 
 UI 用 [ChatRaw](https://github.com/massif-01/ChatRaw) （MIT, © massif-01）作为聊天前端。本仓库**不嵌入** ChatRaw 源码，请单独 clone：
 
+Function 1 需要先启动独立业务服务：
+
+```bash
+pip install -r server/business/requirements.txt
+.venv/bin/python scripts/crawl_bochk_products.py
+.venv/bin/alembic -c alembic.ini upgrade head
+CROSSBRIDGE_CATALOG_MODE=official .venv/bin/uvicorn server.business.app:app --host 127.0.0.1 --port 8081
+```
+
+Function 2 使用独立数据库和快照：
+
+```bash
+.venv/bin/python scripts/sync_document_preparation_catalog.py
+.venv/bin/uvicorn server.document_preparation.app:app --host 127.0.0.1 --port 8082
+```
+
 ```bash
 git clone https://github.com/massif-01/ChatRaw chatraw-fork
+./scripts/apply_chatraw_patch.sh
 cd chatraw-fork/backend
 pip install -r requirements.txt
 python main.py
 ```
+
+`patches/chatraw-function1-function2.patch` 保存 CrossBridge 对 ChatRaw 的定制：
+F1 聊天内嵌贷款匹配、F2 右侧材料工作台、双语文案、固定代理路由和三栏拖拽布局。
+ChatRaw 本体仍保持独立 clone，不嵌入本仓库。
 
 启动后 POST 注册模型 + 改 brand：
 
@@ -130,6 +162,19 @@ server {
 
 - `PROGRESS.md` — 改造时间线 + eval 数据演进 + 已知坑
 - `PROJECT_MEMORY.md` — 产品背景 + pitch demo 场景剧本
+- `.venv/bin/python eval/run_function1_eval.py` — Function 1 独立自动化 eval，输出 JSON + Markdown 报告
+- `.venv/bin/python eval/run_function1_official_catalog_eval.py` — Function 1 BOCHK 官方公开来源目录 eval
+- `.venv/bin/python eval/run_function2_eval.py` — Function 2 独立自动化 eval
+
+Function 1 官方目录抓取范围：
+
+- `https://www.bochk.com/en/loan/loan/unsecured.html`
+- `https://www.bochk.com/dam/smeinone/loan/en.html`
+- `https://www.bochk.com/en/corporate/tradefinance/overview.html`
+- `https://www.bochk.com/en/corporate/tradefinance/import.html`
+- `https://www.bochk.com/en/corporate/tradefinance/export.html`
+- `https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf`
+- `https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html`
 
 ---
 
