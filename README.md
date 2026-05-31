@@ -97,6 +97,15 @@ pip install -r server/business/requirements.txt
 CROSSBRIDGE_CATALOG_MODE=official .venv/bin/uvicorn server.business.app:app --host 127.0.0.1 --port 8081
 ```
 
+F1 的自由文本草稿抽取会优先读取 `CROSSBRIDGE_CLARIFIER_API_KEY`，未设置时复用
+`DASHSCOPE_API_KEY`。生产环境将密钥保存在 `/opt/crossbridge/.env`，不要提交到 Git：
+
+```bash
+DASHSCOPE_API_KEY="..."
+QWEN_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
+QWEN_MODEL="qwen-plus"
+```
+
 Function 2 使用独立数据库和快照：
 
 ```bash
