@@ -113,7 +113,9 @@ python main.py
 ```
 
 `patches/chatraw-function1-function2.patch` 保存 CrossBridge 对 ChatRaw 的定制：
-F1 聊天内嵌贷款匹配、F2 右侧材料工作台、双语文案、固定代理路由和三栏拖拽布局。
+F1 聊天内嵌贷款匹配、F2 右侧材料工作台、双语文案、固定代理路由、三栏拖拽布局，
+以及为产品卡腾出空间的紧凑底部输入区。政策问答和 F1 澄清问题会跟随用户提问语言；
+无法判断语言时使用最近一次明确语言，首次进入则回退到 Settings。
 ChatRaw 本体仍保持独立 clone，不嵌入本仓库。
 
 启动后 POST 注册模型 + 改 brand：

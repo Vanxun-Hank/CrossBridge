@@ -35,6 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "files"))
 
 from rag_engine import CrossBridgeRAG  # noqa: E402
+from language_utils import detect_response_language, normalize_language  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -65,14 +66,25 @@ log.info(
 # ---------------------------------------------------------------------------
 # trust_tier → 单色中文小标签（用户要求："单色（深灰/黑）小 tag，去 emoji"）
 # ---------------------------------------------------------------------------
-TIER_LABEL = {
-    "regulator":    "监管",
-    "central_bank": "央行",
-    "government":   "政府",
-    "official_dev": "官方机构",
-    "bank":         "银行",
-    "industry":     "业界",
-    "non_official": "第三方",
+TIER_LABELS = {
+    "zh": {
+        "regulator": "监管",
+        "central_bank": "央行",
+        "government": "政府",
+        "official_dev": "官方机构",
+        "bank": "银行",
+        "industry": "业界",
+        "non_official": "第三方",
+    },
+    "en": {
+        "regulator": "Regulator",
+        "central_bank": "Central bank",
+        "government": "Government",
+        "official_dev": "Official institution",
+        "bank": "Bank",
+        "industry": "Industry",
+        "non_official": "Third party",
+    },
 }
 
 MODEL_ID = os.environ.get("CROSSBRIDGE_MODEL_ID", "crossbridge-rag")
@@ -98,13 +110,16 @@ def _strip_llm_trailing_citation_line(answer: str) -> str:
         lines.pop()
     if lines:
         last = lines[-1].strip()
-        # 匹配 "信息来源：[资料X]..." / "信息来源:[资料X]..." / "来源：[资料X]..."
-        if last.startswith(("信息来源", "来源：", "来源:")) and "[资料" in last:
+        # 匹配中英文模型自行生成的末尾 source line，避免重复标题。
+        if (
+            last.startswith(("信息来源", "来源：", "来源:", "Sources", "Source:", "Sources:"))
+            and ("[资料" in last or "[Source" in last)
+        ):
             lines.pop()
     return "\n".join(lines).rstrip()
 
 
-def _format_citations_markdown(citations: list[dict]) -> str:
+def _format_citations_markdown(citations: list[dict], response_language: str = "zh") -> str:
     """
     生成答案末尾追加的"信息来源"段。
 
@@ -119,11 +134,12 @@ def _format_citations_markdown(citations: list[dict]) -> str:
     """
     if not citations:
         return ""
-    lines = ["", "---", "", "**信息来源**", ""]
+    is_english = response_language == "en"
+    lines = ["", "---", "", f"**{'Sources' if is_english else '信息来源'}**", ""]
     for i, c in enumerate(citations, 1):
-        title = (c.get("title") or "").strip() or "未命名资料"
+        title = (c.get("title") or "").strip() or ("Untitled source" if is_english else "未命名资料")
         url = (c.get("url") or "").strip()
-        tier_lbl = TIER_LABEL.get(c.get("trust_tier") or "")
+        tier_lbl = TIER_LABELS[response_language].get(c.get("trust_tier") or "")
         # link 部分：有 URL 用链接，没 URL 用 bold title
         if url:
             link = f"[{title}]({url})"
@@ -155,6 +171,17 @@ def _extract_query_from_messages(messages: list[dict]) -> str:
                 text_parts.append(part)
         return "\n".join(text_parts).strip()
     return str(last).strip()
+
+
+def _resolve_response_language(messages: list[dict], fallback: str | None = None) -> str:
+    """Use the latest clear user language; ambiguous turns inherit conversation language."""
+    for message in reversed(messages):
+        if message.get("role") != "user":
+            continue
+        text = _extract_query_from_messages([message])
+        if detected := detect_response_language(text):
+            return detected
+    return normalize_language(fallback)
 
 
 # ---------------------------------------------------------------------------
@@ -252,10 +279,19 @@ async def chat_completions(req: Request) -> JSONResponse:
                                "type": "invalid_request_error"}},
         )
 
-    log.info("Chat request: query=%r (len=%d)", query[:80], len(query))
+    response_language = _resolve_response_language(
+        messages,
+        fallback=req.headers.get("X-CrossBridge-UI-Language"),
+    )
+    log.info(
+        "Chat request: query=%r (len=%d), response_language=%s",
+        query[:80],
+        len(query),
+        response_language,
+    )
     t0 = time.time()
     try:
-        result = rag.ask(query, top_k=3, debug=False)
+        result = rag.ask(query, top_k=3, debug=False, response_language=response_language)
     except Exception as e:  # noqa: BLE001
         # 真正调 RAG 失败（如 DashScope 配额耗尽、网络断）→ 返回友好错误
         log.exception("RAG ask() failed")
@@ -273,7 +309,7 @@ async def chat_completions(req: Request) -> JSONResponse:
     raw_answer = (result.get("answer") or "").strip()
     answer = _strip_llm_trailing_citation_line(raw_answer)
     citations = result.get("citations") or []
-    citation_md = _format_citations_markdown(citations)
+    citation_md = _format_citations_markdown(citations, response_language=response_language)
     full_text = answer + citation_md if citation_md else answer
 
     log.info(

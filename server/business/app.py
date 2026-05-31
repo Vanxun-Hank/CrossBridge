@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from files.language_utils import resolve_response_language
+
 from .catalog import OFFICIAL_CATALOG_PATH, list_active_products, seed_catalog_products
 from .db import build_engine, build_session_factory, get_database_url, run_migrations
 from .matching import (
@@ -92,6 +94,7 @@ def _serialize_session(session: MatchingSession, db: Session) -> dict[str, Any]:
         "clarification_count": session.clarification_count,
         "max_clarifications": MAX_CLARIFICATIONS,
         "current_question": session.current_question,
+        "response_language": session.response_language,
         "missing_required_fields": missing,
         "missing_required_labels": [FIELD_LABELS[field] for field in missing],
         "ready_to_match": not missing,
@@ -195,6 +198,9 @@ def create_app(
         ).first()
         if existing is not None:
             existing_profile = _load_profile_json(existing.draft_profile_json)
+            # Re-entering F1 is a new visible interaction. Use the current UI setting
+            # until the user sends a clear natural-language answer.
+            existing.response_language = request.ui_language
             # 续填语义：已填草稿优先，新 prefill 只补当前为空的字段。
             merged = DraftProfile.model_validate(
                 {
@@ -205,14 +211,14 @@ def create_app(
             if merged.model_dump() != existing_profile.model_dump():
                 db.execute(delete(MatchResult).where(MatchResult.session_id == existing.id))
                 existing.draft_profile_json = merged.model_dump_json()
-                existing.current_question = fallback_question(merged)
                 if missing_required_fields(merged):
                     existing.status = (
                         "awaiting_clarification" if existing.clarification_count else "draft"
                     )
                 else:
                     existing.status = "ready_to_match"
-                existing.updated_at = utcnow()
+            existing.current_question = fallback_question(merged, existing.response_language)
+            existing.updated_at = utcnow()
             _audit(
                 db,
                 sme_id=existing.sme_id,
@@ -234,7 +240,8 @@ def create_app(
             status="draft",
             draft_profile_json=profile.model_dump_json(),
             clarification_count=0,
-            current_question=fallback_question(profile),
+            current_question=fallback_question(profile, request.ui_language),
+            response_language=request.ui_language,
             created_at=utcnow(),
             updated_at=utcnow(),
         )
@@ -268,7 +275,7 @@ def create_app(
         db.execute(delete(MatchResult).where(MatchResult.session_id == session.id))
         session.draft_profile_json = profile.model_dump_json()
         session.status = "ready_to_match" if not missing_required_fields(profile) else "draft"
-        session.current_question = fallback_question(profile)
+        session.current_question = fallback_question(profile, session.response_language)
         # 选项 chip / 手动填表都是「有进展」，清掉连续无进展计数，重新放开 LLM 澄清。
         if request.updates.model_dump(exclude_none=True):
             session.clarification_count = 0
@@ -291,11 +298,19 @@ def create_app(
         if session.status == "discarded":
             raise HTTPException(status_code=409, detail="discarded session cannot be updated")
         profile = _load_profile_json(session.draft_profile_json)
+        session.response_language = resolve_response_language(
+            request.message,
+            previous=session.response_language,
+            fallback=request.ui_language,
+        )
+        session.current_question = fallback_question(profile, session.response_language)
 
         # clarification_count = 连续「无进展」的 LLM 澄清次数（不是总次数）。
         # 乱输入只会累加它，不会污染草稿；达到上限就提示改用选项 chip / 直接填表，
         # 而 chip / 手动编辑走 draft PATCH 会把它清零 —— 所以永远不会被乱输入卡死。
         if session.clarification_count >= MAX_CLARIFICATIONS:
+            session.updated_at = utcnow()
+            db.commit()
             return {
                 **_serialize_session(session, db),
                 "clarifier_mode": "needs_manual",
@@ -344,7 +359,7 @@ def create_app(
         else:
             session.clarification_count += 1
 
-        session.current_question = fallback_question(profile)
+        session.current_question = fallback_question(profile, session.response_language)
         session.status = (
             "ready_to_match"
             if not missing_required_fields(profile)

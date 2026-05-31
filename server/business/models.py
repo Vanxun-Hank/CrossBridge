@@ -40,6 +40,7 @@ class MatchingSession(Base):
     draft_profile_json: Mapped[str] = mapped_column(Text, nullable=False)
     clarification_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     current_question: Mapped[str | None] = mapped_column(Text, nullable=True)
+    response_language: Mapped[str] = mapped_column(String(2), nullable=False, default="zh")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 

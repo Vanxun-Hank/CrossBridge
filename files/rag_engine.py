@@ -1035,7 +1035,11 @@ class AdaptiveRetriever:
 # ----------------------------------------------------------------------
 # 5. LLM 调用 (带降级)
 # ----------------------------------------------------------------------
-SYSTEM_PROMPT = """你是 CrossBridge AI,一个跨境普惠金融决策助手,服务大湾区与东南亚的中小企业。
+from language_utils import resolve_response_language
+
+
+SYSTEM_PROMPTS = {
+    "zh": """你是 CrossBridge AI,一个跨境普惠金融决策助手,服务大湾区与东南亚的中小企业。
 
 严格遵守以下规则:
 1. 只能基于【参考资料】回答,不得编造任何法规、数字或产品条款。
@@ -1045,60 +1049,106 @@ SYSTEM_PROMPT = """你是 CrossBridge AI,一个跨境普惠金融决策助手,�
 5. 绝不提供逃税、洗钱、规避监管等违规建议。
 6. 引用规则:答案末尾"信息来源"中,只列出【参考资料】里标记为"可引用"的资料 ([资料N]);
    标记为"仅作context,不可引用"的资料 ([资料Cx]) 可以帮助你理解,但不要出现在信息来源列表中。
-"""
+7. 必须全程使用中文回答。官方标题、专有名词和链接可保留原文。
+""",
+    "en": """You are CrossBridge AI, a cross-border inclusive-finance decision assistant for SMEs in the Greater Bay Area and Southeast Asia.
 
-def build_prompt(query, retrieved, context_only=None):
+Follow these rules strictly:
+1. Answer only from the provided reference materials. Never invent regulations, figures, or product terms.
+2. If the materials are insufficient, clearly say that the available materials cannot confirm the answer. Do not guess.
+3. Use clear, actionable bullet points for SME owners who may not know financial terminology.
+4. You are not a lawyer or accountant. End with a reminder to confirm final actions with a bank relationship manager or a qualified professional.
+5. Never provide advice for tax evasion, money laundering, or regulatory avoidance.
+6. In the final "Sources" section, list only materials marked "citable" ([SourceN]). Materials marked "context only, not citable" ([SourceCx]) may inform your understanding but must not appear in the source list.
+7. Answer entirely in English. Official titles, proper nouns, and URLs may remain in their original language.
+""",
+}
+
+def build_prompt(query, retrieved, context_only=None, response_language="zh"):
     """把检索结果拼进 Prompt。
 
     Step 3.5: retrieved 是可引用的（来自 trusted source），
               context_only 仅用于 LLM 理解上下文，禁止出现在 citation 列表。
     """
     blocks = []
+    is_english = response_language == "en"
     for i, (doc, _score) in enumerate(retrieved, 1):
-        blocks.append(
-            f"[资料{i}] (可引用) 来源:{doc['source_name']} | 地区:{doc['region']} | "
-            f"生效日:{doc.get('effective_date','-')}\n"
-            f"标题:{doc['title']}\n正文:{doc['content']}"
-        )
+        if is_english:
+            blocks.append(
+                f"[Source{i}] (citable) Source:{doc['source_name']} | Region:{doc['region']} | "
+                f"Effective date:{doc.get('effective_date','-')}\n"
+                f"Title:{doc['title']}\nContent:{doc['content']}"
+            )
+        else:
+            blocks.append(
+                f"[资料{i}] (可引用) 来源:{doc['source_name']} | 地区:{doc['region']} | "
+                f"生效日:{doc.get('effective_date','-')}\n"
+                f"标题:{doc['title']}\n正文:{doc['content']}"
+            )
     if context_only:
         for j, (doc, _score) in enumerate(context_only, 1):
-            blocks.append(
-                f"[资料C{j}] (仅作context,不可引用) 来源:{doc['source_name']} | "
-                f"地区:{doc['region']}\n标题:{doc['title']}\n正文:{doc['content']}"
-            )
+            if is_english:
+                blocks.append(
+                    f"[SourceC{j}] (context only, not citable) Source:{doc['source_name']} | "
+                    f"Region:{doc['region']}\nTitle:{doc['title']}\nContent:{doc['content']}"
+                )
+            else:
+                blocks.append(
+                    f"[资料C{j}] (仅作context,不可引用) 来源:{doc['source_name']} | "
+                    f"地区:{doc['region']}\n标题:{doc['title']}\n正文:{doc['content']}"
+                )
     context = "\n\n".join(blocks)
-    user_msg = (
-        f"【参考资料】\n{context}\n\n"
-        f"【用户问题】\n{query}\n\n"
-        f"请基于以上资料回答,并在结尾用'信息来源'列出你引用了哪几条【可引用】资料。"
-    )
+    if is_english:
+        user_msg = (
+            f"[Reference materials]\n{context}\n\n"
+            f"[User question]\n{query}\n\n"
+            "Answer in English based on the materials above. End with a 'Sources' section "
+            "listing the citable materials you used."
+        )
+    else:
+        user_msg = (
+            f"【参考资料】\n{context}\n\n"
+            f"【用户问题】\n{query}\n\n"
+            f"请基于以上资料回答,并在结尾用'信息来源'列出你引用了哪几条【可引用】资料。"
+        )
     return user_msg
 
 
-def call_llm(query, retrieved):
+def call_llm(query, retrieved, response_language="zh"):
     """
     通过 LangChain 调用 Qwen 生成答案。
     """
-    user_msg = build_prompt(query, retrieved)
+    user_msg = build_prompt(query, retrieved, response_language=response_language)
     resp = get_qwen_chat_model().invoke([
-        ("system", SYSTEM_PROMPT),
+        ("system", SYSTEM_PROMPTS[response_language]),
         ("user", user_msg),
     ])
     return str(resp.content)
 
 
-def _fallback_answer(query, retrieved):
+def _fallback_answer(query, retrieved, response_language="zh"):
     """没有大模型时,直接结构化展示检索结果。"""
+    is_english = response_language == "en"
     if not retrieved:
+        if is_english:
+            return "The available knowledge base does not contain authoritative materials directly related to your question. Please provide more context or consult a bank relationship manager."
         return "现有资料库暂时找不到与您问题直接相关的权威资料,建议补充更多数据源或咨询银行客户经理。"
-    lines = ["(演示模式:未配置大模型 API,以下为检索到的权威资料摘要)\n"]
+    lines = [
+        "(Demo mode: no LLM API is configured. The following are summaries of the retrieved authoritative materials.)\n"
+        if is_english else
+        "(演示模式:未配置大模型 API,以下为检索到的权威资料摘要)\n"
+    ]
     for i, (doc, score) in enumerate(retrieved, 1):
         lines.append(f"{i}. 【{doc['title']}】({doc['source_name']})")
         # 摘要取正文前 80 字
         summary = doc["content"][:80].strip()
-        lines.append(f"   要点:{summary}……")
+        lines.append(f"   {'Summary' if is_english else '要点'}:{summary}……")
         lines.append("")
-    lines.append("⚠️ 以上为参考信息,最终操作前请向中银香港客户经理或专业人士确认。")
+    lines.append(
+        "The information above is for reference only. Confirm final actions with a BOCHK relationship manager or a qualified professional."
+        if is_english else
+        "以上为参考信息,最终操作前请向中银香港客户经理或专业人士确认。"
+    )
     return "\n".join(lines)
 
 
@@ -1198,6 +1248,10 @@ class CrossBridgeRAG:
         state["top_k"] = max(1, int(state.get("top_k", 3)))
         state["region"] = state.get("region", "全部")
         state["topic"] = state.get("topic", "全部")
+        state["response_language"] = resolve_response_language(
+            state["query"],
+            fallback=state.get("response_language"),
+        )
         state["debug"] = bool(state.get("debug", False))
         state["trace"] = {
             "mode": RETRIEVAL_MODE,
@@ -1560,12 +1614,13 @@ class CrossBridgeRAG:
             state["query"],
             state.get("retrieved_for_citation", state["retrieved"]),
             context_only=state.get("context_only"),
+            response_language=state["response_language"],
         )
         return state
 
     def _generate_answer(self, state):
         resp = get_qwen_chat_model().invoke([
-            ("system", SYSTEM_PROMPT),
+            ("system", SYSTEM_PROMPTS[state["response_language"]]),
             ("user", state["prompt"]),
         ])
         state["answer"] = str(resp.content)
@@ -1587,12 +1642,24 @@ class CrossBridgeRAG:
             }
             for doc, score in citation_source
         ]
-        result = {"answer": state["answer"], "citations": citations}
+        result = {
+            "answer": state["answer"],
+            "citations": citations,
+            "response_language": state["response_language"],
+        }
         if state["debug"]:
             result["retrieval_trace"] = state["trace"]
         return result
 
-    def ask(self, query, region="全部", topic="全部", top_k=3, debug=False):
+    def ask(
+        self,
+        query,
+        region="全部",
+        topic="全部",
+        top_k=3,
+        debug=False,
+        response_language=None,
+    ):
         return self.chain.invoke(
             {
                 "query": query,
@@ -1600,6 +1667,7 @@ class CrossBridgeRAG:
                 "topic": topic,
                 "top_k": top_k,
                 "debug": debug,
+                "response_language": response_language,
             },
             config={
                 "run_name": "CrossBridgeRAG.ask",

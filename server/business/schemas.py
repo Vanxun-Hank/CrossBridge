@@ -17,6 +17,7 @@ FinancingPurpose = Literal[
     "working_capital",
     "investment",
 ]
+UiLanguage = Literal["zh", "en"]
 
 
 class DraftProfile(BaseModel):
@@ -54,6 +55,7 @@ class RouteIntentRequest(BaseModel):
 class CreateSessionRequest(BaseModel):
     sme_id: str = Field(default="demo_sme_001", pattern=r"^[a-zA-Z0-9_-]{1,64}$")
     prefill: DraftProfileUpdate = Field(default_factory=DraftProfileUpdate)
+    ui_language: UiLanguage = "zh"
 
 
 class UpdateDraftRequest(BaseModel):
@@ -62,6 +64,7 @@ class UpdateDraftRequest(BaseModel):
 
 class ClarifyRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
+    ui_language: UiLanguage | None = None
 
 
 class ClarifierDecision(BaseModel):
@@ -71,4 +74,3 @@ class ClarifierDecision(BaseModel):
     ready_to_match: bool
     missing_slot: str | None = None
     question_to_user: str | None = Field(default=None, max_length=300)
-

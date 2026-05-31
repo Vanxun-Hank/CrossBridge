@@ -34,10 +34,18 @@ FIELD_LABELS = {
     "business_age_years": "经营年限",
 }
 QUESTION_BY_FIELD = {
-    "business_scenario": "您主要是哪类跨境业务：海外采购、跨境电商、出口贸易还是海外投资？",
-    "annual_turnover_hkd": "贵公司去年的年营业额大约是多少港币？",
-    "financing_purpose": "这笔融资主要用于支付供应商、备货、履行出口订单、日常周转还是海外投资？",
-    "requested_amount_hkd": "您计划申请的融资金额大约是多少港币？",
+    "zh": {
+        "business_scenario": "您主要是哪类跨境业务：海外采购、跨境电商、出口贸易还是海外投资？",
+        "annual_turnover_hkd": "贵公司去年的年营业额大约是多少港币？",
+        "financing_purpose": "这笔融资主要用于支付供应商、备货、履行出口订单、日常周转还是海外投资？",
+        "requested_amount_hkd": "您计划申请的融资金额大约是多少港币？",
+    },
+    "en": {
+        "business_scenario": "Which cross-border business scenario best describes your needs: overseas procurement, cross-border e-commerce, export trade, or overseas investment?",
+        "annual_turnover_hkd": "What was your company's approximate annual turnover last year in HKD?",
+        "financing_purpose": "What is the main financing purpose: supplier payment, inventory stocking, export order fulfillment, working capital, or overseas investment?",
+        "requested_amount_hkd": "Approximately how much financing would you like to apply for in HKD?",
+    },
 }
 
 ACTION_PATTERNS = [
@@ -239,9 +247,10 @@ def merge_profile(profile: DraftProfile, updates: DraftProfileUpdate) -> DraftPr
     )
 
 
-def fallback_question(profile: DraftProfile) -> str | None:
+def fallback_question(profile: DraftProfile, response_language: str = "zh") -> str | None:
     missing = missing_required_fields(profile)
-    return QUESTION_BY_FIELD.get(missing[0]) if missing else None
+    language = "en" if response_language == "en" else "zh"
+    return QUESTION_BY_FIELD[language].get(missing[0]) if missing else None
 
 
 _VALID_SCENARIOS = frozenset(get_args(BusinessScenario))
@@ -394,7 +403,8 @@ class LlmClarifier:
                                 "content": (
                                     "Extract SME financing profile updates. Return JSON only with "
                                     "extracted_updates, ready_to_match, missing_slot, question_to_user. "
-                                    "Never invent missing values. Ask at most one concise Chinese question. "
+                                    "Never invent missing values. If question_to_user is needed, use the "
+                                    "same natural language as latest_user_message. "
                                     "IMPORTANT: the user is currently answering the question for "
                                     "`current_target_field`. If the message is just a value (a number, "
                                     "an amount like '一千万'/'700万'/'2 million', or a single phrase), put it "
