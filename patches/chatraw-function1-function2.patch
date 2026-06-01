@@ -5971,7 +5971,7 @@ index 59132a0..2fb81a4 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..a63ca86 100644
+index 370c42e..4e21415 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -5982,8 +5982,8 @@ index 370c42e..a63ca86 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev7" as="style">
-+    <link rel="preload" href="app.js?v=cbdev7" as="script">
++    <link rel="preload" href="styles.css?v=cbdev8" as="style">
++    <link rel="preload" href="app.js?v=cbdev8" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6002,7 +6002,7 @@ index 370c42e..a63ca86 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev7">
++    <link rel="stylesheet" href="styles.css?v=cbdev8">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6773,7 +6773,7 @@ index 370c42e..a63ca86 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer"
-+                                src="official-pdf-viewer.html" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev8" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -6811,7 +6811,7 @@ index 370c42e..a63ca86 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev7"></script>
++    <script src="app.js?v=cbdev8"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -6870,7 +6870,7 @@ index 0000000..2cf5eb2
 +}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..a3bea3a
+index 0000000..99217af
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
 @@ -0,0 +1,19 @@
@@ -6882,23 +6882,23 @@ index 0000000..a3bea3a
 +    <title>Official Form Viewer</title>
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
-+    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css">
-+    <link rel="stylesheet" href="official-pdf-viewer.css">
++    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev8">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev8">
 +</head>
 +<body>
 +    <div id="status" class="ofv-status" role="status" aria-live="polite"></div>
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev8"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..1fe794a
+index 0000000..eb19c6a
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,204 @@
 +// Sandboxed viewer for genuine BOCHK official AcroForm PDFs.
 +//
 +// Contract with the parent workbench (same-origin only):
@@ -6912,7 +6912,12 @@ index 0000000..1fe794a
 +import * as pdfjsLib from "./vendor/pdfjs/build/pdf.mjs";
 +import { EventBus, PDFLinkService, PDFViewer } from "./vendor/pdfjs/web/pdf_viewer.mjs";
 +
-+const VENDOR = "./vendor/pdfjs/";
++// Absolute base URL (resolved against THIS module's URL). Must be absolute so the
++// worker/cmap/font URLs resolve correctly on BOTH paths: Chromium's real module worker
++// (document-relative) AND Safari's main-thread "fake worker" which import()s workerSrc
++// relative to pdf.mjs — a relative value there doubled the path (/vendor/.../build/
++// vendor/.../build/pdf.worker.mjs -> 404) and broke the viewer in Safari.
++const VENDOR = new URL("./vendor/pdfjs/", import.meta.url).href;
 +pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs";
 +
 +const PARENT_ORIGIN = window.location.origin;
