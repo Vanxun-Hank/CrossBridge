@@ -140,8 +140,30 @@ def _install_pdfjs() -> None:
                 continue
             dest.write_bytes(src.read())
             extracted += 1
+    _patch_worker_sumprecise()
     (PDFJS_DIR / "VERSION").write_text(PDFJS_VERSION + "\n", encoding="utf-8")
     print(f"  installed pdfjs {PDFJS_VERSION} ({extracted} files) under {PDFJS_DIR.relative_to(ROOT)}")
+
+
+# PDF.js 5.x parses PDFs in a Web Worker that calls Math.sumPrecise (a 2025 API). Browsers
+# without it (Safari < 18.2, older Chromium) throw "Math.sumPrecise is not a function" inside
+# the worker realm — which the page's inline polyfill cannot reach. Prepend a minimal polyfill
+# to the worker so document loading works there too. (workerSrc carries a ?v cache-buster.)
+WORKER_POLYFILL_MARKER = "CrossBridge sumPrecise polyfill"
+WORKER_POLYFILL = (
+    f'/* {WORKER_POLYFILL_MARKER} (Safari<18.2 / older Chromium lack Math.sumPrecise) */ '
+    'if(typeof Math.sumPrecise!=="function"){Math.sumPrecise=function(values){'
+    'let s=0;for(const v of values)s+=Number(v);return s;};}\n'
+)
+
+
+def _patch_worker_sumprecise() -> None:
+    worker = PDFJS_DIR / "build" / "pdf.worker.mjs"
+    text = worker.read_text(encoding="utf-8")
+    if WORKER_POLYFILL_MARKER in text:
+        return
+    worker.write_text(WORKER_POLYFILL + text, encoding="utf-8")
+    print("  patched pdf.worker.mjs with Math.sumPrecise polyfill")
 
 
 def main() -> int:

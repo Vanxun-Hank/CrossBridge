@@ -248,7 +248,7 @@ index 79e7920..37ce34c 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..2fb81a4 100644
+index 17f8244..64a5fce 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -182,7 +182,197 @@ const i18n = {
@@ -848,15 +848,17 @@ index 17f8244..2fb81a4 100644
          // Get model type display name
          getModelTypeName(type) {
              const names = {
-@@ -507,6 +1042,7 @@ function app() {
-             // Note: favicon is updated by loadLogo() which is called from loadSettings()
-             // Initialize plugin system
-             this.initPluginSystem();
-+            this.ensureOfficialViewerBridge();
-         },
+@@ -497,6 +1032,9 @@ function app() {
          
-         // Responsive layout sync (mobile drawer + desktop collapse)
-@@ -522,6 +1058,9 @@ function app() {
+         // Initialize
+         async init() {
++            // Bind the official-form viewer bridge FIRST — before the slow awaits below — so the
++            // iframe's one-time 'ready' ping can never fire before our listener is attached.
++            this.ensureOfficialViewerBridge();
+             this.initResponsiveLayout();
+             await this.loadSettings();
+             await this.loadModels();
+@@ -522,6 +1060,9 @@ function app() {
              };
              window.addEventListener('resize', onViewportChange, { passive: true });
              window.addEventListener('orientationchange', onViewportChange, { passive: true });
@@ -866,7 +868,7 @@ index 17f8244..2fb81a4 100644
          },
          
          syncSidebarForViewport(isInitial) {
-@@ -571,6 +1110,1014 @@ function app() {
+@@ -571,6 +1112,1026 @@ function app() {
              this.loadPluginMarket();
              this.closeSidebarOnMobile();
          },
@@ -1639,14 +1641,12 @@ index 17f8244..2fb81a4 100644
 +                const msg = event.data || {};
 +                if (msg.source !== 'official-pdf-viewer') return;
 +                if (msg.type === 'ready') {
-+                    if (msg.booted) {
-+                        this.documentPreparation.viewerBooted = true;
-+                        if (this._pendingViewerLoad) {
-+                            this.postToViewer('load-draft', this._pendingViewerLoad);
-+                            this._pendingViewerLoad = null;
-+                        }
++                    if (msg.booted) this.documentPreparation.viewerBooted = true;
++                    if (msg.formLoaded) {
++                        this.documentPreparation.viewerReady = true;
++                        this._pendingViewerLoad = null;   // PDF loaded — nothing left to push
 +                    }
-+                    if (msg.formLoaded) this.documentPreparation.viewerReady = true;
++                    this.flushViewerLoad();               // push any queued load now the viewer is up
 +                } else if (msg.type === 'draft-changed') {
 +                    this.onOfficialDraftChanged(msg.values || {});
 +                } else if (msg.type === 'error') {
@@ -1658,10 +1658,24 @@ index 17f8244..2fb81a4 100644
 +        postToViewer(type, payload = {}) {
 +            const frame = this.$refs.officialViewer;
 +            if (!frame || !frame.contentWindow) return;
-+            frame.contentWindow.postMessage(
-+                { source: 'crossbridge-doc-prep', type, ...payload },
-+                window.location.origin
-+            );
++            // payload may hold Alpine reactive Proxies (e.g. the queued load values); the
++            // structured-clone used by postMessage cannot clone a Proxy and throws
++            // DataCloneError. Deep-clone to a plain object first so the message always sends.
++            let message;
++            try {
++                message = JSON.parse(JSON.stringify({ source: 'crossbridge-doc-prep', type, ...payload }));
++            } catch (e) {
++                message = { source: 'crossbridge-doc-prep', type };
++            }
++            frame.contentWindow.postMessage(message, window.location.origin);
++        },
++
++        // Push the queued official-form load to the viewer iframe. Safe to call repeatedly:
++        // invoked on form select, on the viewer's 'ready' ping, and on the iframe @load event,
++        // so the PDF loads regardless of parent/iframe boot order (fixes the Safari race where
++        // the parent missed the viewer's one-time ready ping and never sent the PDF).
++        flushViewerLoad() {
++            if (this._pendingViewerLoad) this.postToViewer('load-draft', this._pendingViewerLoad);
 +        },
 +
 +        // Keep the live activeForm reference in sync with the latest package payload.
@@ -1718,11 +1732,11 @@ index 17f8244..2fb81a4 100644
 +                pdfUrl: `/api/crossbridge-documents/v1/packages/${packageId}/forms/${form.form_id}/pdf`,
 +                values
 +            };
-+            // The iframe boots on first render; if it hasn't yet, flush on its ready ping.
-+            this.$nextTick(() => {
-+                if (this.documentPreparation.viewerBooted) this.postToViewer('load-draft', payload);
-+                else this._pendingViewerLoad = payload;
-+            });
++            // Queue the load and push it now. The iframe has been in the DOM since page load, so a
++            // direct post usually wins; the viewer's 'ready' ping and the iframe @load handler also
++            // re-flush, so the PDF loads regardless of parent/iframe boot order (fixes Safari race).
++            this._pendingViewerLoad = payload;
++            this.$nextTick(() => this.flushViewerLoad());
 +        },
 +
 +        async acceptTradeTerms() {
@@ -1881,7 +1895,7 @@ index 17f8244..2fb81a4 100644
          
          // Apply theme
          applyTheme() {
-@@ -746,7 +2293,16 @@ function app() {
+@@ -746,7 +2307,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -1899,7 +1913,7 @@ index 17f8244..2fb81a4 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -763,6 +2319,8 @@ function app() {
+@@ -763,6 +2333,8 @@ function app() {
                  content: message
              });
              this.$nextTick(() => this.scrollToBottom());
@@ -1908,7 +1922,7 @@ index 17f8244..2fb81a4 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +2347,8 @@ function app() {
+@@ -789,7 +2361,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -1918,7 +1932,7 @@ index 17f8244..2fb81a4 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +2376,6 @@ function app() {
+@@ -817,7 +2390,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -1926,7 +1940,7 @@ index 17f8244..2fb81a4 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +2386,7 @@ function app() {
+@@ -828,6 +2400,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -5971,7 +5985,7 @@ index 59132a0..2fb81a4 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..4e21415 100644
+index 370c42e..9819e70 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -5982,8 +5996,8 @@ index 370c42e..4e21415 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev8" as="style">
-+    <link rel="preload" href="app.js?v=cbdev8" as="script">
++    <link rel="preload" href="styles.css?v=cbdev12" as="style">
++    <link rel="preload" href="app.js?v=cbdev12" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6002,7 +6016,7 @@ index 370c42e..4e21415 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev8">
++    <link rel="stylesheet" href="styles.css?v=cbdev12">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6772,8 +6786,8 @@ index 370c42e..4e21415 100644
 +
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
-+                        <iframe class="doc-viewer-frame" x-ref="officialViewer"
-+                                src="official-pdf-viewer.html?v=cbdev8" title="Official form viewer"></iframe>
++                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
++                                src="official-pdf-viewer.html?v=cbdev12" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -6811,7 +6825,7 @@ index 370c42e..4e21415 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev8"></script>
++    <script src="app.js?v=cbdev12"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -6870,10 +6884,10 @@ index 0000000..2cf5eb2
 +}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..99217af
+index 0000000..83626bc
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,31 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +<head>
@@ -6882,23 +6896,35 @@ index 0000000..99217af
 +    <title>Official Form Viewer</title>
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
-+    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev8">
-+    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev8">
++    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev12">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev12">
++    <script>
++      // PDF.js 5.x calls Math.sumPrecise, a 2025 API missing in Safari < 18.2 and older
++      // Chromium. Define a minimal polyfill BEFORE the deferred module loads so getDocument()
++      // doesn't throw "Math.sumPrecise is not a function" (which left the viewer blank).
++      if (typeof Math.sumPrecise !== "function") {
++        Math.sumPrecise = function (values) {
++          let sum = 0;
++          for (const value of values) sum += Number(value);
++          return sum;
++        };
++      }
++    </script>
 +</head>
 +<body>
 +    <div id="status" class="ofv-status" role="status" aria-live="polite"></div>
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js?v=cbdev8"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev12"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..eb19c6a
+index 0000000..adea967
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,219 @@
 +// Sandboxed viewer for genuine BOCHK official AcroForm PDFs.
 +//
 +// Contract with the parent workbench (same-origin only):
@@ -6918,7 +6944,8 @@ index 0000000..eb19c6a
 +// relative to pdf.mjs — a relative value there doubled the path (/vendor/.../build/
 +// vendor/.../build/pdf.worker.mjs -> 404) and broke the viewer in Safari.
 +const VENDOR = new URL("./vendor/pdfjs/", import.meta.url).href;
-+pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs";
++// ?v bust: the worker file is patched with a Math.sumPrecise polyfill for its own realm.
++pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs?v=cbdev12";
 +
 +const PARENT_ORIGIN = window.location.origin;
 +const DRAFT_DEBOUNCE_MS = 500;
@@ -6949,6 +6976,20 @@ index 0000000..eb19c6a
 +    statusEl.textContent = message || "";
 +    statusEl.style.display = message ? "block" : "none";
 +}
++
++// Surface any uncaught failure to the parent (and on-screen) so a broken viewer is never
++// just a silent blank panel — important since this runs in browsers we can't all test directly.
++window.addEventListener("error", (event) => {
++    const detail = (event && (event.message || (event.error && event.error.message))) || "script error";
++    setStatus("Viewer error: " + detail);
++    post("error", { message: detail });
++});
++window.addEventListener("unhandledrejection", (event) => {
++    const reason = event && event.reason;
++    const detail = (reason && (reason.message || String(reason))) || "unhandled rejection";
++    setStatus("Viewer error: " + detail);
++    post("error", { message: detail });
++});
 +
 +eventBus.on("pagesinit", () => {
 +    pdfViewer.currentScaleValue = "page-width";
