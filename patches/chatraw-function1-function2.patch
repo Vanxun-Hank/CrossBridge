@@ -5985,7 +5985,7 @@ index 59132a0..2fb81a4 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..9819e70 100644
+index 370c42e..07854e5 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -5996,8 +5996,8 @@ index 370c42e..9819e70 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev12" as="style">
-+    <link rel="preload" href="app.js?v=cbdev12" as="script">
++    <link rel="preload" href="styles.css?v=cbdev13" as="style">
++    <link rel="preload" href="app.js?v=cbdev13" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6016,7 +6016,7 @@ index 370c42e..9819e70 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev12">
++    <link rel="stylesheet" href="styles.css?v=cbdev13">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6787,7 +6787,7 @@ index 370c42e..9819e70 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev12" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev13" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -6825,7 +6825,7 @@ index 370c42e..9819e70 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev12"></script>
++    <script src="app.js?v=cbdev13"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -6884,10 +6884,10 @@ index 0000000..2cf5eb2
 +}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..83626bc
+index 0000000..5209e6d
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,38 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +<head>
@@ -6896,12 +6896,19 @@ index 0000000..83626bc
 +    <title>Official Form Viewer</title>
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
-+    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev12">
-+    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev12">
++    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev13">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev13">
 +    <script>
-+      // PDF.js 5.x calls Math.sumPrecise, a 2025 API missing in Safari < 18.2 and older
-+      // Chromium. Define a minimal polyfill BEFORE the deferred module loads so getDocument()
-+      // doesn't throw "Math.sumPrecise is not a function" (which left the viewer blank).
++      // PDF.js 5.x calls 2024/2025 APIs (Promise.try, Math.sumPrecise) that Safari < 18.2/18.4
++      // and older Chromium lack. Define minimal polyfills BEFORE the deferred module loads so
++      // getDocument() doesn't throw (which left the viewer a silent blank panel). The worker
++      // realm is polyfilled separately inside pdf.worker.mjs.
++      if (typeof Promise.try !== "function") {
++        Promise.try = function (fn) {
++          const args = Array.prototype.slice.call(arguments, 1);
++          return new Promise(function (resolve) { resolve(fn.apply(null, args)); });
++        };
++      }
 +      if (typeof Math.sumPrecise !== "function") {
 +        Math.sumPrecise = function (values) {
 +          let sum = 0;
@@ -6916,12 +6923,12 @@ index 0000000..83626bc
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js?v=cbdev12"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev13"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..adea967
+index 0000000..1f025a5
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
 @@ -0,0 +1,219 @@
@@ -6945,7 +6952,7 @@ index 0000000..adea967
 +// vendor/.../build/pdf.worker.mjs -> 404) and broke the viewer in Safari.
 +const VENDOR = new URL("./vendor/pdfjs/", import.meta.url).href;
 +// ?v bust: the worker file is patched with a Math.sumPrecise polyfill for its own realm.
-+pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs?v=cbdev12";
++pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs?v=cbdev13";
 +
 +const PARENT_ORIGIN = window.location.origin;
 +const DRAFT_DEBOUNCE_MS = 500;

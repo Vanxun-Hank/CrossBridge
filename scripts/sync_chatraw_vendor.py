@@ -149,9 +149,11 @@ def _install_pdfjs() -> None:
 # without it (Safari < 18.2, older Chromium) throw "Math.sumPrecise is not a function" inside
 # the worker realm — which the page's inline polyfill cannot reach. Prepend a minimal polyfill
 # to the worker so document loading works there too. (workerSrc carries a ?v cache-buster.)
-WORKER_POLYFILL_MARKER = "CrossBridge sumPrecise polyfill"
+WORKER_POLYFILL_MARKER = "CrossBridge polyfills"
 WORKER_POLYFILL = (
-    f'/* {WORKER_POLYFILL_MARKER} (Safari<18.2 / older Chromium lack Math.sumPrecise) */ '
+    f'/* {WORKER_POLYFILL_MARKER}: Promise.try + Math.sumPrecise (Safari<18.2/18.4, older Chromium) */ '
+    'if(typeof Promise.try!=="function"){Promise.try=function(fn){var a=Array.prototype.slice.call(arguments,1);'
+    'return new Promise(function(res){res(fn.apply(null,a));});};} '
     'if(typeof Math.sumPrecise!=="function"){Math.sumPrecise=function(values){'
     'let s=0;for(const v of values)s+=Number(v);return s;};}\n'
 )
