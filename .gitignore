@@ -51,6 +51,7 @@ data/crossbridge_app.db-wal
 data/crossbridge_document_preparation.db
 data/crossbridge_document_preparation.db-shm
 data/crossbridge_document_preparation.db-wal
+data/document_preparation/official_forms_cache/
 data/official_products/*.bak
 eval/reports/function1_eval_*.json
 eval/reports/function1_eval_*.md

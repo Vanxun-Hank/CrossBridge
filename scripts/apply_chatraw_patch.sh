@@ -12,3 +12,8 @@ fi
 
 git -C "$CHATRAW_DIR" apply --binary "$PATCH_FILE"
 echo "Applied CrossBridge Function 1 and Function 2 ChatRaw customizations."
+
+# Vendored frontend libraries (Alpine, marked, PDF.js) are kept out of the patch and
+# fetched + hash-verified here so the official-form viewer works fully offline.
+python3 "$ROOT_DIR/scripts/sync_chatraw_vendor.py"
+echo "Synced pinned ChatRaw vendor assets (Alpine, marked, PDF.js)."

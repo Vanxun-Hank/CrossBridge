@@ -1035,7 +1035,7 @@ class AdaptiveRetriever:
 # ----------------------------------------------------------------------
 # 5. LLM 调用 (带降级)
 # ----------------------------------------------------------------------
-from language_utils import resolve_response_language
+from language_utils import resolve_answer_language
 
 
 SYSTEM_PROMPTS = {
@@ -1062,6 +1062,18 @@ Follow these rules strictly:
 6. In the final "Sources" section, list only materials marked "citable" ([SourceN]). Materials marked "context only, not citable" ([SourceCx]) may inform your understanding but must not appear in the source list.
 7. Answer entirely in English. Official titles, proper nouns, and URLs may remain in their original language.
 """,
+    "bilingual": """你是 CrossBridge AI，一个服务大湾区与东南亚中小企业的跨境普惠金融决策助手。
+You are CrossBridge AI, a cross-border inclusive-finance decision assistant for SMEs in the Greater Bay Area and Southeast Asia.
+
+严格遵守以下规则 / Follow these rules strictly:
+1. 只能基于【参考资料】回答，不得编造法规、数字或产品条款。Answer only from the provided reference materials. Never invent regulations, figures, or product terms.
+2. 若资料不足，要明确说明现有资料无法确认，不要猜。If the materials are insufficient, clearly say so. Do not guess.
+3. 面向不熟悉金融术语的中小企业老板，分点清晰说明。Use clear, actionable bullet points for SME owners.
+4. 你不是律师或会计师。结尾提醒用户向银行客户经理或专业人士确认。End with a reminder to confirm final actions with a bank relationship manager or qualified professional.
+5. 不得提供逃税、洗钱或规避监管建议。Never provide advice for tax evasion, money laundering, or regulatory avoidance.
+6. 结尾“信息来源 / Sources”只列出标记为“可引用”的资料（[资料N]）；“仅作 context，不可引用”的资料（[资料Cx]）不得列出。
+7. 必须使用中文和英文中英对照作答。Provide the answer in BOTH Chinese and English.
+""",
 }
 
 def build_prompt(query, retrieved, context_only=None, response_language="zh"):
@@ -1072,6 +1084,7 @@ def build_prompt(query, retrieved, context_only=None, response_language="zh"):
     """
     blocks = []
     is_english = response_language == "en"
+    is_bilingual = response_language == "bilingual"
     for i, (doc, _score) in enumerate(retrieved, 1):
         if is_english:
             blocks.append(
@@ -1105,6 +1118,13 @@ def build_prompt(query, retrieved, context_only=None, response_language="zh"):
             "Answer in English based on the materials above. End with a 'Sources' section "
             "listing the citable materials you used."
         )
+    elif is_bilingual:
+        user_msg = (
+            f"【参考资料 / Reference materials】\n{context}\n\n"
+            f"【用户问题 / User question】\n{query}\n\n"
+            "请基于以上资料使用中文和英文中英对照作答，并在结尾用"
+            "“信息来源 / Sources”列出使用的【可引用】资料。"
+        )
     else:
         user_msg = (
             f"【参考资料】\n{context}\n\n"
@@ -1129,24 +1149,39 @@ def call_llm(query, retrieved, response_language="zh"):
 def _fallback_answer(query, retrieved, response_language="zh"):
     """没有大模型时,直接结构化展示检索结果。"""
     is_english = response_language == "en"
+    is_bilingual = response_language == "bilingual"
     if not retrieved:
         if is_english:
             return "The available knowledge base does not contain authoritative materials directly related to your question. Please provide more context or consult a bank relationship manager."
+        if is_bilingual:
+            return (
+                "现有资料库暂时找不到与您问题直接相关的权威资料，请补充背景或咨询银行客户经理。\n\n"
+                "The available knowledge base does not contain authoritative materials directly related to your question. "
+                "Please provide more context or consult a bank relationship manager."
+            )
         return "现有资料库暂时找不到与您问题直接相关的权威资料,建议补充更多数据源或咨询银行客户经理。"
     lines = [
         "(Demo mode: no LLM API is configured. The following are summaries of the retrieved authoritative materials.)\n"
         if is_english else
+        "(演示模式：未配置大模型 API。以下为检索到的权威资料摘要。 / "
+        "Demo mode: no LLM API is configured. The following are summaries of the retrieved authoritative materials.)\n"
+        if is_bilingual else
         "(演示模式:未配置大模型 API,以下为检索到的权威资料摘要)\n"
     ]
     for i, (doc, score) in enumerate(retrieved, 1):
         lines.append(f"{i}. 【{doc['title']}】({doc['source_name']})")
         # 摘要取正文前 80 字
         summary = doc["content"][:80].strip()
-        lines.append(f"   {'Summary' if is_english else '要点'}:{summary}……")
+        lines.append(
+            f"   {'Summary' if is_english else '要点 / Summary' if is_bilingual else '要点'}:{summary}……"
+        )
         lines.append("")
     lines.append(
         "The information above is for reference only. Confirm final actions with a BOCHK relationship manager or a qualified professional."
         if is_english else
+        "以上信息仅供参考，最终操作前请向中银香港客户经理或专业人士确认。 / "
+        "The information above is for reference only. Confirm final actions with a BOCHK relationship manager or a qualified professional."
+        if is_bilingual else
         "以上为参考信息,最终操作前请向中银香港客户经理或专业人士确认。"
     )
     return "\n".join(lines)
@@ -1248,7 +1283,7 @@ class CrossBridgeRAG:
         state["top_k"] = max(1, int(state.get("top_k", 3)))
         state["region"] = state.get("region", "全部")
         state["topic"] = state.get("topic", "全部")
-        state["response_language"] = resolve_response_language(
+        state["response_language"] = resolve_answer_language(
             state["query"],
             fallback=state.get("response_language"),
         )
@@ -1659,7 +1694,19 @@ class CrossBridgeRAG:
         top_k=3,
         debug=False,
         response_language=None,
+        trace_tags=None,
+        trace_metadata=None,
     ):
+        tags = ["crossbridge-rag", "qwen", "langchain"]
+        tags.extend(str(tag) for tag in (trace_tags or []) if str(tag).strip())
+        metadata = {
+            "region": region,
+            "topic": topic,
+            "qwen_model": QWEN_MODEL,
+            "embedding_model": QWEN_EMBEDDING_MODEL,
+            "qwen_base_url": QWEN_BASE_URL,
+        }
+        metadata.update(trace_metadata or {})
         return self.chain.invoke(
             {
                 "query": query,
@@ -1671,14 +1718,8 @@ class CrossBridgeRAG:
             },
             config={
                 "run_name": "CrossBridgeRAG.ask",
-                "tags": ["crossbridge-rag", "qwen", "langchain"],
-                "metadata": {
-                    "region": region,
-                    "topic": topic,
-                    "qwen_model": QWEN_MODEL,
-                    "embedding_model": QWEN_EMBEDDING_MODEL,
-                    "qwen_base_url": QWEN_BASE_URL,
-                },
+                "tags": tags,
+                "metadata": metadata,
             },
         )
 

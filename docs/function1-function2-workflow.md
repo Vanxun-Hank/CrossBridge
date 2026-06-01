@@ -29,15 +29,32 @@ Data boundary: F1 owns its FastAPI service on 8081, SQLite database, Alembic mig
 
 ## Function 2: Document Preparation
 
-1. The user enters from the sidebar or clicks `Prepare Documents` on an F1 product card.
-2. F1-to-F2 handoff passes only product preselection and optional context for recommendation highlighting. The user still chooses the import or export scenario inside F2.
-3. ChatRaw opens the F2 workbench as a right-side panel while preserving the chat transcript.
-4. The 8082 service creates or restores a document package for the SME and selected scenario.
-5. The panel combines the scenario base checklist with the selected product overlay. Publicly documented materials are labelled as public-source requirements; preparation suggestions remain suggestions; unpublished requirements remain relationship-manager confirmation items.
-6. The user checks items, edits the scenario-specific transaction form and financing cover sheet, reviews non-blocking validation warnings, switches compatible products, resets the package, or prints the preparation pack.
-7. Template drafts and checklist state auto-save. Switching products keeps base checklist progress and restores product-overlay progress when switching back.
+![Function 2 document-preparation workflow](assets/function2-document-preparation-workflow.svg)
 
-Data boundary: F2 owns its FastAPI service on 8082, separate SQLite database, separate Alembic environment, read-only document catalog snapshot, package state, template drafts, checklist states, and audit events. It never reads or writes F1 database tables.
+```mermaid
+flowchart TD
+    A["侧边栏材料准备入口，或 F1 产品卡点击准备材料"] --> B["打开聊天概览气泡 + 右侧材料面板"]
+    B --> C{"用户手选进口或出口场景？"}
+    C -->|"未选择"| D["停留场景选择器，等待用户确认"]
+    C -->|"已选择"| E["创建或恢复该 SME + 场景的材料包"]
+    E --> H["加载场景三档清单 + 产品叠加 + 官方 BOCHK 表单清单"]
+    H --> S["选择官方表单（精确匹配当前产品的表单置顶）"]
+    S --> T{"该表单需要贸易融资条款？"}
+    T -->|"需要且未接受"| U["弹出条款确认；接受后按 sme + 条款SHA 记录"]
+    T -->|"不需要 / 已接受"| V{"官方 PDF 已在本地缓存？"}
+    U --> V
+    V -->|"否"| W["显示缺失提示 + BOCHK 官方下载链接（绝不伪造表单）"]
+    V -->|"是"| X["内嵌 PDF.js 直接填写官方 AcroForm（同源 iframe）"]
+    X --> Y["字段变更 500ms 防抖 → 白名单过滤后按 source SHA 保存草稿"]
+    Y --> Z{"用户下一步操作"}
+    Z -->|"导出"| Z1["saveDocument() 下载填好的真实官方 PDF + 写 exported 审计"]
+    Z -->|"打印"| Z2["写 printed 审计 → 查看器打印真实 PDF"]
+    Z -->|"重置"| Z3["清空清单与官方表单草稿（保留同版本条款接受）+ 审计"]
+```
+
+F1-to-F2 handoff passes only product preselection and optional context for recommendation highlighting. The user still chooses the import or export scenario inside F2. Document preparation fills **genuine official BOCHK PDF forms** in-place via PDF.js (ENABLE_FORMS + `annotationStorage`, exported with `saveDocument()` — no flattening, no coordinate overlays), instead of self-made fill-in templates. Trade-finance forms are gated behind explicit acceptance of BOCHK's terms; an official PDF that is not present in the deployment's local cache shows a download hint rather than a fabricated form. Publicly documented materials remain public-source labelled; unpublished requirements remain relationship-manager confirmation items.
+
+Data boundary: F2 owns its FastAPI service on 8082, separate SQLite database, separate Alembic environment, read-only document catalog snapshot, the official-form registry, package state, official-form drafts (keyed by `package_id + form_id + source_sha256`), trade-terms acceptance (keyed by `sme_id + terms_sha256`), checklist states, and audit events. It never reads or writes F1 database tables. The encrypted official PDFs live only in a git-ignored local cache (`data/document_preparation/official_forms_cache/`); they are never committed.
 
 ## Service Flow
 

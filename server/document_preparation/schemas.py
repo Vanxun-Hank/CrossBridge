@@ -25,3 +25,9 @@ class UpdateChecklistRequest(BaseModel):
 
 class UpdateTemplateRequest(BaseModel):
     content: dict[str, Any] = Field(default_factory=dict)
+
+
+class UpdateOfficialFormDraftRequest(BaseModel):
+    # Raw PDF.js annotation values keyed by AcroForm field name. The server filters
+    # these against the registry whitelist before persisting; unknown keys are dropped.
+    values: dict[str, Any] = Field(default_factory=dict)

@@ -19,7 +19,7 @@ Function 1 和 Function 2 的完整用户流程见
 - **Graceful Fallback**: rerank API 失败 → RRF 顺序；citation filter 全空 → 三路退化（trusted_clean / fallback_trusted_hub / fallback_all）
 - **Function 1 Loan Matching**: 独立 FastAPI + SQLite/Alembic + BOCHK 官方公开来源目录；企业画像草稿、最多 3 轮 AI 澄清、Python 确定性匹配、来源链接、用户确认后才保存长期画像
 - **Function 1 Public Detail Crawl**: 抓取 7 个 BOCHK 官方来源（产品页、进出口详情页、收费表 PDF），分开展示公开手续费、适用说明、材料提示与待客户经理确认字段
-- **Function 2 Document Preparation**: 独立 FastAPI + SQLite/Alembic 材料准备工作台；按进口付款 / 出口履约场景组织三档清单、产品公开材料、可编辑模板、实时校验和打印稿
+- **Function 2 Document Preparation**: 独立 FastAPI + SQLite/Alembic 材料准备工作台；按进口付款 / 出口履约场景组织三档清单与产品公开材料，并在内嵌 PDF.js 查看器中直接填写**真实的 BOCHK 官方 PDF 表单**（AcroForm，`saveDocument()` 导出/打印真实文件，无 flatten/坐标叠字）；贸易融资表单需先接受官方条款，官方 PDF 仅存于 git 忽略的本地缓存
 - **Bilingual Workspace**: Function 1 / Function 2 工作区全部可见文字跟随 ChatRaw Settings language 切换，中英文模式不混排
 
 ---
@@ -116,9 +116,15 @@ Function 2 使用独立数据库和快照：
 .venv/bin/uvicorn server.document_preparation.app:app --host 127.0.0.1 --port 8082
 ```
 
+官方 BOCHK 表单 PDF 不入库 git；部署主机显式接受 BOCHK 条款后抓取到本地缓存（缓存缺失时前端显示官方下载提示，绝不伪造）：
+
+```bash
+.venv/bin/python scripts/fetch_official_forms.py --accept-bochk-trade-terms
+```
+
 ```bash
 git clone https://github.com/massif-01/ChatRaw chatraw-fork
-./scripts/apply_chatraw_patch.sh
+./scripts/apply_chatraw_patch.sh          # 应用定制补丁后会自动同步 vendor（含 PDF.js v5.7.284）
 cd chatraw-fork/backend
 pip install -r requirements.txt
 python main.py

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="2280" viewBox="0 0 1900 2280" role="img" aria-labelledby="title desc">
+  <title id="title">CrossBridge AI Function 2 材料准备工作台 Workflow</title>
+  <desc id="desc">从侧边栏或 Function 1 产品卡进入材料准备工作台，用户手选场景，创建或恢复材料包，编辑三档清单和模板，自动保存并生成非阻塞提醒，最后切换产品、打印或重置。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#28556f"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7a8d99"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#153b52" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .bg { fill: #f6fafb; }
+      .title { fill: #123247; font: 700 42px Arial, "PingFang SC", sans-serif; }
+      .subtitle { fill: #557180; font: 400 22px Arial, "PingFang SC", sans-serif; }
+      .lane { fill: #eaf4f5; stroke: #c6dfe1; stroke-width: 2; }
+      .node { fill: #ffffff; stroke: #8cb7bd; stroke-width: 2.5; filter: url(#shadow); }
+      .action { fill: #eaf6f5; stroke: #54a1a0; stroke-width: 2.5; filter: url(#shadow); }
+      .notice { fill: #fff8e8; stroke: #d9ad50; stroke-width: 2.5; filter: url(#shadow); }
+      .save { fill: #eaf6ee; stroke: #5a9f6a; stroke-width: 2.5; filter: url(#shadow); }
+      .reset { fill: #f7f8f8; stroke: #a3afb6; stroke-width: 2.5; filter: url(#shadow); }
+      .decision { fill: #f0f6ff; stroke: #6088bd; stroke-width: 2.5; filter: url(#shadow); }
+      .text { fill: #17394c; font: 600 24px Arial, "PingFang SC", sans-serif; text-anchor: middle; }
+      .small { fill: #58717e; font: 400 19px Arial, "PingFang SC", sans-serif; text-anchor: middle; }
+      .label { fill: #28556f; font: 600 19px Arial, "PingFang SC", sans-serif; }
+      .step { fill: #ffffff; font: 700 16px Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+      .arrow { fill: none; stroke: #28556f; stroke-width: 3; marker-end: url(#arrow); }
+      .arrow-muted { fill: none; stroke: #7a8d99; stroke-width: 2.5; stroke-dasharray: 9 8; marker-end: url(#arrow-muted); }
+      .badge { fill: #28556f; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="2280" rx="32"/>
+  <text class="title" x="90" y="92">Function 2｜材料准备工作台 Workflow</text>
+  <text class="subtitle" x="90" y="132">场景由用户确认；清单和模板持续编辑并自动保存；校验提醒不会阻止打印。</text>
+  <rect class="lane" x="380" y="170" width="1080" height="2010" rx="36"/>
+
+  <rect class="node" x="545" y="205" width="750" height="102" rx="22"/>
+  <circle class="badge" cx="582" cy="256" r="18"/><text class="step" x="582" y="256">1</text>
+  <text class="text" x="920" y="250">侧边栏材料准备入口</text>
+  <text class="small" x="920" y="282">或从 F1 产品卡点击「准备材料」</text>
+
+  <path class="arrow" d="M920 307 L920 360"/>
+  <rect class="action" x="545" y="360" width="750" height="102" rx="22"/>
+  <circle class="badge" cx="582" cy="411" r="18"/><text class="step" x="582" y="411">2</text>
+  <text class="text" x="920" y="405">打开聊天概览气泡</text>
+  <text class="small" x="920" y="437">同时展开右侧材料面板</text>
+
+  <path class="arrow" d="M920 462 L920 515"/>
+  <polygon class="decision" points="920,515 1135,603 920,691 705,603"/>
+  <circle class="badge" cx="920" cy="558" r="18"/><text class="step" x="920" y="558">3</text>
+  <text class="text" x="920" y="616">用户手选进口或出口场景？</text>
+
+  <path class="arrow" d="M705 603 L360 603 L360 700"/>
+  <text class="label" x="610" y="580">未选择</text>
+  <rect class="notice" x="90" y="700" width="540" height="104" rx="22"/>
+  <text class="text" x="360" y="744">停留场景选择器</text>
+  <text class="small" x="360" y="777">等待用户亲自确认</text>
+  <path class="arrow-muted" d="M360 700 L360 655 L705 655"/>
+
+  <path class="arrow" d="M920 691 L920 748"/>
+  <text class="label" x="950" y="724">已选择</text>
+  <rect class="node" x="545" y="748" width="750" height="92" rx="22"/>
+  <circle class="badge" cx="582" cy="794" r="18"/><text class="step" x="582" y="794">4</text>
+  <text class="text" x="920" y="803">创建或恢复该 SME + 场景的材料包</text>
+
+  <path class="arrow" d="M920 840 L920 895"/>
+  <polygon class="decision" points="920,895 1125,978 920,1061 715,978"/>
+  <circle class="badge" cx="920" cy="936" r="18"/><text class="step" x="920" y="936">5</text>
+  <text class="text" x="920" y="992">是否有兼容的预选产品？</text>
+
+  <path class="arrow" d="M1125 978 L1510 978 L1510 1085"/>
+  <text class="label" x="1170" y="955">否</text>
+  <rect class="notice" x="1260" y="1085" width="500" height="110" rx="22"/>
+  <text class="text" x="1510" y="1129">清空不兼容预选</text>
+  <text class="small" x="1510" y="1165">提示用户选择当前场景适用产品</text>
+
+  <path class="arrow" d="M920 1061 L920 1125"/>
+  <text class="label" x="950" y="1098">是，或暂不选择产品</text>
+  <rect class="action" x="545" y="1125" width="750" height="104" rx="22"/>
+  <circle class="badge" cx="582" cy="1177" r="18"/><text class="step" x="582" y="1177">6</text>
+  <text class="text" x="920" y="1171">加载场景基础包 + 产品叠加包</text>
+  <text class="small" x="920" y="1204">未选产品时先展示基础包</text>
+  <path class="arrow" d="M1510 1195 L1510 1265 L1295 1265"/>
+
+  <path class="arrow" d="M920 1229 L920 1282"/>
+  <rect class="node" x="470" y="1282" width="900" height="112" rx="22"/>
+  <circle class="badge" cx="507" cy="1338" r="18"/><text class="step" x="507" y="1338">7</text>
+  <text class="text" x="920" y="1332">展示三档清单</text>
+  <text class="small" x="920" y="1368">公开来源提示 / 建议预备 / 需银行确认</text>
+
+  <path class="arrow" d="M920 1394 L920 1447"/>
+  <rect class="action" x="500" y="1447" width="840" height="104" rx="22"/>
+  <circle class="badge" cx="537" cy="1499" r="18"/><text class="step" x="537" y="1499">8</text>
+  <text class="text" x="920" y="1493">勾选清单 + 编辑双模板</text>
+  <text class="small" x="920" y="1526">场景交易表 + 融资材料封面表</text>
+
+  <path class="arrow" d="M920 1551 L920 1604"/>
+  <rect class="save" x="545" y="1604" width="750" height="92" rx="22"/>
+  <circle class="badge" cx="582" cy="1650" r="18"/><text class="step" x="582" y="1650">9</text>
+  <text class="text" x="920" y="1659">约 500ms 自动保存草稿与勾选状态</text>
+
+  <path class="arrow" d="M920 1696 L920 1749"/>
+  <rect class="notice" x="545" y="1749" width="750" height="102" rx="22"/>
+  <circle class="badge" cx="582" cy="1800" r="18"/><text class="step" x="582" y="1800">10</text>
+  <text class="text" x="920" y="1794">实时生成非阻塞校验提醒</text>
+  <text class="small" x="920" y="1827">未完成事项会进入打印稿，但不阻止打印</text>
+
+  <path class="arrow" d="M920 1851 L920 1907"/>
+  <polygon class="decision" points="920,1907 1110,1985 920,2063 730,1985"/>
+  <text class="text" x="920" y="1999">用户下一步操作</text>
+
+  <path class="arrow" d="M730 1985 L380 1985 L380 2110"/>
+  <text class="label" x="570" y="1962">切换产品</text>
+  <rect class="node" x="90" y="2110" width="580" height="116" rx="22"/>
+  <text class="text" x="380" y="2154">检查新产品与场景兼容性</text>
+  <text class="small" x="380" y="2190">兼容则保留基础进度并加载新叠加项</text>
+  <path class="arrow-muted" d="M380 2110 L380 2050 L730 2050"/>
+
+  <path class="arrow" d="M920 2063 L920 2110"/>
+  <text class="label" x="950" y="2094">打印</text>
+  <rect class="save" x="685" y="2110" width="470" height="116" rx="22"/>
+  <text class="text" x="920" y="2154">记录 printed 审计事件</text>
+  <text class="small" x="920" y="2190">打印清单、提醒、模板、来源和免责声明</text>
+
+  <path class="arrow" d="M1110 1985 L1460 1985 L1460 2110"/>
+  <text class="label" x="1255" y="1962">重置</text>
+  <rect class="reset" x="1190" y="2110" width="540" height="116" rx="22"/>
+  <text class="text" x="1460" y="2154">清空当前材料包状态</text>
+  <text class="small" x="1460" y="2190">并记录 reset 审计事件</text>
+</svg>
