@@ -4,6 +4,9 @@
 
 帮助中小企业把跨境政策、汇款、融资讲清楚，每条答案都附 **trust_tier × document_type 双维分级**的权威来源。
 
+Function 1 和 Function 2 的完整用户流程见
+[`docs/function1-function2-workflow.md`](docs/function1-function2-workflow.md)。
+
 ---
 
 ## 核心能力
