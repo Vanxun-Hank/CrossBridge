@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1910" viewBox="0 0 1800 1910" role="img" aria-labelledby="title desc">
+  <title id="title">CrossBridge AI Function 1 贷款匹配 Workflow</title>
+  <desc id="desc">从聊天输入或左侧贷款匹配入口开始，通过意图路由、草稿创建、画像载入、AI 澄清、确定性规则筛选，最后由用户决定保存画像或丢弃草稿。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#28556f"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7a8d99"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#153b52" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .bg { fill: #f6fafb; }
+      .title { fill: #123247; font: 700 42px Arial, "PingFang SC", sans-serif; }
+      .subtitle { fill: #557180; font: 400 22px Arial, "PingFang SC", sans-serif; }
+      .lane { fill: #eaf4f5; stroke: #c6dfe1; stroke-width: 2; }
+      .node { fill: #ffffff; stroke: #8cb7bd; stroke-width: 2.5; filter: url(#shadow); }
+      .action { fill: #eaf6f5; stroke: #54a1a0; stroke-width: 2.5; filter: url(#shadow); }
+      .policy { fill: #fff8e8; stroke: #d9ad50; stroke-width: 2.5; filter: url(#shadow); }
+      .save { fill: #eaf6ee; stroke: #5a9f6a; stroke-width: 2.5; filter: url(#shadow); }
+      .discard { fill: #f7f8f8; stroke: #a3afb6; stroke-width: 2.5; filter: url(#shadow); }
+      .decision { fill: #f0f6ff; stroke: #6088bd; stroke-width: 2.5; filter: url(#shadow); }
+      .text { fill: #17394c; font: 600 24px Arial, "PingFang SC", sans-serif; text-anchor: middle; }
+      .small { fill: #58717e; font: 400 19px Arial, "PingFang SC", sans-serif; text-anchor: middle; }
+      .label { fill: #28556f; font: 600 19px Arial, "PingFang SC", sans-serif; }
+      .step { fill: #ffffff; font: 700 16px Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+      .arrow { fill: none; stroke: #28556f; stroke-width: 3; marker-end: url(#arrow); }
+      .arrow-muted { fill: none; stroke: #7a8d99; stroke-width: 2.5; stroke-dasharray: 9 8; marker-end: url(#arrow-muted); }
+      .badge { fill: #28556f; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1910" rx="32"/>
+  <text class="title" x="90" y="92">Function 1｜贷款匹配 Workflow</text>
+  <text class="subtitle" x="90" y="132">融资意图进入确定性产品匹配；政策解释问题继续进入 Function 5 RAG。</text>
+  <rect class="lane" x="390" y="170" width="1020" height="1660" rx="36"/>
+
+  <rect class="node" x="605" y="205" width="590" height="92" rx="22"/>
+  <circle class="badge" cx="640" cy="251" r="18"/><text class="step" x="640" y="251">1</text>
+  <text class="text" x="900" y="260">聊天输入或左侧贷款匹配入口</text>
+
+  <path class="arrow" d="M900 297 L900 350"/>
+  <polygon class="decision" points="900,350 1080,432 900,514 720,432"/>
+  <circle class="badge" cx="900" cy="391" r="18"/><text class="step" x="900" y="391">2</text>
+  <text class="text" x="900" y="447">意图路由</text>
+
+  <path class="arrow" d="M1080 432 L1430 432 L1430 522"/>
+  <text class="label" x="1120" y="410">政策解释类问题</text>
+  <rect class="policy" x="1245" y="522" width="370" height="110" rx="22"/>
+  <text class="text" x="1430" y="566">继续进入 Function 5 RAG</text>
+  <text class="small" x="1430" y="600">政策问答与官方来源引用</text>
+
+  <path class="arrow" d="M900 514 L900 590"/>
+  <text class="label" x="930" y="555">找贷款、申请融资、推荐产品</text>
+  <rect class="action" x="620" y="590" width="560" height="92" rx="22"/>
+  <circle class="badge" cx="657" cy="636" r="18"/><text class="step" x="657" y="636">3</text>
+  <text class="text" x="900" y="645">展示 CTA</text>
+
+  <path class="arrow" d="M900 682 L900 735"/>
+  <rect class="node" x="620" y="735" width="560" height="92" rx="22"/>
+  <circle class="badge" cx="657" cy="781" r="18"/><text class="step" x="657" y="781">4</text>
+  <text class="text" x="900" y="790">创建匹配草稿 Session</text>
+
+  <path class="arrow" d="M900 827 L900 880"/>
+  <rect class="node" x="555" y="880" width="690" height="102" rx="22"/>
+  <circle class="badge" cx="592" cy="931" r="18"/><text class="step" x="592" y="931">5</text>
+  <text class="text" x="900" y="925">载入已确认企业画像</text>
+  <text class="small" x="900" y="958">并合并可识别信息</text>
+
+  <path class="arrow" d="M900 982 L900 1035"/>
+  <rect class="action" x="620" y="1035" width="560" height="92" rx="22"/>
+  <circle class="badge" cx="657" cy="1081" r="18"/><text class="step" x="657" y="1081">6</text>
+  <text class="text" x="900" y="1090">表单填写 + AI 逐轮澄清</text>
+
+  <path class="arrow" d="M900 1127 L900 1182"/>
+  <polygon class="decision" points="900,1182 1110,1270 900,1358 690,1270"/>
+  <circle class="badge" cx="900" cy="1225" r="18"/><text class="step" x="900" y="1225">7</text>
+  <text class="text" x="900" y="1285">四个必填字段完整？</text>
+
+  <path class="arrow" d="M1110 1270 L1430 1270 L1430 1372"/>
+  <text class="label" x="1146" y="1247">否</text>
+  <rect class="discard" x="1205" y="1372" width="450" height="126" rx="22"/>
+  <text class="text" x="1430" y="1420">最多澄清 3 次</text>
+  <text class="small" x="1430" y="1459">仍缺失则停留草稿</text>
+  <path class="arrow-muted" d="M1205 1435 L1120 1435 L1120 1081 L1180 1081"/>
+  <text class="label" x="1138" y="1412">补充信息后继续</text>
+
+  <path class="arrow" d="M900 1358 L900 1415"/>
+  <text class="label" x="930" y="1392">是</text>
+  <rect class="node" x="575" y="1415" width="650" height="92" rx="22"/>
+  <circle class="badge" cx="612" cy="1461" r="18"/><text class="step" x="612" y="1461">8</text>
+  <text class="text" x="900" y="1470">Python 确定性筛选官方目录</text>
+
+  <path class="arrow" d="M900 1507 L900 1560"/>
+  <rect class="action" x="505" y="1560" width="790" height="102" rx="22"/>
+  <circle class="badge" cx="542" cy="1611" r="18"/><text class="step" x="542" y="1611">9</text>
+  <text class="text" x="900" y="1605">显示候选卡片、官方来源</text>
+  <text class="small" x="900" y="1638">以及待客户经理确认项</text>
+
+  <path class="arrow" d="M900 1662 L900 1693"/>
+  <polygon class="decision" points="900,1693 1075,1764 900,1835 725,1764"/>
+  <text class="text" x="900" y="1778">用户明确保存画像？</text>
+
+  <path class="arrow" d="M725 1764 L525 1764 L525 1846"/>
+  <text class="label" x="630" y="1742">保存</text>
+  <rect class="save" x="260" y="1846" width="530" height="54" rx="20"/>
+  <text class="text" x="525" y="1882">写入 sme_profiles 长期画像</text>
+
+  <path class="arrow" d="M1075 1764 L1275 1764 L1275 1846"/>
+  <text class="label" x="1125" y="1742">取消</text>
+  <rect class="discard" x="1010" y="1846" width="530" height="54" rx="20"/>
+  <text class="text" x="1275" y="1882">丢弃草稿，仅保留审计事件</text>
+</svg>

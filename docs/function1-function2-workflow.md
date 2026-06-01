@@ -4,13 +4,26 @@
 
 ## Function 1: Loan Matching
 
-1. The user enters loan-matching mode from the sidebar, the composer mode switch, or an in-chat CTA.
-2. ChatRaw creates or resumes an open F1 session through the 8081 business service. The current Settings language is used for the first visible question.
-3. F1 collects four required fields: cross-border scenario, annual turnover, financing purpose, and requested amount.
-4. Enum chips update the draft deterministically. Free-text answers are sent to the Qwen clarifier when a DashScope key is configured; numeric answers also have a deterministic parser.
-5. Clear Chinese or English free-text answers switch subsequent clarification questions to the user's language. Product codes and numeric-only replies retain the most recent clear language.
-6. Once the required profile is complete, F1 runs deterministic rules against the BOCHK official-source catalog and shows candidate product cards in the chat transcript.
-7. The user can edit the draft, rerun matching, save the confirmed SME profile, discard the session, or click `Prepare Documents` on a product card.
+![Function 1 loan-matching workflow](assets/function1-loan-matching-workflow.svg)
+
+```mermaid
+flowchart TD
+    A["聊天输入或左侧贷款匹配入口"] --> B["意图路由"]
+    B -->|"找贷款、申请融资、推荐产品"| C["展示 CTA"]
+    B -->|"政策解释类问题"| D["继续进入 Function 5 RAG"]
+    C --> E["创建匹配草稿 Session"]
+    E --> F["载入已确认企业画像，并合并可识别信息"]
+    F --> G["表单填写 + AI 逐轮澄清"]
+    G --> H{"四个必填字段完整？"}
+    H -->|"否"| I["最多澄清 3 次，仍缺失则停留草稿"]
+    H -->|"是"| J["Python 确定性筛选官方目录"]
+    J --> K["显示候选卡片、官方来源、待客户经理确认项"]
+    K --> L{"用户明确保存画像？"}
+    L -->|"保存"| M["写入 sme_profiles 长期画像"]
+    L -->|"取消"| N["丢弃草稿，仅保留审计事件"]
+```
+
+The four required fields are cross-border scenario, annual turnover, financing purpose, and requested amount. Enum chips update the draft deterministically. Free-text answers use the Qwen clarifier when configured, and visible clarification questions follow the user's Chinese or English input language.
 
 Data boundary: F1 owns its FastAPI service on 8081, SQLite database, Alembic migrations, session drafts, saved SME profiles, matching results, audit events, official catalog snapshot, and deterministic matching rules.
 
