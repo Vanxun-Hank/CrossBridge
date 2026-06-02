@@ -55,9 +55,11 @@ PDFJS_EXTRACT = {
     "package/build/pdf.worker.mjs": "build/pdf.worker.mjs",
     "package/web/pdf_viewer.mjs": "web/pdf_viewer.mjs",
     "package/web/pdf_viewer.css": "web/pdf_viewer.css",
-    # Node-only build used by scripts/check_official_forms_pdfjs.mjs (no DOM globals).
+    # Legacy module graph: used by the Safari-compatible browser viewer and the
+    # deploy-time Node checker. It carries PDF.js's own compatibility polyfills.
     "package/legacy/build/pdf.mjs": "legacy/build/pdf.mjs",
     "package/legacy/build/pdf.worker.mjs": "legacy/build/pdf.worker.mjs",
+    "package/legacy/web/pdf_viewer.mjs": "legacy/web/pdf_viewer.mjs",
 }
 # Directory members copied wholesale (member-prefix -> dest subdir)
 PDFJS_EXTRACT_DIRS = {
@@ -92,7 +94,15 @@ def _check_only() -> int:
         path = VENDOR_DIR / rel
         if not path.is_file() or _sha256_bytes(path.read_bytes()) != sha:
             problems.append(rel)
-    for required in ("build/pdf.mjs", "build/pdf.worker.mjs", "web/pdf_viewer.mjs", "web/pdf_viewer.css"):
+    for required in (
+        "build/pdf.mjs",
+        "build/pdf.worker.mjs",
+        "web/pdf_viewer.mjs",
+        "web/pdf_viewer.css",
+        "legacy/build/pdf.mjs",
+        "legacy/build/pdf.worker.mjs",
+        "legacy/web/pdf_viewer.mjs",
+    ):
         if not (PDFJS_DIR / required).is_file():
             problems.append(f"pdfjs/{required}")
     if not (PDFJS_DIR / "cmaps").is_dir():
@@ -140,32 +150,8 @@ def _install_pdfjs() -> None:
                 continue
             dest.write_bytes(src.read())
             extracted += 1
-    _patch_worker_sumprecise()
     (PDFJS_DIR / "VERSION").write_text(PDFJS_VERSION + "\n", encoding="utf-8")
     print(f"  installed pdfjs {PDFJS_VERSION} ({extracted} files) under {PDFJS_DIR.relative_to(ROOT)}")
-
-
-# PDF.js 5.x parses PDFs in a Web Worker that calls Math.sumPrecise (a 2025 API). Browsers
-# without it (Safari < 18.2, older Chromium) throw "Math.sumPrecise is not a function" inside
-# the worker realm — which the page's inline polyfill cannot reach. Prepend a minimal polyfill
-# to the worker so document loading works there too. (workerSrc carries a ?v cache-buster.)
-WORKER_POLYFILL_MARKER = "CrossBridge polyfills"
-WORKER_POLYFILL = (
-    f'/* {WORKER_POLYFILL_MARKER}: Promise.try + Math.sumPrecise (Safari<18.2/18.4, older Chromium) */ '
-    'if(typeof Promise.try!=="function"){Promise.try=function(fn){var a=Array.prototype.slice.call(arguments,1);'
-    'return new Promise(function(res){res(fn.apply(null,a));});};} '
-    'if(typeof Math.sumPrecise!=="function"){Math.sumPrecise=function(values){'
-    'let s=0;for(const v of values)s+=Number(v);return s;};}\n'
-)
-
-
-def _patch_worker_sumprecise() -> None:
-    worker = PDFJS_DIR / "build" / "pdf.worker.mjs"
-    text = worker.read_text(encoding="utf-8")
-    if WORKER_POLYFILL_MARKER in text:
-        return
-    worker.write_text(WORKER_POLYFILL + text, encoding="utf-8")
-    print("  patched pdf.worker.mjs with Math.sumPrecise polyfill")
 
 
 def main() -> int:

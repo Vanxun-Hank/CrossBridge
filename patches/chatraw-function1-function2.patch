@@ -5985,7 +5985,7 @@ index 59132a0..2fb81a4 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..07854e5 100644
+index 370c42e..a60d38d 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -5996,8 +5996,8 @@ index 370c42e..07854e5 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev13" as="style">
-+    <link rel="preload" href="app.js?v=cbdev13" as="script">
++    <link rel="preload" href="styles.css?v=cbdev17" as="style">
++    <link rel="preload" href="app.js?v=cbdev17" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6016,7 +6016,7 @@ index 370c42e..07854e5 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev13">
++    <link rel="stylesheet" href="styles.css?v=cbdev17">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6787,7 +6787,7 @@ index 370c42e..07854e5 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev13" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev17" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -6825,7 +6825,7 @@ index 370c42e..07854e5 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev13"></script>
++    <script src="app.js?v=cbdev17"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -6884,10 +6884,10 @@ index 0000000..2cf5eb2
 +}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..5209e6d
+index 0000000..7952cde
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,19 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +<head>
@@ -6896,42 +6896,23 @@ index 0000000..5209e6d
 +    <title>Official Form Viewer</title>
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
-+    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev13">
-+    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev13">
-+    <script>
-+      // PDF.js 5.x calls 2024/2025 APIs (Promise.try, Math.sumPrecise) that Safari < 18.2/18.4
-+      // and older Chromium lack. Define minimal polyfills BEFORE the deferred module loads so
-+      // getDocument() doesn't throw (which left the viewer a silent blank panel). The worker
-+      // realm is polyfilled separately inside pdf.worker.mjs.
-+      if (typeof Promise.try !== "function") {
-+        Promise.try = function (fn) {
-+          const args = Array.prototype.slice.call(arguments, 1);
-+          return new Promise(function (resolve) { resolve(fn.apply(null, args)); });
-+        };
-+      }
-+      if (typeof Math.sumPrecise !== "function") {
-+        Math.sumPrecise = function (values) {
-+          let sum = 0;
-+          for (const value of values) sum += Number(value);
-+          return sum;
-+        };
-+      }
-+    </script>
++    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev17">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev17">
 +</head>
 +<body>
 +    <div id="status" class="ofv-status" role="status" aria-live="polite"></div>
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js?v=cbdev13"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev17"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..1f025a5
+index 0000000..49501e3
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
-@@ -0,0 +1,219 @@
+@@ -0,0 +1,261 @@
 +// Sandboxed viewer for genuine BOCHK official AcroForm PDFs.
 +//
 +// Contract with the parent workbench (same-origin only):
@@ -6942,8 +6923,8 @@ index 0000000..1f025a5
 +// in pdfDocument.annotationStorage, and export/print via saveDocument() — no flattening,
 +// no coordinate overlays, no remote URLs. Internal annotation ids never leave the viewer;
 +// only registry-known AcroForm field NAMES are sent to the parent.
-+import * as pdfjsLib from "./vendor/pdfjs/build/pdf.mjs";
-+import { EventBus, PDFLinkService, PDFViewer } from "./vendor/pdfjs/web/pdf_viewer.mjs";
++import * as pdfjsLib from "./vendor/pdfjs/legacy/build/pdf.mjs";
++import { EventBus, PDFLinkService, PDFViewer } from "./vendor/pdfjs/legacy/web/pdf_viewer.mjs";
 +
 +// Absolute base URL (resolved against THIS module's URL). Must be absolute so the
 +// worker/cmap/font URLs resolve correctly on BOTH paths: Chromium's real module worker
@@ -6951,8 +6932,8 @@ index 0000000..1f025a5
 +// relative to pdf.mjs — a relative value there doubled the path (/vendor/.../build/
 +// vendor/.../build/pdf.worker.mjs -> 404) and broke the viewer in Safari.
 +const VENDOR = new URL("./vendor/pdfjs/", import.meta.url).href;
-+// ?v bust: the worker file is patched with a Math.sumPrecise polyfill for its own realm.
-+pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "build/pdf.worker.mjs?v=cbdev13";
++// Use PDF.js's official legacy worker so Safari gets the matching compatibility layer.
++pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "legacy/build/pdf.worker.mjs?v=cbdev17";
 +
 +const PARENT_ORIGIN = window.location.origin;
 +const DRAFT_DEBOUNCE_MS = 500;
@@ -6970,6 +6951,22 @@ index 0000000..1f025a5
 +});
 +linkService.setViewer(pdfViewer);
 +
++// Re-apply page-width scaling whenever the container gains a real (non-zero) width.
++// If pagesinit runs while the panel/iframe is momentarily 0-width (Alpine x-show layout
++// race), "page-width" computes a negative scale and pages render at 0x0 (a blank viewer
++// with no error). This observer recovers as soon as the container has a usable width, and
++// also keeps the form fit-to-width when the document panel is resized.
++const scaleObserver = new ResizeObserver(() => {
++    if (pdfDocument && container.clientWidth > 0) {
++        try {
++            pdfViewer.currentScaleValue = "page-width";
++        } catch (_) {
++            /* viewer not ready yet */
++        }
++    }
++});
++scaleObserver.observe(container);
++
 +let pdfDocument = null;
 +let idToName = new Map(); // annotation element id -> AcroForm field name
 +let nameToIds = new Map(); // AcroForm field name -> [annotation element ids]
@@ -6982,6 +6979,21 @@ index 0000000..1f025a5
 +function setStatus(message) {
 +    statusEl.textContent = message || "";
 +    statusEl.style.display = message ? "block" : "none";
++}
++
++// Resolve once the container has a real (non-zero) width. The iframe boots while its
++// parent panel is still display:none (Alpine x-show), so rendering a cached PDF can reach
++// pagesinit before layout — yielding a negative "page-width" scale and a blank page.
++// Waiting here makes the initial fit deterministic instead of relying on a later resize.
++function waitForContainerWidth() {
++    return new Promise((resolve) => {
++        let tries = 0;
++        const check = () => {
++            if (container.clientWidth > 0 || tries++ > 180) resolve();
++            else requestAnimationFrame(check);
++        };
++        check();
++    });
 +}
 +
 +// Surface any uncaught failure to the parent (and on-screen) so a broken viewer is never
@@ -7000,6 +7012,14 @@ index 0000000..1f025a5
 +
 +eventBus.on("pagesinit", () => {
 +    pdfViewer.currentScaleValue = "page-width";
++    // Re-apply on the next frame: on first paint the container can still be mid-layout
++    // (0-width), which yields a negative scale and a blank page. This + the ResizeObserver
++    // make the initial fit deterministic across browsers (incl. Safari).
++    requestAnimationFrame(() => {
++        if (container.clientWidth > 0) {
++            pdfViewer.currentScaleValue = "page-width";
++        }
++    });
 +});
 +
 +async function loadDraft({ pdfUrl, values }) {
@@ -7041,6 +7061,9 @@ index 0000000..1f025a5
 +            }
 +        }
 +
++        // Render only once the container is laid out, so the initial page-width scale is
++        // computed against a real width (never a 0-width -> negative-scale -> blank page).
++        await waitForContainerWidth();
 +        linkService.setDocument(pdfDocument, null);
 +        pdfViewer.setDocument(pdfDocument);
 +        setStatus("");
