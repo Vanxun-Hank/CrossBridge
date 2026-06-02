@@ -5985,7 +5985,7 @@ index 59132a0..2fb81a4 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..a60d38d 100644
+index 370c42e..563f383 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -5996,8 +5996,8 @@ index 370c42e..a60d38d 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev17" as="style">
-+    <link rel="preload" href="app.js?v=cbdev17" as="script">
++    <link rel="preload" href="styles.css?v=cbdev18" as="style">
++    <link rel="preload" href="app.js?v=cbdev18" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6016,7 +6016,7 @@ index 370c42e..a60d38d 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev17">
++    <link rel="stylesheet" href="styles.css?v=cbdev18">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6787,7 +6787,7 @@ index 370c42e..a60d38d 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev17" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev18" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -6825,7 +6825,7 @@ index 370c42e..a60d38d 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev17"></script>
++    <script src="app.js?v=cbdev18"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -6884,7 +6884,7 @@ index 0000000..2cf5eb2
 +}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..7952cde
+index 0000000..b9b0410
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
 @@ -0,0 +1,19 @@
@@ -6896,23 +6896,23 @@ index 0000000..7952cde
 +    <title>Official Form Viewer</title>
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
-+    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev17">
-+    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev17">
++    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev18">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev18">
 +</head>
 +<body>
 +    <div id="status" class="ofv-status" role="status" aria-live="polite"></div>
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js?v=cbdev17"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev18"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..49501e3
+index 0000000..3dde812
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,272 @@
 +// Sandboxed viewer for genuine BOCHK official AcroForm PDFs.
 +//
 +// Contract with the parent workbench (same-origin only):
@@ -6933,7 +6933,7 @@ index 0000000..49501e3
 +// vendor/.../build/pdf.worker.mjs -> 404) and broke the viewer in Safari.
 +const VENDOR = new URL("./vendor/pdfjs/", import.meta.url).href;
 +// Use PDF.js's official legacy worker so Safari gets the matching compatibility layer.
-+pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "legacy/build/pdf.worker.mjs?v=cbdev17";
++pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + "legacy/build/pdf.worker.mjs?v=cbdev18";
 +
 +const PARENT_ORIGIN = window.location.origin;
 +const DRAFT_DEBOUNCE_MS = 500;
@@ -7076,12 +7076,23 @@ index 0000000..49501e3
 +
 +function collectValues() {
 +    if (!pdfDocument) return {};
-+    const all = pdfDocument.annotationStorage.getAll() || {};
++    // The (legacy) build's annotationStorage has no getAll(); read each known field by id
++    // via getValue(). idToName was populated from getFieldObjects() at load time.
++    const storage = pdfDocument.annotationStorage;
 +    const out = {};
-+    for (const [id, entry] of Object.entries(all)) {
-+        const name = idToName.get(id);
-+        if (!name || !entry || !("value" in entry)) continue;
-+        out[name] = entry.value;
++    for (const [id, name] of idToName) {
++        let entry = null;
++        try {
++            entry = storage.getValue(id, null);
++        } catch (_) {
++            entry = null;
++        }
++        if (entry && typeof entry === "object" && "value" in entry) {
++            const value = entry.value;
++            if (value !== undefined && value !== null && value !== "") {
++                out[name] = value;
++            }
++        }
 +    }
 +    return out;
 +}
