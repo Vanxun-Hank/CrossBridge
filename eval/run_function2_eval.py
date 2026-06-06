@@ -23,6 +23,7 @@ from fastapi.testclient import TestClient
 
 from server.document_preparation.app import create_app
 from server.document_preparation import catalog as catalog_module
+from server.document_preparation import official_forms as official_forms_module
 from server.document_preparation.catalog import build_catalog
 from server.document_preparation.db import build_engine, build_session_factory, run_migrations
 from server.document_preparation.models import DocumentAuditEvent
@@ -190,6 +191,11 @@ def run_checks() -> Checks:
     with tempfile.TemporaryDirectory() as temp_dir:
         db_path = Path(temp_dir) / "f2.db"
         database_url = f"sqlite:///{db_path}"
+        # Keep this API test hermetic even when a developer has populated the real
+        # gitignored cache for browser testing. The ready-cache path is exercised by
+        # scripts/check_official_forms_pdfjs.mjs against the genuine local PDFs.
+        original_form_cache_dir = official_forms_module.FORM_CACHE_DIR
+        official_forms_module.FORM_CACHE_DIR = Path(temp_dir) / "missing-official-forms"
         run_migrations(database_url)
         app = create_app(database_url=database_url, migrate_on_startup=False)
         with TestClient(app) as client:
@@ -464,11 +470,122 @@ def run_checks() -> Checks:
                 json.dumps(exp_forms),
             )
 
+            # ---- submission-readiness (Function 3 submit gate; F2 is the source of truth) ----
+            rp = client.post(
+                f"{API}/packages",
+                json={"sme_id": "demo_ready_001", "scenario_code": "import_payment"},
+            ).json()
+            rpid = rp["id"]
+            tt_bind = next(
+                f["validation_bindings"]
+                for f in rp["official_forms"]
+                if f["form_id"] == "tt_remittance"
+            )
+
+            def _readiness(pkg_id: str = rpid) -> dict:
+                return client.get(f"{API}/packages/{pkg_id}/submission-readiness").json()
+
+            empty = _readiness()
+            empty_codes = {b["code"] for b in empty["blocking"]}
+            result.check(
+                "readiness: empty package is not ready (core_fields + charge_bearer block)",
+                empty["ready"] is False
+                and "core_fields" in empty_codes
+                and "charge_bearer" in empty_codes,
+                json.dumps(empty["blocking"]),
+            )
+
+            good_values = {
+                tt_bind["swift_bic"]: "HSBCHKHH",
+                tt_bind["beneficiary_account_name"]: "ACME LTD",
+                tt_bind["payment_amount"]: "1000",
+                tt_bind["payment_currency"]: "USD",
+                tt_bind["charge_bearer"]: "OUR",
+            }
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={"values": good_values},
+            )
+            ready = _readiness()
+            result.check(
+                "readiness: complete consistent form is ready to submit",
+                ready["ready"] is True and ready["blocking"] == [],
+                json.dumps(ready),
+            )
+            result.check(
+                "readiness: unaccepted trade terms surface as a non-blocking warning",
+                any(w["code"] == "trade_terms" for w in ready["warnings"]),
+                json.dumps(ready["warnings"]),
+            )
+
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={"values": dict(good_values, **{tt_bind["swift_bic"]: "BAD"})},
+            )
+            r_bic = _readiness()
+            result.check(
+                "readiness: malformed SWIFT/BIC blocks submission",
+                r_bic["ready"] is False
+                and any(b["code"] == "swift_bic" for b in r_bic["blocking"]),
+                json.dumps(r_bic["blocking"]),
+            )
+
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={
+                    "values": dict(
+                        good_values, **{tt_bind["charge_bearer"]: "PENDING_CONFIRMATION"}
+                    )
+                },
+            )
+            r_cb = _readiness()
+            result.check(
+                "readiness: pending charge bearer blocks submission",
+                r_cb["ready"] is False
+                and any(b["code"] == "charge_bearer" for b in r_cb["blocking"]),
+                json.dumps(r_cb["blocking"]),
+            )
+
+            # published product materials: an overlay with unchecked required items blocks.
+            overlays = client.get(f"{API}/catalog").json()["product_overlays"]
+            import_overlay = next(
+                ov
+                for ov in overlays.values()
+                if "import_payment" in ov.get("scenarios", []) and ov.get("checklist_items")
+            )
+            pub = client.post(
+                f"{API}/packages",
+                json={
+                    "sme_id": "demo_ready_002",
+                    "scenario_code": "import_payment",
+                    "selected_product_id": import_overlay["product_id"],
+                },
+            ).json()
+            pub_id = pub["id"]
+            pub_before = {b["code"] for b in _readiness(pub_id)["blocking"]}
+            result.check(
+                "readiness: unchecked published product materials block submission",
+                "published_documents" in pub_before,
+                json.dumps(sorted(pub_before)),
+            )
+            for item in pub["product_overlay"]["checklist_items"]:
+                client.patch(
+                    f"{API}/packages/{pub_id}/checklist",
+                    json={"item_code": item["code"], "checked": True},
+                )
+            pub_after = {b["code"] for b in _readiness(pub_id)["blocking"]}
+            result.check(
+                "readiness: checking all published materials clears that block",
+                "published_documents" not in pub_after,
+                json.dumps(sorted(pub_after)),
+            )
+
             unknown = client.post(
                 f"{API}/packages",
                 json={"sme_id": "demo_sme_003", "scenario_code": "import_payment"},
             )
             result.check("unrelated SME gets its own package", unknown.json()["id"] != pid)
+        official_forms_module.FORM_CACHE_DIR = original_form_cache_dir
 
         engine = build_engine(database_url)
         session = build_session_factory(engine)()

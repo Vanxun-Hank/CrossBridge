@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -65,6 +66,31 @@ def _audit(
             created_at=utcnow(),
         )
     )
+
+
+# ---- submission-readiness (server-side mirror of the frontend runDocValidation) ----
+# SWIFT/BIC is 8 or 11 letters/digits; same rule the client applied to the active form.
+_BIC_RE = re.compile(r"^[A-Z0-9]{8}([A-Z0-9]{3})?$", re.IGNORECASE)
+# Core fields that, when mapped to an official form, must be present before submitting.
+_CORE_REQUIRED_CODES = [
+    "swift_bic",
+    "payment_amount",
+    "payment_currency",
+    "beneficiary_account_name",
+]
+
+
+def _normalize(raw: Any) -> str:
+    """Match the client's normalization: drop spaces/commas, upper-case."""
+    return re.sub(r"[,\s]", "", str(raw or "")).upper()
+
+
+def _field_get(bindings: dict[str, Any], vals: dict[str, Any], code: str) -> str:
+    """Value of the AcroForm field bound to ``code`` on this form (or "")."""
+    name = bindings.get(code)
+    if not name:
+        return ""
+    return str(vals.get(name, "") or "").strip()
 
 
 def create_app(
@@ -265,6 +291,7 @@ def create_app(
             "scenario_label_en": scenario["label_en"],
             "selected_product_id": package.selected_product_id,
             "origin_matching_session_id": package.origin_matching_session_id,
+            "saved_draft_id": package.saved_draft_id,
             "status": package.status,
             "checklist": _checklist_with_state(scenario, states),
             "product_overlay": _overlay_with_state(overlay, states),
@@ -280,6 +307,129 @@ def create_app(
             "catalog_note_zh": cat.get("note_zh", ""),
             "catalog_note_en": cat.get("note_en", ""),
         }
+
+    def _submission_readiness(db: Session, package: DocumentPackage) -> dict[str, Any]:
+        """Whether the package is ready to submit as a loan application (Function 3).
+
+        Single source of truth: the same high-trust checks the client ran on the active
+        official form (``runDocValidation``), now applied server-side across *every*
+        applicable form. ``blocking`` items prevent submission; ``warnings`` do not. The
+        result shape mirrors the client's validation warnings so the UI can reuse its
+        ``docValidationMessage`` renderer.
+        """
+        cat = catalog()
+        scenario = get_scenario(cat, package.scenario_code)
+        if scenario is None:
+            raise HTTPException(status_code=500, detail="scenario not found in catalog")
+
+        state_rows = db.scalars(
+            select(DocumentChecklistState).where(
+                DocumentChecklistState.package_id == package.id
+            )
+        ).all()
+        states = {row.item_code: row.checked for row in state_rows}
+        overlay = _validate_product_for_scenario(
+            cat, package.selected_product_id, package.scenario_code
+        )
+        overlay_state = _overlay_with_state(overlay, states)
+
+        reg = form_registry()
+        forms = forms_for_package(
+            reg,
+            scenario_code=package.scenario_code,
+            selected_product_id=package.selected_product_id,
+        )
+        draft_rows = db.scalars(
+            select(DocumentOfficialFormDraft).where(
+                DocumentOfficialFormDraft.package_id == package.id
+            )
+        ).all()
+        values_by_key = {
+            (row.form_id, row.source_sha256): json.loads(row.values_json or "{}")
+            for row in draft_rows
+        }
+
+        blocking_codes: set[str] = set()
+        core_bound: set[str] = set()
+        core_present: set[str] = set()
+
+        for form in forms:
+            bindings = form.get("validation_bindings", {}) or {}
+            vals = values_by_key.get((form["form_id"], form["source_sha256"]), {})
+
+            swift = _field_get(bindings, vals, "swift_bic")
+            if bindings.get("swift_bic") and swift and not _BIC_RE.match(swift):
+                blocking_codes.add("swift_bic")
+
+            supplier = _field_get(bindings, vals, "supplier_name")
+            beneficiary = _field_get(bindings, vals, "beneficiary_account_name")
+            if (
+                bindings.get("supplier_name")
+                and bindings.get("beneficiary_account_name")
+                and supplier
+                and beneficiary
+                and _normalize(supplier) != _normalize(beneficiary)
+            ):
+                blocking_codes.add("beneficiary_name")
+
+            inv_amt = _field_get(bindings, vals, "invoice_amount")
+            pay_amt = _field_get(bindings, vals, "payment_amount")
+            inv_cur = _field_get(bindings, vals, "invoice_currency")
+            pay_cur = _field_get(bindings, vals, "payment_currency")
+            amount_mismatch = (
+                bindings.get("invoice_amount")
+                and bindings.get("payment_amount")
+                and inv_amt
+                and pay_amt
+                and _normalize(inv_amt) != _normalize(pay_amt)
+            )
+            currency_mismatch = (
+                bindings.get("invoice_currency")
+                and bindings.get("payment_currency")
+                and inv_cur
+                and pay_cur
+                and _normalize(inv_cur) != _normalize(pay_cur)
+            )
+            if amount_mismatch or currency_mismatch:
+                blocking_codes.add("invoice_payment")
+
+            charge = _field_get(bindings, vals, "charge_bearer")
+            if (
+                package.scenario_code == "import_payment"
+                and bindings.get("charge_bearer")
+                and (not charge or charge == "PENDING_CONFIRMATION")
+            ):
+                blocking_codes.add("charge_bearer")
+
+            for code in _CORE_REQUIRED_CODES:
+                if bindings.get(code):
+                    core_bound.add(code)
+                    if _field_get(bindings, vals, code):
+                        core_present.add(code)
+
+        # Core fields newly enforced at submit (the client never blocked on completeness):
+        # a code mapped to some form but left empty everywhere blocks submission.
+        missing_core = [c for c in _CORE_REQUIRED_CODES if c in core_bound and c not in core_present]
+        if overlay_state and any(
+            not item.get("checked") for item in overlay_state.get("checklist_items", [])
+        ):
+            blocking_codes.add("published_documents")
+
+        blocking: list[dict[str, Any]] = []
+        if missing_core:
+            blocking.append({"code": "core_fields", "fields": missing_core})
+        for code in ("swift_bic", "beneficiary_name", "invoice_payment", "charge_bearer", "published_documents"):
+            if code in blocking_codes:
+                blocking.append({"code": code})
+
+        warnings: list[dict[str, Any]] = []
+        terms_sha = _current_terms_sha()
+        if any(f.get("trade_terms_required") for f in forms) and not _trade_terms_accepted(
+            db, package.sme_id, terms_sha
+        ):
+            warnings.append({"code": "trade_terms"})
+
+        return {"ready": len(blocking) == 0, "blocking": blocking, "warnings": warnings}
 
     def _get_package_or_404(db: Session, package_id: str) -> DocumentPackage:
         package = db.get(DocumentPackage, package_id)
@@ -317,13 +467,21 @@ def create_app(
             cat, request.selected_product_id, request.scenario_code
         )
 
-        # Resume an existing active package for the same SME + scenario, else create.
-        existing = db.scalars(
+        # One document package per Function 1 saved draft (true one-to-one). With a
+        # saved_draft_id, resume/keep that draft's package; without one (legacy candidate-card
+        # entry) fall back to the per-scenario package that has no saved-draft link.
+        query = (
             select(DocumentPackage)
             .where(DocumentPackage.sme_id == request.sme_id)
-            .where(DocumentPackage.scenario_code == request.scenario_code)
             .where(DocumentPackage.status == "active")
-        ).first()
+        )
+        if request.saved_draft_id is not None:
+            query = query.where(DocumentPackage.saved_draft_id == request.saved_draft_id)
+        else:
+            query = query.where(
+                DocumentPackage.scenario_code == request.scenario_code
+            ).where(DocumentPackage.saved_draft_id.is_(None))
+        existing = db.scalars(query).first()
 
         if existing is not None:
             resumed = True
@@ -332,6 +490,8 @@ def create_app(
                 package.selected_product_id = request.selected_product_id
             if request.origin_matching_session_id is not None:
                 package.origin_matching_session_id = request.origin_matching_session_id
+            if request.saved_draft_id is not None and package.saved_draft_id is None:
+                package.saved_draft_id = request.saved_draft_id
             package.catalog_version = cat["catalog_version"]
             package.updated_at = utcnow()
         else:
@@ -343,6 +503,7 @@ def create_app(
                 catalog_version=cat["catalog_version"],
                 selected_product_id=request.selected_product_id,
                 origin_matching_session_id=request.origin_matching_session_id,
+                saved_draft_id=request.saved_draft_id,
                 status="active",
                 created_at=utcnow(),
                 updated_at=utcnow(),
@@ -369,6 +530,13 @@ def create_app(
     @app.get(f"{API_PREFIX}/packages/{{package_id}}")
     def read_package(package_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
         return _serialize_package(db, _get_package_or_404(db, package_id))
+
+    @app.get(f"{API_PREFIX}/packages/{{package_id}}/submission-readiness")
+    def read_submission_readiness(
+        package_id: str, db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        # Source of truth for Function 3's "submit application" gate.
+        return _submission_readiness(db, _get_package_or_404(db, package_id))
 
     @app.patch(f"{API_PREFIX}/packages/{{package_id}}/product")
     def update_product(
@@ -635,6 +803,69 @@ def create_app(
         )
         db.commit()
         return {"status": "ok"}
+
+    def _serialize_package_summary(db: Session, package: DocumentPackage) -> dict[str, Any]:
+        cat = catalog()
+        scenario = get_scenario(cat, package.scenario_code)
+        state_rows = db.scalars(
+            select(DocumentChecklistState).where(
+                DocumentChecklistState.package_id == package.id
+            )
+        ).all()
+        states = {row.item_code: row.checked for row in state_rows}
+        total = done = 0
+        if scenario is not None:
+            for group in scenario["checklist"].values():
+                for item in group["items"]:
+                    total += 1
+                    if states.get(item["code"], False):
+                        done += 1
+        return {
+            "id": package.id,
+            "sme_id": package.sme_id,
+            "scenario_code": package.scenario_code,
+            "scenario_label_zh": scenario["label_zh"] if scenario else package.scenario_code,
+            "scenario_label_en": scenario["label_en"] if scenario else package.scenario_code,
+            "selected_product_id": package.selected_product_id,
+            "saved_draft_id": package.saved_draft_id,
+            "origin_matching_session_id": package.origin_matching_session_id,
+            "status": package.status,
+            "checklist_done": done,
+            "checklist_total": total,
+            "created_at": package.created_at.isoformat() if package.created_at else None,
+            "updated_at": package.updated_at.isoformat() if package.updated_at else None,
+        }
+
+    @app.get(f"{API_PREFIX}/packages")
+    def list_packages(
+        sme_id: str = "demo_sme_001", db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        rows = db.scalars(
+            select(DocumentPackage)
+            .where(DocumentPackage.sme_id == sme_id)
+            .where(DocumentPackage.status == "active")
+            .order_by(DocumentPackage.updated_at.desc())
+        ).all()
+        return {
+            "sme_id": sme_id,
+            "packages": [_serialize_package_summary(db, package) for package in rows],
+        }
+
+    @app.delete(f"{API_PREFIX}/packages/{{package_id}}")
+    def delete_package(package_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+        package = db.get(DocumentPackage, package_id)
+        if package is not None:
+            package.status = "deleted"
+            package.updated_at = utcnow()
+            _audit(
+                db,
+                sme_id=package.sme_id,
+                package_id=package.id,
+                event_type="document_package_deleted",
+                payload={},
+            )
+            db.commit()
+        return {"deleted": True, "package_id": package_id}
 
     return app
 

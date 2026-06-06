@@ -1,6 +1,6 @@
 [Unit]
 Description=CrossBridge AI - ChatRaw UI
-After=network-online.target crossbridge-fastapi.service crossbridge-business.service crossbridge-documents.service
+After=network-online.target crossbridge-fastapi.service crossbridge-business.service crossbridge-documents.service crossbridge-timeline.service
 Wants=network-online.target
 
 [Service]
