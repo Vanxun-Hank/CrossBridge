@@ -1,5 +1,5 @@
 diff --git a/backend/main.py b/backend/main.py
-index 79e7920..37ce34c 100644
+index 79e7920..c7180b1 100644
 --- a/backend/main.py
 +++ b/backend/main.py
 @@ -82,7 +82,7 @@ def setup_logging():
@@ -172,7 +172,7 @@ index 79e7920..37ce34c 100644
                  yield chunk + "\n"
          
          return StreamingResponse(
-@@ -1892,9 +1919,73 @@ async def chat(request: Request):
+@@ -1892,9 +1919,127 @@ async def chat(request: Request):
          )
      else:
          # Non-streaming response
@@ -180,6 +180,47 @@ index 79e7920..37ce34c 100644
 +        result = await llm_service.chat_non_stream(chat_id, message, use_rag, use_thinking, image_base64, web_content, web_url, ui_language)
          return {"chat_id": chat_id, "content": result["content"], "thinking": result.get("thinking", ""), "references": result["references"]}
  
++# A just-restarted upstream leaves stale keep-alive connections in the shared aiohttp pool;
++# the first reuse fails with ServerDisconnectedError/ClientOSError. Retry once on those so an
++# upstream restart doesn't surface to users as a 502 (the cause of the saved-drafts 502).
++_PROXY_STALE_ERRORS = (
++    aiohttp.ServerDisconnectedError,
++    aiohttp.ClientConnectorError,
++    aiohttp.ClientOSError,
++)
++
++
++async def _proxy_pass(target_url: str, request: Request, *, unavailable_msg: str):
++    body = await request.body()
++    headers = {"Content-Type": request.headers.get("content-type", "application/json")}
++    last_exc = None
++    for attempt in range(2):
++        try:
++            session = await get_http_session()
++            async with session.request(
++                request.method,
++                target_url,
++                data=body,
++                headers=headers,
++                timeout=aiohttp.ClientTimeout(total=30),
++            ) as resp:
++                content = await resp.read()
++                return Response(
++                    content=content,
++                    status_code=resp.status,
++                    media_type=resp.headers.get("Content-Type", "application/json"),
++                )
++        except _PROXY_STALE_ERRORS as e:
++            last_exc = e
++            logger.warning("CrossBridge proxy stale-connection retry %d/2 (%s): %s", attempt + 1, target_url, e)
++            continue
++        except aiohttp.ClientError as e:
++            last_exc = e
++            break
++    logger.error("CrossBridge proxy failed (%s): %s", target_url, last_exc)
++    return JSONResponse({"error": unavailable_msg}, status_code=502)
++
++
 +@app.api_route("/api/crossbridge/{path:path}", methods=["GET", "POST", "PATCH", "DELETE"])
 +async def proxy_crossbridge_business_api(path: str, request: Request):
 +    """Proxy only the fixed local CrossBridge business service; callers cannot choose a target."""
@@ -187,28 +228,9 @@ index 79e7920..37ce34c 100644
 +    target_url = f"{base_url}/crossbridge/{path}"
 +    if request.url.query:
 +        target_url += f"?{request.url.query}"
-+    headers = {"Content-Type": request.headers.get("content-type", "application/json")}
-+    try:
-+        session = await get_http_session()
-+        async with session.request(
-+            request.method,
-+            target_url,
-+            data=await request.body(),
-+            headers=headers,
-+            timeout=aiohttp.ClientTimeout(total=30),
-+        ) as resp:
-+            content = await resp.read()
-+            return Response(
-+                content=content,
-+                status_code=resp.status,
-+                media_type=resp.headers.get("Content-Type", "application/json"),
-+            )
-+    except aiohttp.ClientError as e:
-+        logger.error("CrossBridge business proxy failed: %s", e)
-+        return JSONResponse(
-+            {"error": "CrossBridge business service is unavailable"},
-+            status_code=502,
-+        )
++    return await _proxy_pass(
++        target_url, request, unavailable_msg="CrossBridge business service is unavailable"
++    )
 +
 +@app.api_route("/api/crossbridge-documents/{path:path}", methods=["GET", "POST", "PATCH", "DELETE"])
 +async def proxy_crossbridge_documents_api(path: str, request: Request):
@@ -221,34 +243,66 @@ index 79e7920..37ce34c 100644
 +    target_url = f"{base_url}/crossbridge-documents/{path}"
 +    if request.url.query:
 +        target_url += f"?{request.url.query}"
-+    headers = {"Content-Type": request.headers.get("content-type", "application/json")}
-+    try:
-+        session = await get_http_session()
-+        async with session.request(
-+            request.method,
-+            target_url,
-+            data=await request.body(),
-+            headers=headers,
-+            timeout=aiohttp.ClientTimeout(total=30),
-+        ) as resp:
-+            content = await resp.read()
-+            return Response(
-+                content=content,
-+                status_code=resp.status,
-+                media_type=resp.headers.get("Content-Type", "application/json"),
-+            )
-+    except aiohttp.ClientError as e:
-+        logger.error("CrossBridge documents proxy failed: %s", e)
-+        return JSONResponse(
-+            {"error": "CrossBridge documents service is unavailable"},
-+            status_code=502,
-+        )
++    return await _proxy_pass(
++        target_url, request, unavailable_msg="CrossBridge documents service is unavailable"
++    )
++
++# NOTE: this streaming route is declared BEFORE the catch-all timeline proxy below so it
++# wins route matching for GET /api/crossbridge-timeline/v1/events (the catch-all would
++# otherwise capture it and buffer the SSE stream).
++@app.get("/api/crossbridge-timeline/v1/events")
++async def proxy_crossbridge_timeline_events(request: Request):
++    """Stream the Function 3 SSE timeline feed to the SME without buffering.
++
++    The generic CrossBridge proxy buffers the whole response (``await resp.read()``),
++    which would stall an SSE stream forever. This dedicated route forwards chunks as
++    they arrive and sets ``X-Accel-Buffering: no`` so nginx does not buffer it either —
++    letting the SME's EventSource use one same-origin URL in both dev and prod.
++    """
++    base_url = os.environ.get("CROSSBRIDGE_TIMELINE_API_URL", "http://127.0.0.1:8083").rstrip("/")
++    target_url = f"{base_url}/crossbridge-timeline/v1/events"
++    if request.url.query:
++        target_url += f"?{request.url.query}"
++
++    async def event_stream():
++        try:
++            session = await get_http_session()
++            async with session.get(
++                target_url, timeout=aiohttp.ClientTimeout(total=None, sock_read=None)
++            ) as resp:
++                async for chunk in resp.content.iter_any():
++                    yield chunk
++        except aiohttp.ClientError as e:
++            logger.warning("CrossBridge timeline SSE proxy ended (%s): %s", target_url, e)
++            return
++
++    return StreamingResponse(
++        event_stream(),
++        media_type="text/event-stream",
++        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
++    )
++
++@app.api_route("/api/crossbridge-timeline/{path:path}", methods=["GET", "POST", "PATCH", "DELETE"])
++async def proxy_crossbridge_timeline_api(path: str, request: Request):
++    """Proxy only the fixed local CrossBridge application-timeline service (Function 3).
++
++    Parallel to the F1/F2 proxies; callers cannot choose a target. Fixed target is the
++    F3 FastAPI service on port 8083. SSE has the dedicated streaming route above; normal
++    reads/writes (create / list / get applications) use this buffered proxy.
++    """
++    base_url = os.environ.get("CROSSBRIDGE_TIMELINE_API_URL", "http://127.0.0.1:8083").rstrip("/")
++    target_url = f"{base_url}/crossbridge-timeline/{path}"
++    if request.url.query:
++        target_url += f"?{request.url.query}"
++    return await _proxy_pass(
++        target_url, request, unavailable_msg="CrossBridge timeline service is unavailable"
++    )
 +
  @app.get("/api/documents")
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..5b507cc 100644
+index 17f8244..748aec3 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -259,7 +313,7 @@ index 17f8244..5b507cc 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,197 @@ const i18n = {
+@@ -182,7 +183,252 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -268,9 +322,31 @@ index 17f8244..5b507cc 100644
 +        // CrossBridge Function 1
 +        cbBusinessServices: 'Business Services',
 +        cbLoanMatching: 'Loan Matching',
++        cbLoanMatchingNav: 'Loan Matching',
++        cbSavedDraftsTitle: 'My Saved Drafts',
++        cbSavedDraftsSubtitle: 'Saved SME profiles and the products you selected.',
++        cbNewBlankDraft: 'New blank draft',
++        cbSavedDraftsEmpty: 'No saved drafts yet. Start a new draft, match products, then "Confirm and Save".',
++        cbDraftOpen: 'Open',
++        cbDraftDelete: 'Delete',
++        cbDraftConfirmDelete: 'Delete this saved draft?',
++        cbDraftSelectedProducts: 'Selected products',
++        cbDraftNoSelection: 'No product selected',
++        cbDraftSavedToast: 'Draft saved.',
++        cbDraftMatchedCount: 'candidates',
++        cbSelectProduct: 'Select',
++        cbSelectedProduct: 'Selected',
 +        // CrossBridge Function 2
 +        cbDocPrepNav: 'Document Preparation',
 +        cbPrepareDocuments: 'Prepare Documents',
++        cbDocDraftsTitle: 'My Document Drafts',
++        cbDocDraftsSubtitle: 'One document draft per saved loan-matching draft.',
++        cbDocDraftsEmpty: 'No document drafts yet. Open a saved loan draft and tap "Prepare Documents".',
++        cbDocChecklistProgress: 'Checklist',
++        cbDocDraftFor: 'For loan draft',
++        cbDocDraftOpen: 'Open',
++        cbDocDraftDelete: 'Delete',
++        cbDocDraftConfirmDelete: 'Delete this document draft?',
 +        cbDocPanelTitle: 'Document Preparation Workbench',
 +        cbDocScenario: 'Scenario',
 +        cbDocScenarioImport: 'Import Payment',
@@ -329,6 +405,39 @@ index 17f8244..5b507cc 100644
 +        cbDocPrintForm: 'Print',
 +        cbDocFormError: 'Form viewer error',
 +        cbDocChoose: 'Choose',
++        cbTlNav: 'Application Progress',
++        cbTlPanelTitle: 'Application Progress',
++        cbTlClose: 'Close',
++        cbTlSubmit: 'Submit Application',
++        cbTlSubmitting: 'Submitting...',
++        cbTlSubmitBlockedTitle: 'Resolve these items before submitting',
++        cbTlSubmitFailed: 'Unable to submit the application',
++        cbTlSubmittedToast: 'Application submitted',
++        cbTlResumed: 'This package was already submitted — opened the existing application.',
++        cbTlNeedMaterialsFirst: 'Finish and submit your materials in Document Preparation first.',
++        cbTlNoApplications: 'No applications yet.',
++        cbTlSwitcher: 'Application',
++        cbTlOverviewTitle: 'Loan application progress',
++        cbTlViewProgress: 'View progress',
++        cbTlCurrentStage: 'Current stage',
++        cbTlStatusLabel: 'Status',
++        cbTlProduct: 'Product',
++        cbTlApplicationId: 'Application ID',
++        cbTlReminder: 'Reminder',
++        cbTlBankNote: 'Bank update',
++        cbTlUpdated: 'Updated',
++        cbTlStatusInProgress: 'In progress',
++        cbTlStatusRejected: 'Rejected',
++        cbTlStatusCompleted: 'Completed',
++        cbTlStatePending: 'Pending',
++        cbTlStateInProgress: 'In progress',
++        cbTlStateCompleted: 'Completed',
++        cbTlStateRejected: 'Rejected',
++        cbTlStateSupplement: 'Supplement required',
++        cbTlCoreSwiftBic: 'SWIFT / BIC',
++        cbTlCorePaymentAmount: 'Payment amount',
++        cbTlCorePaymentCurrency: 'Payment currency',
++        cbTlCoreBeneficiary: 'Beneficiary account name',
 +        cbResizeSidebar: 'Resize navigation panel',
 +        cbResizeDocuments: 'Resize document-preparation panel',
 +        cbModeEnter: "Loan-matching mode is on. I'll ask a few quick questions, then screen official candidate plans. Tap an option below or just type your answer.",
@@ -449,7 +558,7 @@ index 17f8244..5b507cc 100644
 +        cbClarifyFailed: 'AI clarification failed',
 +        cbClarifierFallback: 'AI clarification is temporarily unavailable. The draft was not modified automatically. Fill in or correct the form directly.',
 +        cbMatchFailed: 'Matching failed',
-+        cbConfirmSaveProfile: 'Save the current SME profile to long-term memory?',
++        cbConfirmSaveProfile: 'Save this as a draft (with your selected products)?',
 +        cbProfileSaved: 'SME profile saved after confirmation. New sessions will prefill this information.',
 +        cbSaveFailed: 'Unable to save SME profile',
 +        cbConfirmClearProfile: 'Clear the long-term SME profile for demo_sme_001?',
@@ -458,7 +567,7 @@ index 17f8244..5b507cc 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +468,7 @@ const i18n = {
+@@ -277,6 +523,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -466,7 +575,7 @@ index 17f8244..5b507cc 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +508,196 @@ const i18n = {
+@@ -316,7 +563,251 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -475,8 +584,30 @@ index 17f8244..5b507cc 100644
 +        // CrossBridge Function 1
 +        cbBusinessServices: '企业服务',
 +        cbLoanMatching: '贷款匹配',
++        cbLoanMatchingNav: '贷款匹配',
++        cbSavedDraftsTitle: '我的已保存草稿',
++        cbSavedDraftsSubtitle: '已保存的企业画像，以及你选择的产品。',
++        cbNewBlankDraft: '新建空白草稿',
++        cbSavedDraftsEmpty: '还没有已保存的草稿。先新建草稿、匹配产品，再点「确认并保存」。',
++        cbDraftOpen: '打开',
++        cbDraftDelete: '删除',
++        cbDraftConfirmDelete: '确定删除这份已保存草稿吗？',
++        cbDraftSelectedProducts: '已选产品',
++        cbDraftNoSelection: '未选择产品',
++        cbDraftSavedToast: '草稿已保存。',
++        cbDraftMatchedCount: '个候选',
++        cbSelectProduct: '选择',
++        cbSelectedProduct: '已选',
 +        cbDocPrepNav: '材料准备',
 +        cbPrepareDocuments: '准备材料',
++        cbDocDraftsTitle: '我的材料草稿',
++        cbDocDraftsSubtitle: '每条已保存的贷款匹配草稿，对应一份材料草稿。',
++        cbDocDraftsEmpty: '还没有材料草稿。打开一条已保存的贷款草稿，点「准备材料」。',
++        cbDocChecklistProgress: '清单',
++        cbDocDraftFor: '对应贷款草稿',
++        cbDocDraftOpen: '打开',
++        cbDocDraftDelete: '删除',
++        cbDocDraftConfirmDelete: '确定删除这份材料草稿吗？',
 +        cbDocPanelTitle: '材料准备',
 +        cbDocScenario: '场景',
 +        cbDocScenarioImport: '进口付款',
@@ -535,6 +666,39 @@ index 17f8244..5b507cc 100644
 +        cbDocPrintForm: '打印',
 +        cbDocFormError: '表单查看器出错',
 +        cbDocChoose: '请选择',
++        cbTlNav: '申请进度',
++        cbTlPanelTitle: '申请进度',
++        cbTlClose: '关闭',
++        cbTlSubmit: '提交申请',
++        cbTlSubmitting: '提交中…',
++        cbTlSubmitBlockedTitle: '提交前请先完成以下事项',
++        cbTlSubmitFailed: '提交申请失败',
++        cbTlSubmittedToast: '申请已提交',
++        cbTlResumed: '该材料此前已提交，已为你打开对应申请。',
++        cbTlNeedMaterialsFirst: '请先在“材料准备”完成并提交材料。',
++        cbTlNoApplications: '尚无申请。',
++        cbTlSwitcher: '申请',
++        cbTlOverviewTitle: '贷款申请进度',
++        cbTlViewProgress: '查看进度',
++        cbTlCurrentStage: '当前阶段',
++        cbTlStatusLabel: '状态',
++        cbTlProduct: '关联产品',
++        cbTlApplicationId: '申请编号',
++        cbTlReminder: '提醒',
++        cbTlBankNote: '银行说明',
++        cbTlUpdated: '更新于',
++        cbTlStatusInProgress: '进行中',
++        cbTlStatusRejected: '已拒绝',
++        cbTlStatusCompleted: '已完成',
++        cbTlStatePending: '待处理',
++        cbTlStateInProgress: '进行中',
++        cbTlStateCompleted: '已完成',
++        cbTlStateRejected: '已拒绝',
++        cbTlStateSupplement: '需补件',
++        cbTlCoreSwiftBic: 'SWIFT / BIC',
++        cbTlCorePaymentAmount: '付款金额',
++        cbTlCorePaymentCurrency: '付款币种',
++        cbTlCoreBeneficiary: '收款人户名',
 +        cbResizeSidebar: '调整导航栏宽度',
 +        cbResizeDocuments: '调整材料准备面板宽度',
 +        cbModeEnter: '已进入贷款匹配模式。我会先问几个简短问题，再用规则筛选官方候选方案。点下面的选项，或直接在输入框回答都可以。',
@@ -655,7 +819,7 @@ index 17f8244..5b507cc 100644
 +        cbClarifyFailed: 'AI 澄清失败',
 +        cbClarifierFallback: 'AI 澄清暂时不可用。草稿没有被自动修改，请直接在左侧表单填写或修正资料。',
 +        cbMatchFailed: '匹配失败',
-+        cbConfirmSaveProfile: '确认将当前企业画像保存为长期记忆吗？',
++        cbConfirmSaveProfile: '保存为一份草稿（含你勾选的产品）吗？',
 +        cbProfileSaved: '企业画像已确认保存。新会话将自动带入这些资料。',
 +        cbSaveFailed: '保存失败',
 +        cbConfirmClearProfile: '确认清除 demo_sme_001 的长期企业画像吗？',
@@ -664,12 +828,15 @@ index 17f8244..5b507cc 100644
      }
  };
  
-@@ -346,24 +727,40 @@ marked.setOptions({
+@@ -346,24 +837,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
 +const SIDEBAR_WIDTH_DEFAULT = 280;
 +const DOCUMENT_PANEL_WIDTH_DEFAULT = 460;
++// Fixed F3 timeline node order — used to derive "step N / 6" progress from current_node_code
++// (the list/summary endpoint carries current_node_code but not the full node array).
++const TL_NODE_ORDER = ['submitted', 'material_review', 'credit_assessment', 'approval_result', 'signing', 'disbursement'];
  
  function isMobileViewport() {
      return window.matchMedia(MOBILE_VIEW_MEDIA_QUERY).matches;
@@ -706,7 +873,7 @@ index 17f8244..5b507cc 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +770,10 @@ function app() {
+@@ -373,6 +883,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -717,7 +884,7 @@ index 17f8244..5b507cc 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +788,58 @@ function app() {
+@@ -387,7 +901,82 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -735,6 +902,11 @@ index 17f8244..5b507cc 100644
 +            clarifyLoading: false,  // awaiting a clarify/PATCH round (disables the anchored panel)
 +            matchLoading: false,
 +            saveLoading: false,
++            listOpen: false,        // saved-drafts list panel visible
++            savedDrafts: [],        // [{ id, name, draft_profile, selected_products, ... }]
++            savedDraftsLoading: false,
++            selectedProductIds: [], // products ticked on candidate cards (snapshot into a saved draft)
++            entering: false,        // concurrency lock for enterLoanMatching (no double-create)
 +            form: {
 +                business_scenario: '',
 +                annual_turnover_hkd: '',
@@ -752,6 +924,9 @@ index 17f8244..5b507cc 100644
 +            panelOpen: false,
 +            loading: false,
 +            error: '',
++            listOpen: false,      // document-drafts list panel visible
++            packages: [],         // [{ id, scenario_code, saved_draft_id, checklist_done/total, ... }]
++            packagesLoading: false,
 +            catalog: null,        // { scenarios, templates, product_overlays, note_* }
 +            package: null,        // server package (checklist + overlay + templates)
 +            scenario: '',         // selected scenario code (import_payment / export_fulfillment)
@@ -774,14 +949,53 @@ index 17f8244..5b507cc 100644
 +            draftSaveQueues: {}   // form_id -> serialized save queue
 +        },
 +
++        // Function 3 — loan-application progress timeline (right-side panel + chat cards).
++        // Independent state; shares the right-side panel width with documentPreparation and
++        // is mutually exclusive with it (opening one closes the other).
++        documentTimeline: {
++            panelOpen: false,
++            loading: false,
++            submitting: false,
++            error: '',
++            applications: [],   // [{ id, product_label_*, current_node_code, status, ... }] summaries
++            activeId: '',       // application shown in the panel
++            active: null,       // full detail of the active application (with nodes)
++            blocking: [],       // [{ code, fields? }] submit-blocking items shown in the F2 panel
++            sse: null,          // EventSource (live updates)
++            loadedOnce: false   // guards lazy load for chat cards restored on reload
++        },
++
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -484,7 +936,99 @@ function app() {
-             this.lang = newLang;
-             localStorage.setItem('justchat_lang', newLang);
+@@ -466,110 +1055,1746 @@ function app() {
+                 assistant_avatar: ''
+             }
          },
 -        
+-        // Toast
+-        toast: {
+-            show: false,
+-            message: '',
+-            type: ''
++        
++        // Toast
++        toast: {
++            show: false,
++            message: '',
++            type: ''
++        },
++        
++        // Translation helper
++        t(key) {
++            return i18n[this.lang][key] || key;
++        },
++        
++        // Set language
++        setLanguage(newLang) {
++            this.lang = newLang;
++            localStorage.setItem('justchat_lang', newLang);
++        },
 +
 +        layoutStyle() {
 +            return {
@@ -875,33 +1089,102 @@ index 17f8244..5b507cc 100644
 +            );
 +        },
 +
-         // Get model type display name
-         getModelTypeName(type) {
-             const names = {
-@@ -497,6 +1041,9 @@ function app() {
-         
-         // Initialize
-         async init() {
++        // Get model type display name
++        getModelTypeName(type) {
++            const names = {
++                chat: this.t('chat'),
++                embedding: this.t('embedding'),
++                rerank: this.t('reranker')
++            };
++            return names[type] || type;
++        },
++        
++        // Initialize
++        async init() {
 +            // Bind the official-form viewer bridge FIRST — before the slow awaits below — so the
 +            // iframe's one-time 'ready' ping can never fire before our listener is attached.
 +            this.ensureOfficialViewerBridge();
-             this.initResponsiveLayout();
-             await this.loadSettings();
-             await this.loadModels();
-@@ -522,6 +1069,9 @@ function app() {
-             };
-             window.addEventListener('resize', onViewportChange, { passive: true });
-             window.addEventListener('orientationchange', onViewportChange, { passive: true });
++            this.initResponsiveLayout();
++            await this.loadSettings();
++            await this.loadModels();
++            await this.loadChats();
++            await this.loadDocuments();
++            await this.loadInstalledPlugins();
++            this.applyTheme();
++            // Note: favicon is updated by loadLogo() which is called from loadSettings()
++            // Initialize plugin system
++            this.initPluginSystem();
++            // Right-side panels (F2 doc-prep and F3 timeline) share width and are mutually
++            // exclusive: opening one always closes the other, wherever it is opened from.
++            this.$watch('documentPreparation.panelOpen', open => { if (open) this.documentTimeline.panelOpen = false; });
++            this.$watch('documentTimeline.panelOpen', open => { if (open) this.documentPreparation.panelOpen = false; });
++        },
++        
++        // Responsive layout sync (mobile drawer + desktop collapse)
++        initResponsiveLayout() {
++            this.syncSidebarForViewport(true);
++            const onViewportChange = () => {
++                if (this._resizeRaf) {
++                    cancelAnimationFrame(this._resizeRaf);
++                }
++                this._resizeRaf = requestAnimationFrame(() => {
++                    this.syncSidebarForViewport(false);
++                });
++            };
++            window.addEventListener('resize', onViewportChange, { passive: true });
++            window.addEventListener('orientationchange', onViewportChange, { passive: true });
 +            window.addEventListener('pointermove', event => this.continueLayoutResize(event));
 +            window.addEventListener('pointerup', () => this.finishLayoutResize());
 +            window.addEventListener('pointercancel', () => this.finishLayoutResize());
-         },
-         
-         syncSidebarForViewport(isInitial) {
-@@ -571,6 +1121,1111 @@ function app() {
-             this.loadPluginMarket();
-             this.closeSidebarOnMobile();
-         },
++        },
++        
++        syncSidebarForViewport(isInitial) {
++            const isMobileNow = isMobileViewport();
++            const switchedToMobile = !this.isMobileView && isMobileNow;
++            const switchedToDesktop = this.isMobileView && !isMobileNow;
++            this.isMobileView = isMobileNow;
++            
++            if (isMobileNow && (isInitial || switchedToMobile)) {
++                // Mobile: default closed drawer, open via top menu.
++                this.sidebarCollapsed = true;
++            } else if (!isMobileNow && (isInitial || switchedToDesktop)) {
++                // Desktop: restore persisted collapse preference.
++                this.sidebarCollapsed = this.desktopSidebarCollapsed;
++            }
++        },
++        
++        toggleSidebar() {
++            this.sidebarCollapsed = !this.sidebarCollapsed;
++            if (!this.isMobileView) {
++                this.desktopSidebarCollapsed = this.sidebarCollapsed;
++                localStorage.setItem('chatraw_sidebar_collapsed', this.sidebarCollapsed ? '1' : '0');
++            }
++        },
++        
++        openSidebar() {
++            this.sidebarCollapsed = false;
++        },
++        
++        closeSidebar() {
++            this.sidebarCollapsed = true;
++        },
++        
++        closeSidebarOnMobile() {
++            if (this.isMobileView) {
++                this.closeSidebar();
++            }
++        },
++        
++        openSettingsPanel() {
++            this.showSettings = true;
++            this.closeSidebarOnMobile();
++        },
++        
++        openPluginsPanel() {
++            this.showPlugins = true;
++            this.loadPluginMarket();
++            this.closeSidebarOnMobile();
++        },
 +
 +        async fetchLoanMatchingIntent(message) {
 +            try {
@@ -1078,13 +1361,11 @@ index 17f8244..5b507cc 100644
 +        async saveLoanDraft(silent = false) {
 +            if (!this.loanMatching.session) return false;
 +            try {
-+                const res = await fetch(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/draft`, {
++                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/draft`, {
 +                    method: 'PATCH',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ updates: this.loanFormPayload() })
 +                });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail || this.t('cbDraftSaveFailed'));
 +                this.syncLoanMatchingSession(data);
 +                if (!silent) this.showToast(this.t('cbDraftUpdated'), 'success');
 +                return true;
@@ -1132,16 +1413,35 @@ index 17f8244..5b507cc 100644
 +            }
 +        },
 +
++        // Localized draft name with a timestamp, e.g. "Cross-border e-commerce · 1,000,000 · 06-04 21:41".
++        buildLoanDraftName() {
++            const p = this.loanMatching.session?.draft_profile || {};
++            const scenario = p.business_scenario
++                ? this.loanChipLabelByValue('business_scenario', p.business_scenario)
++                : this.t('cbLoanMatching');
++            const amount = p.requested_amount_hkd ? this.loanFormatHkd(p.requested_amount_hkd) : '';
++            const d = new Date(), z = n => String(n).padStart(2, '0');
++            const stamp = `${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;
++            return [scenario, amount, stamp].filter(Boolean).join(' · ');
++        },
++
 +        async saveLoanProfile() {
 +            if (!this.loanMatching.session || !confirm(this.t('cbConfirmSaveProfile'))) return;
 +            this.loanMatching.saveLoading = true;
 +            try {
-+                const res = await fetch(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/save-profile`, {
-+                    method: 'POST'
++                // 多份草稿：每次保存新建一条 saved_drafts（含勾选的产品），不再覆盖单份 profile。
++                // 草稿名在前端生成 → 随当前 UI 语言本地化，并带上时间（后端中文兜底用不到）。
++                await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/save-draft`, {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({
++                        name: this.buildLoanDraftName(),
++                        selected_product_ids: this.loanMatching.selectedProductIds
++                    })
 +                });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail || this.t('cbSaveFailed'));
-+                this.showToast(this.t('cbProfileSaved'), 'success');
++                this.showToast(this.t('cbDraftSavedToast'), 'success');
++                await this.loadSavedDrafts();
++                this.loanMatching.listOpen = true;   // surface the list with the new entry
 +            } catch (e) {
 +                this.showToast(`${this.t('cbSaveFailed')}: ${e.message}`, 'error');
 +            } finally {
@@ -1172,6 +1472,81 @@ index 17f8244..5b507cc 100644
 +            }
 +            this.loanMatching.session = null;
 +            this.activeWorkspace = 'chat';
++        },
++
++        // ---- Saved drafts (multiple per SME) + candidate selection -------------
++
++        loanFormatHkd(amount) {
++            if (!amount) return '';
++            if (this.lang === 'zh') {
++                if (amount >= 100000000) return `${+(amount / 100000000).toFixed(2)}亿`;
++                if (amount >= 10000) return `${+(amount / 10000).toFixed(2)}万`;
++            }
++            return amount.toLocaleString('en-US');
++        },
++
++        isProductSelected(productId) {
++            return this.loanMatching.selectedProductIds.includes(productId);
++        },
++
++        toggleProductSelection(productId) {
++            const ids = this.loanMatching.selectedProductIds;
++            const at = ids.indexOf(productId);
++            if (at >= 0) ids.splice(at, 1);
++            else ids.push(productId);
++        },
++
++        // Sidebar entry → open the saved-drafts list panel.
++        async openLoanMatchingDrafts() {
++            this.closeSidebarOnMobile();
++            this.loanMatching.listOpen = true;
++            await this.loadSavedDrafts();
++        },
++
++        async loadSavedDrafts() {
++            this.loanMatching.savedDraftsLoading = true;
++            try {
++                const data = await this.cbFetchJson('/api/crossbridge/v1/loan-matching/saved-drafts?sme_id=demo_sme_001');
++                this.loanMatching.savedDrafts = data.saved_drafts || [];
++            } catch (e) {
++                this.showToast(`${this.t('cbSaveFailed')}: ${e.message}`, 'error');
++            } finally {
++                this.loanMatching.savedDraftsLoading = false;
++            }
++        },
++
++        // "+ New blank draft" → always a fresh, empty session (bypass the re-entry guard).
++        async startNewLoanDraft() {
++            this.loanMatching.listOpen = false;
++            this.loanMatching.selectedProductIds = [];
++            this.loanMatching.active = false;
++            this.loanMatching.session = null;
++            await this.enterLoanMatching();
++        },
++
++        // Open a saved draft → fresh session pre-filled from its profile, selection restored.
++        async openSavedDraft(draft) {
++            this.loanMatching.listOpen = false;
++            this.loanMatching.active = false;
++            this.loanMatching.session = null;
++            const prefill = {};
++            for (const [key, value] of Object.entries(draft.draft_profile || {})) {
++                if (value !== null && value !== undefined && value !== '') prefill[key] = value;
++            }
++            await this.enterLoanMatching(prefill);
++            // enterLoanMatching clears selection for a fresh draft; restore this draft's picks after.
++            this.loanMatching.selectedProductIds = [...(draft.selected_product_ids || [])];
++        },
++
++        async deleteSavedDraft(draft) {
++            if (!confirm(this.t('cbDraftConfirmDelete'))) return;
++            try {
++                const res = await fetch(`/api/crossbridge/v1/loan-matching/saved-drafts/${draft.id}`, { method: 'DELETE' });
++                if (!res.ok) throw new Error(this.t('cbClearFailed'));
++                this.loanMatching.savedDrafts = this.loanMatching.savedDrafts.filter(d => d.id !== draft.id);
++            } catch (e) {
++                this.showToast(`${this.t('cbClearFailed')}: ${e.message}`, 'error');
++            }
 +        },
 +
 +        // ============================================================
@@ -1248,12 +1623,22 @@ index 17f8244..5b507cc 100644
 +        // Entry point used by the mode switch, the sidebar "贷款匹配" link and the in-chat CTA.
 +        // Creates OR resumes the open session, then drives the flow inside the chat.
 +        async enterLoanMatching(prefill = {}) {
-+            // Re-entry guard: if already in loan mode with a live session, don't create/push again
-+            // (prevents the duplicate "欢迎回来 + 候选方案" when CTA + mode-switch both fire).
-+            if (this.loanMatching.active && this.loanMatching.session) {
++            // Concurrency lock: replaces the old "active && session → return" guard, which made
++            // re-entering after a COMPLETED session a no-op (bug: "再次进行 loan matching 没给草稿").
++            if (this.loanMatching.entering) return;
++            const s = this.loanMatching.session;
++            const inProgress = s && (!s.match_results || !s.match_results.length)
++                && (s.missing_required_fields || []).length > 0;
++            // Only resume (don't re-create) when toggling back into a still-in-progress draft and
++            // no new prefill was supplied. Otherwise → always a FRESH blank session.
++            if (this.loanMatching.active && inProgress && !Object.keys(prefill).length) {
 +                this.activeWorkspace = 'chat';
 +                return;
 +            }
++            this.loanMatching.entering = true;
++            this.loanMatching.session = null;
++            this.loanMatching.selectedProductIds = [];
++            this.documentPreparation.openedProductIds = [];  // 新匹配 → 所有产品的 Prepare Documents 重新可用
 +            this.activeWorkspace = 'chat';
 +            this.loanMatching.active = true;
 +            this.loanMatching.error = '';
@@ -1261,13 +1646,11 @@ index 17f8244..5b507cc 100644
 +            this.loanMatching.clarifyLoading = false;
 +            this.closeSidebarOnMobile();
 +            try {
-+                const res = await fetch('/api/crossbridge/v1/loan-matching/sessions', {
++                const data = await this.cbFetchJson('/api/crossbridge/v1/loan-matching/sessions', {
 +                    method: 'POST',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ sme_id: 'demo_sme_001', prefill, ui_language: this.lang })
 +                });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail || data.error || this.t('cbCreateDraftFailed'));
 +                this.syncLoanMatchingSession(data);
 +                const filled = this.loanRequiredCompletedCount();
 +                this.messages.push({ role: 'assistant', content: filled > 0 ? this.t('cbModeResume') : this.t('cbModeEnter') });
@@ -1275,6 +1658,8 @@ index 17f8244..5b507cc 100644
 +            } catch (e) {
 +                this.loanMatching.active = false;
 +                this.showToast(`${this.t('cbCreateDraftFailed')}: ${e.message}`, 'error');
++            } finally {
++                this.loanMatching.entering = false;
 +            }
 +        },
 +
@@ -1294,13 +1679,11 @@ index 17f8244..5b507cc 100644
 +            this.loanMatching.clarifyLoading = true;
 +            this.$nextTick(() => this.scrollToBottom());
 +            try {
-+                const res = await fetch(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/clarify`, {
++                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/clarify`, {
 +                    method: 'POST',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ message: text, ui_language: this.lang })
 +                });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail || this.t('cbClarifyFailed'));
 +                this.syncLoanMatchingSession(data);
 +                if (data.clarifier_mode === 'needs_manual') this.loanMatching.clarifierNotice = this.t('cbNeedsManual');
 +                else if (data.clarifier_mode === 'no_progress') this.loanMatching.clarifierNotice = this.t('cbNoProgress');
@@ -1321,13 +1704,11 @@ index 17f8244..5b507cc 100644
 +            this.loanMatching.clarifyLoading = true;
 +            this.$nextTick(() => this.scrollToBottom());
 +            try {
-+                const res = await fetch(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/draft`, {
++                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/draft`, {
 +                    method: 'PATCH',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ updates: { [field]: value } })
 +                });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail || this.t('cbDraftSaveFailed'));
 +                this.syncLoanMatchingSession(data);
 +                this.pushLoanStep();
 +            } catch (e) {
@@ -1342,9 +1723,7 @@ index 17f8244..5b507cc 100644
 +            if (!await this.saveLoanDraft(true) || !this.loanMatching.session?.ready_to_match) return;
 +            this.loanMatching.matchLoading = true;
 +            try {
-+                const res = await fetch(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/match`, { method: 'POST' });
-+                const data = await res.json();
-+                if (!res.ok) throw new Error(data.detail?.message || data.detail || this.t('cbMatchFailed'));
++                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/match`, { method: 'POST' });
 +                this.syncLoanMatchingSession(data);
 +                if (data.match_results && data.match_results.length) {
 +                    this.messages.push({ role: 'assistant', loanResults: data.match_results });
@@ -1509,9 +1888,351 @@ index 17f8244..5b507cc 100644
 +            this.documentPreparation.panelOpen = false;
 +        },
 +
++        // ---- Function 3: loan-application progress timeline -----------------
++
++        closeApplicationTimeline() {
++            this.documentTimeline.panelOpen = false;
++        },
++
++        tlAppById(id) {
++            return (this.documentTimeline.applications || []).find(a => a.id === id) || null;
++        },
++
++        tlStatusLabel(status) {
++            return this.t({
++                in_progress: 'cbTlStatusInProgress',
++                rejected: 'cbTlStatusRejected',
++                completed: 'cbTlStatusCompleted'
++            }[status] || 'cbTlStatusInProgress');
++        },
++
++        tlStateLabel(state) {
++            return this.t({
++                pending: 'cbTlStatePending',
++                in_progress: 'cbTlStateInProgress',
++                completed: 'cbTlStateCompleted',
++                rejected: 'cbTlStateRejected',
++                supplement_required: 'cbTlStateSupplement'
++            }[state] || state);
++        },
++
++        tlNodeLabel(node) {
++            return this.lang === 'zh' ? node.label_zh : node.label_en;
++        },
++
++        tlProductLabel(app) {
++            if (!app) return '';
++            return this.lang === 'zh' ? app.product_label_zh : app.product_label_en;
++        },
++
++        tlCurrentStageLabel(app) {
++            if (!app) return '';
++            return this.lang === 'zh' ? app.current_node_label_zh : app.current_node_label_en;
++        },
++
++        // "step N of 6" progress derived from current_node_code (works for both summary + detail).
++        tlProgress(app) {
++            const idx = TL_NODE_ORDER.indexOf(app && app.current_node_code);
++            const step = idx >= 0 ? idx + 1 : 0;
++            const total = TL_NODE_ORDER.length;
++            return { step, total, pct: Math.round((step / total) * 100) };
++        },
++
++        tlPad2(n) {
++            return String(n).padStart(2, '0');
++        },
++
++        // Short uppercased application serial for the "NO." ledger label.
++        tlShortId(app) {
++            return (app && app.id ? app.id : '').slice(0, 8).toUpperCase();
++        },
++
++        tlNodeNote(node) {
++            return this.lang === 'zh' ? node.customer_note_zh : node.customer_note_en;
++        },
++
++        // Submit-blocking reasons reuse the F2 validation copy; core fields get their own labels.
++        tlSubmitBlockingMessage(item) {
++            if (item.code === 'core_fields') {
++                const sep = this.lang === 'zh' ? '、' : ', ';
++                const map = {
++                    swift_bic: 'cbTlCoreSwiftBic',
++                    payment_amount: 'cbTlCorePaymentAmount',
++                    payment_currency: 'cbTlCorePaymentCurrency',
++                    beneficiary_account_name: 'cbTlCoreBeneficiary'
++                };
++                const names = (item.fields || []).map(f => this.t(map[f] || f)).join(sep);
++                return `${this.t('cbDocValidationCore')} ${names}`;
++            }
++            return this.docValidationMessage(item);
++        },
++
++        async loadTimelineApplications() {
++            try {
++                const data = await this.cbFetchJson(
++                    '/api/crossbridge-timeline/v1/applications?sme_id=demo_sme_001'
++                );
++                this.documentTimeline.applications = data.applications || [];
++            } catch (e) {
++                this.documentTimeline.error = e.message;
++            }
++            return this.documentTimeline.applications;
++        },
++
++        async loadTimelineDetail(id) {
++            if (!id) return null;
++            try {
++                const data = await this.cbFetchJson(`/api/crossbridge-timeline/v1/applications/${id}`);
++                if (this.documentTimeline.activeId === id) this.documentTimeline.active = data;
++                return data;
++            } catch (e) {
++                this.documentTimeline.error = e.message;
++                return null;
++            }
++        },
++
++        async selectTimelineApplication(id) {
++            this.documentTimeline.activeId = id;
++            await this.loadTimelineDetail(id);
++        },
++
++        // Sidebar entry: open the timeline panel (or nudge to finish materials first).
++        async openApplicationTimeline() {
++            this.activeWorkspace = 'chat';
++            this.closeSidebarOnMobile();
++            this.documentTimeline.loading = true;
++            try {
++                const list = await this.loadTimelineApplications();
++                if (!list.length) {
++                    this.showToast(this.t('cbTlNeedMaterialsFirst'));
++                    return;
++                }
++                this.documentPreparation.panelOpen = false;
++                this.documentTimeline.panelOpen = true;
++                const keep = this.documentTimeline.activeId
++                    && list.some(a => a.id === this.documentTimeline.activeId);
++                await this.selectTimelineApplication(keep ? this.documentTimeline.activeId : list[0].id);
++                this.startTimelineStream();
++            } finally {
++                this.documentTimeline.loading = false;
++            }
++        },
++
++        // Chat overview card → focus that application in the panel.
++        async openTimelineFromCard(id) {
++            this.documentPreparation.panelOpen = false;
++            this.documentTimeline.panelOpen = true;
++            await this.selectTimelineApplication(id);
++            this.startTimelineStream();
++        },
++
++        pushTimelineCard(id) {
++            if (this.messages.some(m => m.timelineApplicationId === id)) return;
++            this.messages.push({ role: 'assistant', content: '', timelineApplicationId: id });
++            this.$nextTick(() => this.scrollToBottom?.());
++        },
++
++        // Lazily hydrate cards (e.g. restored chat) + open the live stream once.
++        ensureTimelineLoaded() {
++            if (this.documentTimeline.loadedOnce) return;
++            this.documentTimeline.loadedOnce = true;
++            this.loadTimelineApplications();
++            this.startTimelineStream();
++        },
++
++        startTimelineStream() {
++            if (this.documentTimeline.sse) return;
++            // Same-origin EventSource in dev and prod: ChatRaw streams it through without
++            // buffering (X-Accel-Buffering: no), so no per-environment base URL is needed.
++            const es = new EventSource('/api/crossbridge-timeline/v1/events?sme_id=demo_sme_001');
++            const refresh = (id) => {
++                this.loadTimelineApplications();
++                if (id && id === this.documentTimeline.activeId) this.loadTimelineDetail(id);
++            };
++            es.onmessage = (event) => {
++                let data = null;
++                try { data = JSON.parse(event.data); } catch (_) { return; }
++                refresh(data && data.application_id);
++            };
++            // Browser auto-reconnects on error; on (re)connect, re-pull the full list.
++            es.onopen = () => this.loadTimelineApplications();
++            es.onerror = () => { /* keep the EventSource; it retries automatically */ };
++            this.documentTimeline.sse = es;
++        },
++
++        stopTimelineStream() {
++            if (this.documentTimeline.sse) {
++                this.documentTimeline.sse.close();
++                this.documentTimeline.sse = null;
++            }
++        },
++
++        // Function 2 footer "Submit application": flush drafts, gate on readiness, create timeline.
++        async submitApplication() {
++            const pkg = this.documentPreparation.package;
++            if (!pkg || this.documentTimeline.submitting) return;
++            this.documentTimeline.submitting = true;
++            this.documentTimeline.blocking = [];
++            try {
++                // 1. Flush the open form + any queued autosaves so F2 sees the latest values.
++                this.stopOfficialViewer();
++                await this.waitForOfficialDraftSaves();
++                // 2. Readiness gate (F2 is the source of truth).
++                const readiness = await this.cbFetchJson(
++                    `/api/crossbridge-documents/v1/packages/${pkg.id}/submission-readiness`
++                );
++                if (!readiness.ready) {
++                    this.documentTimeline.blocking = readiness.blocking || [];
++                    this.showToast(this.t('cbTlSubmitBlockedTitle'), 'error');
++                    return; // stay in the F2 workbench showing the reasons
++                }
++                // 3. Snapshot product/scenario labels and create the application.
++                const overlay = pkg.selected_product_id
++                    ? this.docProductById(pkg.selected_product_id)
++                    : null;
++                const created = await this.cbFetchJson('/api/crossbridge-timeline/v1/applications', {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({
++                        sme_id: 'demo_sme_001',
++                        origin_package_id: pkg.id,
++                        product_id: pkg.selected_product_id || '',
++                        product_label_zh: (overlay && overlay.product_name) || pkg.scenario_label_zh || '',
++                        product_label_en:
++                            (overlay && (overlay.product_name_en || overlay.product_name))
++                            || pkg.scenario_label_en || '',
++                        scenario_code: pkg.scenario_code
++                    })
++                });
++                // 4. Switch to the timeline panel, drop a chat card, go live.
++                this.documentTimeline.loadedOnce = true;
++                await this.loadTimelineApplications();
++                this.documentPreparation.panelOpen = false;
++                this.documentTimeline.panelOpen = true;
++                this.documentTimeline.activeId = created.id;
++                this.documentTimeline.active = created;
++                this.pushTimelineCard(created.id);
++                this.startTimelineStream();
++                this.showToast(this.t(created.resumed ? 'cbTlResumed' : 'cbTlSubmittedToast'), 'success');
++            } catch (e) {
++                this.showToast(`${this.t('cbTlSubmitFailed')}: ${e.message}`, 'error');
++            } finally {
++                this.documentTimeline.submitting = false;
++            }
++        },
++
 +        docPreparationAlreadyOpened(productId) {
 +            return Boolean(productId && this.documentPreparation.openedProductIds.includes(productId));
 +        },
++
++        // ---- Function 2: saved document drafts (one per loan saved draft) ----
++
++        docDraftLoanName(pkg) {
++            if (!pkg.saved_draft_id) return '';
++            const draft = (this.loanMatching.savedDrafts || []).find(d => d.id === pkg.saved_draft_id);
++            return draft ? draft.name : '';
++        },
++        docDraftTitle(pkg) {
++            return this.docDraftLoanName(pkg)
++                || (this.lang === 'zh' ? pkg.scenario_label_zh : pkg.scenario_label_en);
++        },
++
++        // Sidebar "Document Preparation" → list of saved document drafts.
++        async openDocumentPreparationDrafts() {
++            this.closeSidebarOnMobile();
++            this.documentPreparation.listOpen = true;
++            await this.loadDocumentPackages();
++        },
++
++        async loadDocumentPackages() {
++            this.documentPreparation.packagesLoading = true;
++            try {
++                // Load loan drafts too so each document draft can show its loan-draft name
++                // (join by saved_draft_id — F1/F2 are separate services, so join client-side).
++                const [pkgData] = await Promise.all([
++                    this.cbFetchJson('/api/crossbridge-documents/v1/packages?sme_id=demo_sme_001'),
++                    this.loadSavedDrafts(),
++                ]);
++                this.documentPreparation.packages = pkgData.packages || [];
++            } catch (e) {
++                this.showToast(`${this.t('cbDocLoadFailed')}: ${e.message}`, 'error');
++            } finally {
++                this.documentPreparation.packagesLoading = false;
++            }
++        },
++
++        // "准备材料" on a loan saved-draft → create/resume that draft's document package, open panel.
++        async prepareDocsForDraft(draft) {
++            this.loanMatching.listOpen = false;
++            await this.ensureDocumentCatalog();
++            const scenarioCode = draft.draft_profile?.business_scenario === 'export_trade'
++                ? 'export_fulfillment' : 'import_payment';
++            let selectedProductId = (draft.selected_product_ids && draft.selected_product_ids[0]) || null;
++            const overlay = selectedProductId ? this.docProductById(selectedProductId) : null;
++            if (selectedProductId && (!overlay || !overlay.scenarios?.includes(scenarioCode))) {
++                selectedProductId = null;   // product not valid for this scenario → let user pick in panel
++            }
++            try {
++                const data = await this.cbFetchJson('/api/crossbridge-documents/v1/packages', {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({
++                        sme_id: 'demo_sme_001',
++                        scenario_code: scenarioCode,
++                        selected_product_id: selectedProductId,
++                        saved_draft_id: draft.id,
++                        origin_matching_session_id: draft.origin_session_id || null
++                    })
++                });
++                this._applyDocPackage(data);
++            } catch (e) {
++                this.showToast(`${this.t('cbDocLoadFailed')}: ${e.message}`, 'error');
++            }
++        },
++
++        // Open an existing document draft from the list → fetch full package, show panel.
++        async openDocumentPackage(pkg) {
++            this.documentPreparation.listOpen = false;
++            await this.ensureDocumentCatalog();
++            try {
++                const data = await this.cbFetchJson(`/api/crossbridge-documents/v1/packages/${pkg.id}`);
++                this._applyDocPackage(data);
++            } catch (e) {
++                this.showToast(`${this.t('cbDocLoadFailed')}: ${e.message}`, 'error');
++            }
++        },
++
++        async deleteDocumentPackage(pkg) {
++            if (!confirm(this.t('cbDocDraftConfirmDelete'))) return;
++            try {
++                await this.cbFetchJson(`/api/crossbridge-documents/v1/packages/${pkg.id}`, { method: 'DELETE' });
++                this.documentPreparation.packages = this.documentPreparation.packages.filter(p => p.id !== pkg.id);
++            } catch (e) {
++                this.showToast(`${this.t('cbClearFailed')}: ${e.message}`, 'error');
++            }
+         },
+-        
+-        // Translation helper
+-        t(key) {
+-            return i18n[this.lang][key] || key;
++
++        // Load a full server package into the workbench panel (shared by prepare/open).
++        _applyDocPackage(data) {
++            this.documentPreparation.scenario = data.scenario_code;
++            this.documentPreparation.package = data;
++            this.documentPreparation.pendingProductId = data.selected_product_id || '';
++            this.documentPreparation.panelOpen = true;
++            this.activeWorkspace = 'chat';
++            if (data.scenario_code) localStorage.setItem('crossbridge_doc_last_scenario', data.scenario_code);
++            this.resetActiveOfficialForm();
++            this.runDocValidation();
++            this.updateLatestDocOverview();
+         },
+-        
+-        // Set language
+-        setLanguage(newLang) {
+-            this.lang = newLang;
+-            localStorage.setItem('justchat_lang', newLang);
 +
 +        async openDocumentPreparation(productId = '', matchingSessionId = null) {
 +            if (this.docPreparationAlreadyOpened(productId)) return;
@@ -1544,7 +2265,16 @@ index 17f8244..5b507cc 100644
 +                }
 +            });
 +            this.$nextTick(() => this.scrollToBottom());
-+        },
+         },
+-        
+-        // Get model type display name
+-        getModelTypeName(type) {
+-            const names = {
+-                chat: this.t('chat'),
+-                embedding: this.t('embedding'),
+-                rerank: this.t('reranker')
+-            };
+-            return names[type] || type;
 +
 +        async resumeDocumentPreparation(overview) {
 +            this.activeWorkspace = 'chat';
@@ -1557,7 +2287,20 @@ index 17f8244..5b507cc 100644
 +            if (overview?.scenarioCode) {
 +                await this.selectDocScenario(overview.scenarioCode, { silent: true });
 +            }
-+        },
+         },
+-        
+-        // Initialize
+-        async init() {
+-            this.initResponsiveLayout();
+-            await this.loadSettings();
+-            await this.loadModels();
+-            await this.loadChats();
+-            await this.loadDocuments();
+-            await this.loadInstalledPlugins();
+-            this.applyTheme();
+-            // Note: favicon is updated by loadLogo() which is called from loadSettings()
+-            // Initialize plugin system
+-            this.initPluginSystem();
 +
 +        updateLatestDocOverview() {
 +            const message = [...this.messages].reverse().find(item => item.docOverview);
@@ -1565,7 +2308,14 @@ index 17f8244..5b507cc 100644
 +            message.docOverview.productId = this.docSelectedProductValue();
 +            message.docOverview.scenarioCode = this.documentPreparation.scenario;
 +            message.docOverview.recommendedScenario = this.documentPreparation.recommendedScenario;
-+        },
+         },
+-        
+-        // Responsive layout sync (mobile drawer + desktop collapse)
+-        initResponsiveLayout() {
+-            this.syncSidebarForViewport(true);
+-            const onViewportChange = () => {
+-                if (this._resizeRaf) {
+-                    cancelAnimationFrame(this._resizeRaf);
 +
 +        async selectDocScenario(scenarioCode, options = {}) {
 +            if (!scenarioCode || !await this.ensureDocumentCatalog()) return;
@@ -1600,7 +2350,9 @@ index 17f8244..5b507cc 100644
 +                this.updateLatestDocOverview();
 +                if (clearedIncompatible && !options.silent) {
 +                    this.showToast(this.t('cbDocIncompatibleCleared'), 'error');
-+                }
+                 }
+-                this._resizeRaf = requestAnimationFrame(() => {
+-                    this.syncSidebarForViewport(false);
 +            } catch (e) {
 +                this.documentPreparation.error = e.message;
 +                this.showToast(`${this.t('cbDocLoadFailed')}: ${e.message}`, 'error');
@@ -1655,7 +2407,7 @@ index 17f8244..5b507cc 100644
 +                    method: 'PATCH',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ item_code: itemCode, checked })
-+                });
+                 });
 +                const data = await res.json();
 +                if (!res.ok) throw new Error(data.detail || this.t('cbDocSaveFailed'));
 +                this.documentPreparation.package = data;
@@ -1801,13 +2553,28 @@ index 17f8244..5b507cc 100644
 +                loadId,
 +                pdfUrl: `/api/crossbridge-documents/v1/packages/${packageId}/forms/${form.form_id}/pdf`,
 +                values
-+            };
+             };
+-            window.addEventListener('resize', onViewportChange, { passive: true });
+-            window.addEventListener('orientationchange', onViewportChange, { passive: true });
 +            // Queue the load and push it now. The iframe has been in the DOM since page load, so a
 +            // direct post usually wins; the viewer's 'ready' ping and the iframe @load handler also
 +            // re-flush, so the PDF loads regardless of parent/iframe boot order (fixes Safari race).
 +            this._pendingViewerLoad = payload;
 +            this.$nextTick(() => this.flushViewerLoad());
-+        },
+         },
+-        
+-        syncSidebarForViewport(isInitial) {
+-            const isMobileNow = isMobileViewport();
+-            const switchedToMobile = !this.isMobileView && isMobileNow;
+-            const switchedToDesktop = this.isMobileView && !isMobileNow;
+-            this.isMobileView = isMobileNow;
+-            
+-            if (isMobileNow && (isInitial || switchedToMobile)) {
+-                // Mobile: default closed drawer, open via top menu.
+-                this.sidebarCollapsed = true;
+-            } else if (!isMobileNow && (isInitial || switchedToDesktop)) {
+-                // Desktop: restore persisted collapse preference.
+-                this.sidebarCollapsed = this.desktopSidebarCollapsed;
 +
 +        async acceptTradeTerms() {
 +            const packageId = this.documentPreparation.package?.id;
@@ -1827,10 +2594,16 @@ index 17f8244..5b507cc 100644
 +                return;
 +            } finally {
 +                this.documentPreparation.termsPrompt = false;
-+            }
+             }
 +            this.documentPreparation.pendingTermsForm = null;
 +            if (form) await this.loadOfficialForm(form);
-+        },
+         },
+-        
+-        toggleSidebar() {
+-            this.sidebarCollapsed = !this.sidebarCollapsed;
+-            if (!this.isMobileView) {
+-                this.desktopSidebarCollapsed = this.sidebarCollapsed;
+-                localStorage.setItem('chatraw_sidebar_collapsed', this.sidebarCollapsed ? '1' : '0');
 +
 +        cancelTradeTerms() {
 +            this.documentPreparation.termsPrompt = false;
@@ -1846,14 +2619,17 @@ index 17f8244..5b507cc 100644
 +                && formId === this.documentPreparation.activeFormId) {
 +                this.documentPreparation.activeFormValues = plainValues;
 +                this.runDocValidation();
-+            }
+             }
 +            const saveKey = `${packageId}:${formId}`;
 +            clearTimeout(this.documentPreparation.draftSaveTimers[saveKey]);
 +            this.documentPreparation.draftSaveTimers[saveKey] = setTimeout(
 +                () => this.saveOfficialDraft(packageId, formId, plainValues),
 +                600
 +            );
-+        },
+         },
+-        
+-        openSidebar() {
+-            this.sidebarCollapsed = false;
 +
 +        async saveOfficialDraft(packageId, formId, values) {
 +            if (!packageId || !formId) return;
@@ -1892,7 +2668,10 @@ index 17f8244..5b507cc 100644
 +                    await this.saveOfficialDraft(packageId, formId, queue.pendingValues);
 +                }
 +            }
-+        },
+         },
+-        
+-        closeSidebar() {
+-            this.sidebarCollapsed = true;
 +
 +        mergeOfficialFormDraftState(savedPackage) {
 +            const current = this.documentPreparation.package;
@@ -1906,7 +2685,11 @@ index 17f8244..5b507cc 100644
 +                    : form
 +            ));
 +            this.syncActiveForm();
-+        },
+         },
+-        
+-        closeSidebarOnMobile() {
+-            if (this.isMobileView) {
+-                this.closeSidebar();
 +
 +        async waitForOfficialDraftSaves() {
 +            const saves = Object.values(this.documentPreparation.draftSaveQueues)
@@ -1945,7 +2728,7 @@ index 17f8244..5b507cc 100644
 +                    && get('invoice_currency') && get('payment_currency')
 +                    && normalized(get('invoice_currency')) !== normalized(get('payment_currency')))) {
 +                warnings.push({ code: 'invoice_payment' });
-+            }
+             }
 +            if (pkg.scenario_code === 'import_payment' && bindings.charge_bearer
 +                && (!get('charge_bearer') || get('charge_bearer') === 'PENDING_CONFIRMATION')) {
 +                warnings.push({ code: 'charge_bearer' });
@@ -1954,7 +2737,11 @@ index 17f8244..5b507cc 100644
 +            if (overlayItems.some(item => !item.checked)) warnings.push({ code: 'published_documents' });
 +            this.documentPreparation.validation = warnings;
 +            return warnings;
-+        },
+         },
+-        
+-        openSettingsPanel() {
+-            this.showSettings = true;
+-            this.closeSidebarOnMobile();
 +
 +        async resetDocPackage() {
 +            const packageId = this.documentPreparation.package?.id;
@@ -1974,7 +2761,12 @@ index 17f8244..5b507cc 100644
 +            } catch (e) {
 +                this.showToast(`${this.t('cbDocResetFailed')}: ${e.message}`, 'error');
 +            }
-+        },
+         },
+-        
+-        openPluginsPanel() {
+-            this.showPlugins = true;
+-            this.loadPluginMarket();
+-            this.closeSidebarOnMobile();
 +
 +        async exportOfficialForm() {
 +            const formId = this.documentPreparation.viewerFormId;
@@ -2006,11 +2798,55 @@ index 17f8244..5b507cc 100644
 +                return;
 +            }
 +            this.postToViewer('print', {});
-+        },
+         },
          
          // Apply theme
-         applyTheme() {
-@@ -746,7 +2401,16 @@ function app() {
+@@ -658,13 +2883,31 @@ function app() {
+             }
+         },
+         
++        // Switching/creating a chat must drop any Function 1/2 mode so the composer returns to
++        // Policy Q&A (bug: loan-matching mode leaked into a new chat).
++        resetBusinessModes() {
++            this.loanMatching.active = false;
++            this.loanMatching.session = null;
++            this.loanMatching.listOpen = false;
++            this.loanMatching.selectedProductIds = [];
++            this.loanMatching.entering = false;
++            this.loanMatching.clarifierNotice = '';
++            for (const key of Object.keys(this.loanMatching.form)) this.loanMatching.form[key] = '';
++            this.documentPreparation.panelOpen = false;
++            this.documentPreparation.pendingProductId = '';
++            this.documentPreparation.pendingMatchingSessionId = null;
++            this.documentPreparation.openedProductIds = [];  // "已准备"按匹配/聊天独立，不跨草稿累积
++            this.activeWorkspace = 'chat';
++        },
++
+         // Create new chat
+         async createNewChat() {
+             // Stop any ongoing generation first
+             if (this.isGenerating) {
+                 this.stopGeneration();
+             }
+-            
++            this.resetBusinessModes();
++
+             try {
+                 const res = await fetch('/api/chats', { method: 'POST' });
+                 if (res.ok) {
+@@ -680,9 +2923,10 @@ function app() {
+                 this.showToast(this.t('createChatFailed'), 'error');
+             }
+         },
+-        
++
+         // Select chat
+         async selectChat(chatId) {
++            this.resetBusinessModes();
+             this.currentChatId = chatId;
+             await this.loadMessages(chatId);
+             this.closeSidebarOnMobile();
+@@ -746,7 +2990,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -2028,7 +2864,7 @@ index 17f8244..5b507cc 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +2426,9 @@ function app() {
+@@ -762,7 +3015,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -2039,7 +2875,7 @@ index 17f8244..5b507cc 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +2455,8 @@ function app() {
+@@ -789,7 +3044,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -2049,7 +2885,7 @@ index 17f8244..5b507cc 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +2484,6 @@ function app() {
+@@ -817,7 +3073,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -2057,7 +2893,7 @@ index 17f8244..5b507cc 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +2494,7 @@ function app() {
+@@ -828,6 +3083,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -2065,7 +2901,7 @@ index 17f8244..5b507cc 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +2551,7 @@ function app() {
+@@ -884,7 +3140,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2074,7 +2910,7 @@ index 17f8244..5b507cc 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +2560,7 @@ function app() {
+@@ -893,7 +3149,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2083,7 +2919,7 @@ index 17f8244..5b507cc 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +2568,7 @@ function app() {
+@@ -901,7 +3157,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2092,7 +2928,27 @@ index 17f8244..5b507cc 100644
                              }
                              
                              if (parsed.error) {
-@@ -947,7 +2614,7 @@ function app() {
+@@ -930,12 +3186,15 @@ function app() {
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(body)
+             });
+-            
+-            const data = await res.json();
+-            
++
++            // Parse defensively: a non-JSON error page (e.g. 502 HTML) must not become a cryptic
++            // Safari "did not match the expected pattern." from res.json().
++            let data = null;
++            try { data = await res.json(); } catch (_) { /* non-JSON body */ }
+             if (!res.ok) {
+-                throw new Error(data.error || 'Request failed');
++                throw new Error((data && data.error) || `HTTP ${res.status}`);
+             }
++            data = data || {};
+             
+             if (!this.currentChatId && data.chat_id) {
+                 this.currentChatId = data.chat_id;
+@@ -947,7 +3206,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -2101,7 +2957,7 @@ index 17f8244..5b507cc 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +3232,77 @@ function app() {
+@@ -1565,12 +3824,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -2181,6 +3037,28 @@ index 17f8244..5b507cc 100644
          },
          
          // Auto resize textarea
+@@ -1579,6 +3903,21 @@ function app() {
+             el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+         },
+         
++        // Robust JSON fetch: check res.ok FIRST, then parse defensively. A backend hiccup
++        // (502 / nginx HTML error page / empty body) must NOT become a cryptic Safari
++        // "The string did not match the expected pattern." from res.json() on non-JSON.
++        async cbFetchJson(url, opts = {}) {
++            const res = await fetch(url, opts);
++            let data = null;
++            try { data = await res.json(); } catch (_) { /* non-JSON body */ }
++            if (!res.ok) {
++                const endpoint = url.replace(/^\/api\//, '').split('?')[0];
++                const reason = (data && (data.detail || data.error)) ? `: ${data.detail || data.error}` : '';
++                throw new Error(`HTTP ${res.status} · ${endpoint}${reason}`);
++            }
++            return data || {};
++        },
++
+         // Show toast
+         showToast(message, type = '') {
+             this.toast.message = message;
 diff --git a/backend/static/app.min.js b/backend/static/app.min.js
 index 59132a0..154e9e9 100644
 --- a/backend/static/app.min.js
@@ -6229,7 +7107,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..6d468d5 100644
+index 370c42e..ac49444 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -6240,8 +7118,8 @@ index 370c42e..6d468d5 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev20" as="style">
-+    <link rel="preload" href="app.js?v=cbdev20" as="script">
++    <link rel="preload" href="styles.css?v=cbdev30" as="style">
++    <link rel="preload" href="app.js?v=cbdev30" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -6260,7 +7138,7 @@ index 370c42e..6d468d5 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev20">
++    <link rel="stylesheet" href="styles.css?v=cbdev30">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -6271,46 +7149,59 @@ index 370c42e..6d468d5 100644
      <!-- Sidebar Overlay for Mobile -->
      <div class="sidebar-overlay" x-show="isMobileView && !sidebarCollapsed" @click="closeSidebar()" x-transition:enter="fade-enter" x-transition:leave="fade-leave"></div>
      
-@@ -165,6 +169,38 @@
+@@ -165,6 +169,51 @@
                  <i class="ri-arrow-right-s-line" x-show="sidebarCollapsed"></i>
              </button>
          </div>
 +
 +        <div class="crossbridge-business-nav" x-show="!sidebarCollapsed">
-+            <div class="crossbridge-business-label" x-text="t('cbBusinessServices')"></div>
 +            <button class="crossbridge-business-link"
-+                    :class="{ 'active': loanMatching.active }"
-+                    @click="enterLoanMatching()">
-+                <i class="ri-search-line"></i>
-+                <span x-text="t('cbLoanMatching')"></span>
++                    :class="{ 'active': loanMatching.listOpen }"
++                    @click="openLoanMatchingDrafts()">
++                <i class="ri-bank-line"></i>
++                <span x-text="t('cbLoanMatchingNav')"></span>
 +            </button>
 +            <button class="crossbridge-business-link"
-+                    :class="{ 'active': documentPreparation.panelOpen }"
-+                    @click="enterDocumentPreparation()">
++                    :class="{ 'active': documentPreparation.listOpen }"
++                    @click="openDocumentPreparationDrafts()">
 +                <i class="ri-file-list-3-line"></i>
 +                <span x-text="t('cbDocPrepNav')"></span>
 +            </button>
++            <button class="crossbridge-business-link"
++                    :class="{ 'active': documentTimeline.panelOpen }"
++                    @click="openApplicationTimeline()">
++                <i class="ri-route-line"></i>
++                <span x-text="t('cbTlNav')"></span>
++            </button>
 +        </div>
 +
-+        <button class="btn-icon crossbridge-business-collapsed"
++        <button class="btn-icon crossbridge-business-collapsed crossbridge-loan-matching-collapsed"
 +                x-show="sidebarCollapsed"
-+                @click="enterLoanMatching()"
-+                :title="t('cbLoanMatching')"
-+                :aria-label="t('cbLoanMatching')">
-+            <i class="ri-search-line"></i>
++                @click="openLoanMatchingDrafts()"
++                :title="t('cbLoanMatchingNav')"
++                :aria-label="t('cbLoanMatchingNav')">
++            <i class="ri-bank-line"></i>
 +        </button>
 +
 +        <button class="btn-icon crossbridge-business-collapsed crossbridge-doc-prep-collapsed"
 +                x-show="sidebarCollapsed"
-+                @click="enterDocumentPreparation()"
++                @click="openDocumentPreparationDrafts()"
 +                :title="t('cbDocPrepNav')"
 +                :aria-label="t('cbDocPrepNav')">
 +            <i class="ri-file-list-3-line"></i>
 +        </button>
++
++        <button class="btn-icon crossbridge-business-collapsed crossbridge-timeline-collapsed"
++                x-show="sidebarCollapsed"
++                @click="openApplicationTimeline()"
++                :title="t('cbTlNav')"
++                :aria-label="t('cbTlNav')">
++            <i class="ri-route-line"></i>
++        </button>
          
          <button class="btn-new-chat" @click="createNewChat()" x-show="!sidebarCollapsed">
              <i class="ri-add-line"></i>
-@@ -209,10 +245,24 @@
+@@ -209,10 +258,24 @@
          <button class="btn-icon sidebar-settings-collapsed" @click="openSettingsPanel()" x-show="sidebarCollapsed" :title="t('settings')">
              <i class="ri-settings-3-line"></i>
          </button>
@@ -6332,11 +7223,11 @@ index 370c42e..6d468d5 100644
  
      <!-- Main Content -->
 -    <main class="main-content">
-+    <main class="main-content" :class="{ 'doc-panel-open': documentPreparation.panelOpen }">
++    <main class="main-content" :class="{ 'doc-panel-open': documentPreparation.panelOpen || documentTimeline.panelOpen }">
          <!-- Mobile Header -->
          <div class="mobile-header" x-show="isMobileView">
              <button class="btn-icon" @click="openSidebar()">
-@@ -221,7 +271,7 @@
+@@ -221,7 +284,7 @@
              <span class="mobile-title">ChatRaw</span>
          </div>
  
@@ -6345,7 +7236,7 @@ index 370c42e..6d468d5 100644
              <!-- Welcome - Pre-rendered for LCP optimization -->
              <div class="welcome" x-show="messages.length === 0">
                  <div class="welcome-logo">
-@@ -229,25 +279,12 @@
+@@ -229,25 +292,12 @@
                  </div>
                  <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
                  <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
@@ -6374,7 +7265,7 @@ index 370c42e..6d468d5 100644
                  <template x-for="(msg, index) in messages" :key="index">
                      <div class="message" :class="msg.role">
                          <div class="message-avatar" :class="msg.role">
-@@ -260,7 +297,7 @@
+@@ -260,7 +310,7 @@
                          </div>
                          <div class="message-content">
                              <!-- Show typing indicator for empty assistant message while generating -->
@@ -6383,11 +7274,30 @@ index 370c42e..6d468d5 100644
                                  <span></span><span></span><span></span>
                              </div>
                              <!-- Thinking/Reasoning Block -->
-@@ -277,7 +314,188 @@
+@@ -277,7 +327,215 @@
                              
                              <!-- Show actual content -->
                              <div x-show="msg.content" x-html="renderMarkdown(msg.content)"></div>
 -                            
++
++                            <!-- Function 3: persistent application-progress overview card -->
++                            <div class="timeline-card" x-show="msg.timelineApplicationId" x-init="ensureTimelineLoaded()">
++                                <template x-if="tlAppById(msg.timelineApplicationId)">
++                                    <div class="timeline-card-inner" x-data="{ get a() { return tlAppById(msg.timelineApplicationId); } }">
++                                        <div class="timeline-card-head">
++                                            <span class="timeline-card-eyebrow" x-text="t('cbTlOverviewTitle')"></span>
++                                            <span class="timeline-status" :class="`tl-${a.status}`" x-text="tlStatusLabel(a.status)"></span>
++                                        </div>
++                                        <div class="timeline-card-product" x-text="tlProductLabel(a)"></div>
++                                        <div class="timeline-card-sub">
++                                            <span x-text="tlCurrentStageLabel(a)"></span>
++                                            <span class="timeline-card-step" x-text="`${tlPad2(tlProgress(a).step)} / ${tlPad2(tlProgress(a).total)}`"></span>
++                                        </div>
++                                        <div class="timeline-progress"><span class="timeline-progress-fill" :class="`tl-${a.status}`" :style="`width:${tlProgress(a).pct}%`"></span></div>
++                                        <button class="timeline-card-btn" @click="openTimelineFromCard(a.id)" x-text="t('cbTlViewProgress')"></button>
++                                    </div>
++                                </template>
++                            </div>
 +
 +                            <!-- Function 1 CTA: invitation only. It never saves data until clicked and confirmed. -->
 +                            <div class="loan-matching-cta" x-show="msg.loanMatchingCta">
@@ -6551,12 +7461,20 @@ index 370c42e..6d468d5 100644
 +                                                        </a>
 +                                                    </template>
 +                                                </div>
-+                                                <button class="loan-btn loan-btn-primary loan-doc-prep-btn"
-+                                                        @click="openDocumentPreparation(result.product.product_id, loanMatching.session?.id)"
-+                                                        :disabled="docPreparationAlreadyOpened(result.product.product_id)">
-+                                                    <i class="ri-file-list-3-line"></i>
-+                                                    <span x-text="t('cbPrepareDocuments')"></span>
-+                                                </button>
++                                                <div class="loan-card-actions">
++                                                    <button class="loan-btn loan-btn-select"
++                                                            :class="{ 'is-selected': isProductSelected(result.product.product_id) }"
++                                                            @click="toggleProductSelection(result.product.product_id)">
++                                                        <i :class="isProductSelected(result.product.product_id) ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"></i>
++                                                        <span x-text="isProductSelected(result.product.product_id) ? t('cbSelectedProduct') : t('cbSelectProduct')"></span>
++                                                    </button>
++                                                    <button class="loan-btn loan-btn-primary loan-doc-prep-btn"
++                                                            @click="openDocumentPreparation(result.product.product_id, loanMatching.session?.id)"
++                                                            :disabled="docPreparationAlreadyOpened(result.product.product_id)">
++                                                        <i class="ri-file-list-3-line"></i>
++                                                        <span x-text="t('cbPrepareDocuments')"></span>
++                                                    </button>
++                                                </div>
 +                                            </article>
 +                                        </template>
 +                                    </div>
@@ -6573,7 +7491,7 @@ index 370c42e..6d468d5 100644
                              <!-- Message Actions (assistant only) -->
                              <div class="message-actions" x-show="msg.role === 'assistant' && msg.content && !isGenerating">
                                  <button class="btn-copy"
-@@ -326,7 +544,56 @@
+@@ -326,7 +584,56 @@
  
              <!-- Input Area -->
              <div class="input-area">
@@ -6630,7 +7548,7 @@ index 370c42e..6d468d5 100644
                      <div class="uploaded-image-preview" x-show="uploadedImage">
                          <img :src="uploadedImage ? 'data:image/jpeg;base64,' + uploadedImageBase64 : ''" alt="Preview" width="60" height="60">
                          <button class="btn-delete-overlay" @click="removeUploadedImage()" aria-label="Remove image"><i class="ri-close-circle-fill"></i></button>
-@@ -377,26 +644,10 @@
+@@ -377,26 +684,10 @@
                          ></textarea>
                          
                          <div class="input-toolbar">
@@ -6661,7 +7579,7 @@ index 370c42e..6d468d5 100644
                              <!-- Plugin Toolbar Buttons Extension Area -->
                              <div class="plugin-toolbar-area" x-show="pluginToolbarButtons.length > 0" x-cloak>
                                  <div class="plugin-toolbar-divider"></div>
-@@ -448,8 +699,415 @@
+@@ -448,8 +739,614 @@
                  </div>
              </div>
          </div>
@@ -6871,12 +7789,20 @@ index 370c42e..6d468d5 100644
 +                                    <span x-text="loanReviewStatusLabel(result.product)"></span>
 +                                </small>
 +                            </div>
-+                            <button class="loan-btn loan-btn-primary loan-doc-prep-btn"
-+                                    @click="openDocumentPreparation(result.product.product_id, loanMatching.session?.id)"
-+                                    :disabled="docPreparationAlreadyOpened(result.product.product_id)">
-+                                <i class="ri-file-list-3-line"></i>
-+                                <span x-text="t('cbPrepareDocuments')"></span>
-+                            </button>
++                            <div class="loan-card-actions">
++                                <button class="loan-btn loan-btn-select"
++                                        :class="{ 'is-selected': isProductSelected(result.product.product_id) }"
++                                        @click="toggleProductSelection(result.product.product_id)">
++                                    <i :class="isProductSelected(result.product.product_id) ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"></i>
++                                    <span x-text="isProductSelected(result.product.product_id) ? t('cbSelectedProduct') : t('cbSelectProduct')"></span>
++                                </button>
++                                <button class="loan-btn loan-btn-primary loan-doc-prep-btn"
++                                        @click="openDocumentPreparation(result.product.product_id, loanMatching.session?.id)"
++                                        :disabled="docPreparationAlreadyOpened(result.product.product_id)">
++                                    <i class="ri-file-list-3-line"></i>
++                                    <span x-text="t('cbPrepareDocuments')"></span>
++                                </button>
++                            </div>
 +                        </article>
 +                    </template>
 +                </div>
@@ -7044,7 +7970,7 @@ index 370c42e..6d468d5 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev20" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev30" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -7064,25 +7990,216 @@ index 370c42e..6d468d5 100644
 +            </div>
 +        </div>
 +
++        <!-- Function 3: submit-blocking reasons (kept in the F2 workbench until resolved) -->
++        <div class="timeline-blocking" x-show="documentTimeline.blocking.length" x-cloak>
++            <p class="timeline-blocking-title" x-text="t('cbTlSubmitBlockedTitle')"></p>
++            <ul>
++                <template x-for="item in documentTimeline.blocking" :key="item.code">
++                    <li x-text="tlSubmitBlockingMessage(item)"></li>
++                </template>
++            </ul>
++        </div>
++
 +        <footer class="doc-prep-actions">
 +            <button class="loan-btn" @click="resetDocPackage()" :disabled="!documentPreparation.package" x-text="t('cbDocReset')"></button>
 +            <button class="loan-btn" @click="exportOfficialForm()" :disabled="!documentPreparation.viewerReady" x-text="t('cbDocExportForm')"></button>
-+            <button class="loan-btn loan-btn-primary" @click="printOfficialForm()" :disabled="!documentPreparation.viewerReady">
++            <button class="loan-btn" @click="printOfficialForm()" :disabled="!documentPreparation.viewerReady">
 +                <i class="ri-printer-line"></i>
 +                <span x-text="t('cbDocPrintForm')"></span>
++            </button>
++            <button class="loan-btn loan-btn-primary"
++                    @click="submitApplication()"
++                    :disabled="!documentPreparation.package || documentTimeline.submitting">
++                <i class="ri-send-plane-line"></i>
++                <span x-text="documentTimeline.submitting ? t('cbTlSubmitting') : t('cbTlSubmit')"></span>
 +            </button>
 +        </footer>
 +    </aside>
 +
++    <!-- CrossBridge Function 3 — Application progress timeline (ChatRaw-native, refined) -->
++    <aside class="doc-prep-panel timeline-panel"
++           x-show="documentTimeline.panelOpen"
++           x-cloak
++           :style="layoutStyle()"
++           @keydown.escape.window="documentTimeline.panelOpen && closeApplicationTimeline()">
++        <header class="doc-prep-header">
++            <div>
++                <h2 x-text="t('cbTlPanelTitle')"></h2>
++            </div>
++            <button class="btn-icon" @click="closeApplicationTimeline()" :aria-label="t('cbTlClose')">
++                <i class="ri-close-line"></i>
++            </button>
++        </header>
++        <div class="doc-prep-scroll">
++            <div class="doc-prep-error" x-show="documentTimeline.error" x-text="documentTimeline.error"></div>
++
++            <!-- application switcher (one SME can have several applications) -->
++            <label class="doc-prep-field timeline-switcher" x-show="documentTimeline.applications.length > 1">
++                <span x-text="t('cbTlSwitcher')"></span>
++                <select @change="selectTimelineApplication($event.target.value)">
++                    <template x-for="a in documentTimeline.applications" :key="a.id">
++                        <option :value="a.id" :selected="a.id === documentTimeline.activeId"
++                                x-text="`${tlProductLabel(a)} · ${tlStatusLabel(a.status)}`"></option>
++                    </template>
++                </select>
++            </label>
++
++            <div x-show="documentTimeline.active" x-data="{ get a() { return documentTimeline.active; } }">
++                <!-- head: product, application id, progress -->
++                <section class="doc-prep-card timeline-head">
++                    <div class="timeline-head-top">
++                        <h3 class="timeline-product" x-text="tlProductLabel(a)"></h3>
++                        <span class="timeline-status" :class="`tl-${a?.status}`" x-text="tlStatusLabel(a?.status)"></span>
++                    </div>
++                    <div class="timeline-sub">
++                        <span class="timeline-id" x-text="`#${tlShortId(a)}`"></span>
++                        <span class="timeline-step" x-text="`${tlPad2(tlProgress(a).step)} / ${tlPad2(tlProgress(a).total)}`"></span>
++                    </div>
++                    <div class="timeline-progress"><span class="timeline-progress-fill" :class="`tl-${a?.status}`" :style="`width:${tlProgress(a).pct}%`"></span></div>
++                </section>
++
++                <!-- the six fixed nodes -->
++                <section class="doc-prep-card">
++                    <ol class="timeline-nodes">
++                        <template x-for="node in (a?.nodes || [])" :key="node.node_code">
++                            <li class="timeline-node" :class="[`tl-${node.state}`, { 'is-current': node.node_code === a.current_node_code }]">
++                                <span class="timeline-node-marker"></span>
++                                <div class="timeline-node-body">
++                                    <div class="timeline-node-row">
++                                        <span class="timeline-node-title" x-text="tlNodeLabel(node)"></span>
++                                        <span class="timeline-node-state" x-text="tlStateLabel(node.state)"></span>
++                                    </div>
++                                    <p class="timeline-node-note" x-show="tlNodeNote(node)" x-text="tlNodeNote(node)"></p>
++                                    <p class="timeline-node-reminder" x-show="node.reminder_at"
++                                       x-text="`${t('cbTlReminder')} · ${(node.reminder_at || '').slice(0, 16).replace('T', ' ')}`"></p>
++                                </div>
++                            </li>
++                        </template>
++                    </ol>
++                </section>
++            </div>
++
++            <div class="doc-prep-muted timeline-empty" x-show="!documentTimeline.applications.length" x-text="t('cbTlNoApplications')"></div>
++        </div>
++    </aside>
++
++    <!-- CrossBridge Function 1 — Saved Drafts -->
++    <div class="modal-overlay" x-show="loanMatching.listOpen" x-cloak
++         @click.self="loanMatching.listOpen = false"
++         @keydown.escape.window="loanMatching.listOpen && (loanMatching.listOpen = false)"
++         x-transition role="dialog" aria-modal="true" aria-labelledby="saved-drafts-title">
++        <div class="saved-drafts-modal">
++            <div class="saved-drafts-header">
++                <div>
++                    <h2 id="saved-drafts-title" x-text="t('cbSavedDraftsTitle')"></h2>
++                    <p x-text="t('cbSavedDraftsSubtitle')"></p>
++                </div>
++                <button class="btn-icon" @click="loanMatching.listOpen = false" aria-label="Close">
++                    <i class="ri-close-line"></i>
++                </button>
++            </div>
++            <div class="saved-drafts-toolbar">
++                <button class="loan-btn loan-btn-primary" @click="startNewLoanDraft()">
++                    <i class="ri-add-line"></i><span x-text="t('cbNewBlankDraft')"></span>
++                </button>
++            </div>
++            <div class="saved-drafts-body">
++                <div class="saved-drafts-loading" x-show="loanMatching.savedDraftsLoading">
++                    <div class="spinner"></div>
++                </div>
++                <p class="saved-drafts-empty"
++                   x-show="!loanMatching.savedDraftsLoading && !loanMatching.savedDrafts.length"
++                   x-text="t('cbSavedDraftsEmpty')"></p>
++                <template x-for="draft in loanMatching.savedDrafts" :key="draft.id">
++                    <article class="saved-draft-card">
++                        <div class="saved-draft-main">
++                            <h3 x-text="draft.name"></h3>
++                            <div class="saved-draft-meta">
++                                <span class="saved-draft-tag" x-show="draft.draft_profile.business_scenario"
++                                      x-text="loanChipLabelByValue('business_scenario', draft.draft_profile.business_scenario)"></span>
++                                <span class="saved-draft-tag" x-show="draft.draft_profile.financing_purpose"
++                                      x-text="loanChipLabelByValue('financing_purpose', draft.draft_profile.financing_purpose)"></span>
++                                <span x-show="draft.draft_profile.annual_turnover_hkd"
++                                      x-text="t('cbFieldTurnover') + '：' + loanFormatHkd(draft.draft_profile.annual_turnover_hkd)"></span>
++                                <span x-show="draft.draft_profile.requested_amount_hkd"
++                                      x-text="t('cbFieldRequestedAmount') + '：' + loanFormatHkd(draft.draft_profile.requested_amount_hkd)"></span>
++                            </div>
++                            <div class="saved-draft-products">
++                                <strong x-text="t('cbDraftSelectedProducts') + '：'"></strong>
++                                <span class="saved-draft-none" x-show="!draft.selected_products.length" x-text="t('cbDraftNoSelection')"></span>
++                                <template x-for="p in draft.selected_products" :key="p.product_id">
++                                    <span class="saved-draft-chip" x-text="lang === 'en' && p.product_name_en ? p.product_name_en : p.product_name"></span>
++                                </template>
++                            </div>
++                        </div>
++                        <div class="saved-draft-actions">
++                            <button class="loan-btn loan-btn-primary" @click="openSavedDraft(draft)" x-text="t('cbDraftOpen')"></button>
++                            <button class="loan-btn" @click="prepareDocsForDraft(draft)">
++                                <i class="ri-file-list-3-line"></i>
++                                <span x-text="t('cbPrepareDocuments')"></span>
++                            </button>
++                            <button class="loan-btn loan-btn-danger" @click="deleteSavedDraft(draft)" x-text="t('cbDraftDelete')"></button>
++                        </div>
++                    </article>
++                </template>
++            </div>
++        </div>
++    </div>
++
++    <!-- CrossBridge Function 2 — Document Drafts (one per loan saved draft) -->
++    <div class="modal-overlay" x-show="documentPreparation.listOpen" x-cloak
++         @click.self="documentPreparation.listOpen = false"
++         @keydown.escape.window="documentPreparation.listOpen && (documentPreparation.listOpen = false)"
++         x-transition role="dialog" aria-modal="true" aria-labelledby="doc-drafts-title">
++        <div class="saved-drafts-modal">
++            <div class="saved-drafts-header">
++                <div>
++                    <h2 id="doc-drafts-title" x-text="t('cbDocDraftsTitle')"></h2>
++                    <p x-text="t('cbDocDraftsSubtitle')"></p>
++                </div>
++                <button class="btn-icon" @click="documentPreparation.listOpen = false" aria-label="Close">
++                    <i class="ri-close-line"></i>
++                </button>
++            </div>
++            <div class="saved-drafts-body">
++                <div class="saved-drafts-loading" x-show="documentPreparation.packagesLoading">
++                    <div class="spinner"></div>
++                </div>
++                <p class="saved-drafts-empty"
++                   x-show="!documentPreparation.packagesLoading && !documentPreparation.packages.length"
++                   x-text="t('cbDocDraftsEmpty')"></p>
++                <template x-for="pkg in documentPreparation.packages" :key="pkg.id">
++                    <article class="saved-draft-card">
++                        <div class="saved-draft-main">
++                            <h3 x-text="docDraftTitle(pkg)"></h3>
++                            <div class="saved-draft-meta">
++                                <span class="saved-draft-tag" x-text="lang === 'zh' ? pkg.scenario_label_zh : pkg.scenario_label_en"></span>
++                                <span x-text="t('cbDocChecklistProgress') + '：' + pkg.checklist_done + '/' + pkg.checklist_total"></span>
++                            </div>
++                            <div class="saved-draft-products" x-show="docDraftLoanName(pkg)">
++                                <strong x-text="t('cbDocDraftFor') + '：'"></strong>
++                                <span class="saved-draft-chip" x-text="docDraftLoanName(pkg)"></span>
++                            </div>
++                        </div>
++                        <div class="saved-draft-actions">
++                            <button class="loan-btn loan-btn-primary" @click="openDocumentPackage(pkg)" x-text="t('cbDocDraftOpen')"></button>
++                            <button class="loan-btn loan-btn-danger" @click="deleteDocumentPackage(pkg)" x-text="t('cbDocDraftDelete')"></button>
++                        </div>
++                    </article>
++                </template>
++            </div>
++        </div>
++    </div>
++
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -949,6 +1607,6 @@
+@@ -949,6 +1846,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev20"></script>
++    <script src="app.js?v=cbdev30"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -7515,7 +8632,7 @@ index 0000000..2a3d06f
 +// Announce readiness so the parent knows it can send load-draft.
 +post("ready", { booted: true });
 diff --git a/backend/static/styles.css b/backend/static/styles.css
-index 4be8751..39f1749 100644
+index 4be8751..4ad6129 100644
 --- a/backend/static/styles.css
 +++ b/backend/static/styles.css
 @@ -189,8 +189,8 @@ select:focus:not(:focus-visible),
@@ -7569,7 +8686,7 @@ index 4be8751..39f1749 100644
  .input-container-inner {
      max-width: 800px;
      margin: 0 auto;
-@@ -3237,3 +3265,1196 @@ input[type=range]::-webkit-slider-thumb:hover {
+@@ -3237,3 +3265,1449 @@ input[type=range]::-webkit-slider-thumb:hover {
          border-color: var(--border-color);
      }
  }
@@ -8766,6 +9883,259 @@ index 4be8751..39f1749 100644
 +/* The old "print the workbench HTML" path is retired: official forms are printed by
 +   the embedded PDF.js viewer (saveDocument() -> hidden iframe -> print), so the genuine
 +   bank PDF is what reaches the printer — not a CSS rendering of the panel. */
++
++/* ---- Function 1: candidate selection toggle ----
++   "Select" is a SECONDARY outlined button: same height/radius/padding/font as the primary
++   "Prepare Documents" so the pair is aligned and balanced, but visually one tier lighter. */
++.loan-card-actions {
++    display: flex;
++    gap: 8px;
++    flex-wrap: wrap;
++    align-items: stretch;   /* both buttons take the same height */
++    margin-top: 12px;
++}
++/* Neutralize stray margins (e.g. .loan-doc-prep-btn's margin-top:14px) so the row is aligned. */
++.loan-card-actions > .loan-btn {
++    margin: 0;
++}
++.loan-btn-select {
++    display: inline-flex;
++    align-items: center;
++    justify-content: center;
++    gap: 6px;
++    color: var(--text-secondary);
++    background: var(--bg-primary);
++    border: 1px solid var(--border-color);
++    transition: color .12s ease, background .12s ease, border-color .12s ease;
++}
++.loan-btn-select i {
++    font-size: 1.05em;
++    line-height: 1;
++}
++.loan-btn-select:hover:not(:disabled) {
++    color: var(--text-primary);
++    border-color: var(--accent-color);
++    background: var(--bg-hover);
++}
++.loan-btn-select.is-selected {
++    color: var(--accent-color);
++    border-color: var(--accent-color);
++    /* subtle accent wash; falls back to bg-hover where color-mix is unsupported */
++    background: var(--bg-hover);
++    background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-primary));
++    font-weight: 600;
++}
++
++/* ---- Function 1: saved-drafts list modal ---- */
++.saved-drafts-modal {
++    display: flex;
++    flex-direction: column;
++    width: min(760px, 92vw);
++    max-height: 84vh;
++    background: var(--bg-primary);
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-md, 12px);
++    overflow: hidden;
++}
++.saved-drafts-header {
++    display: flex;
++    align-items: flex-start;
++    justify-content: space-between;
++    gap: 12px;
++    padding: 18px 20px;
++    border-bottom: 1px solid var(--border-color);
++}
++.saved-drafts-header h2 {
++    margin: 0;
++    font-size: 1.1rem;
++}
++.saved-drafts-header p {
++    margin: 4px 0 0;
++    font-size: 0.85rem;
++    color: var(--text-secondary);
++}
++.saved-drafts-toolbar {
++    padding: 14px 20px 0;
++}
++.saved-drafts-body {
++    padding: 16px 20px 20px;
++    overflow-y: auto;
++    display: flex;
++    flex-direction: column;
++    gap: 12px;
++}
++.saved-drafts-empty {
++    color: var(--text-secondary);
++    font-size: 0.9rem;
++    text-align: center;
++    padding: 28px 12px;
++}
++.saved-drafts-loading {
++    display: flex;
++    justify-content: center;
++    padding: 24px;
++}
++.saved-draft-card {
++    display: flex;
++    align-items: flex-start;
++    justify-content: space-between;
++    gap: 16px;
++    padding: 14px 16px;
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    background: var(--bg-secondary, var(--bg-primary));
++}
++.saved-draft-main { min-width: 0; flex: 1; }
++.saved-draft-main h3 {
++    margin: 0 0 8px;
++    font-size: 0.98rem;
++}
++.saved-draft-meta {
++    display: flex;
++    flex-wrap: wrap;
++    gap: 8px;
++    font-size: 0.82rem;
++    color: var(--text-secondary);
++}
++.saved-draft-tag {
++    padding: 2px 8px;
++    border-radius: 999px;
++    background: var(--bg-hover);
++    color: var(--text-primary);
++}
++.saved-draft-products {
++    margin-top: 10px;
++    font-size: 0.82rem;
++    display: flex;
++    flex-wrap: wrap;
++    align-items: center;
++    gap: 6px;
++}
++.saved-draft-products strong { color: var(--text-secondary); font-weight: 600; }
++.saved-draft-none { color: var(--text-secondary); }
++.saved-draft-chip {
++    padding: 2px 8px;
++    border-radius: 999px;
++    background: var(--accent-color);
++    color: var(--on-accent);
++}
++.saved-draft-actions {
++    display: flex;
++    flex-direction: column;
++    gap: 8px;
++    flex-shrink: 0;
++}
++
++/* ===== Function 3 — application progress timeline =====
++   Native to ChatRaw's minimal monochrome system: system font, white/grey/black tokens,
++   reuses the F2 panel/header/card chrome (.doc-prep-*) so it reads as the same app.
++   Status is restrained (ink + grey; ChatRaw's --destructive only for rejected) — no
++   rainbow badges. The only F3-local token is a faint theme-aware focus ring. */
++:root { --timeline-ring: rgba(0, 0, 0, 0.07); }
++[data-theme="dark"] { --timeline-ring: rgba(255, 255, 255, 0.09); }
++
++.timeline-empty { padding: 40px 8px; text-align: center; }
++
++/* status — quiet text + a small dot, single accent only where it carries meaning */
++.timeline-status {
++    font-size: 12px; font-weight: 500; color: var(--text-secondary);
++    white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
++}
++.timeline-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
++.timeline-status.tl-in_progress { color: var(--text-primary); }
++.timeline-status.tl-completed { color: var(--text-muted); }
++.timeline-status.tl-rejected { color: var(--error-color); }
++.timeline-status.tl-supplement_required { color: var(--text-secondary); }
++
++/* head card (sits inside a .doc-prep-card): product + id + progress line */
++.timeline-head { display: flex; flex-direction: column; gap: 9px; }
++.timeline-head-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
++.timeline-product { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--text-primary); }
++.timeline-sub { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--text-muted); }
++.timeline-id, .timeline-step { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
++.timeline-progress { height: 3px; border-radius: 999px; background: var(--bg-tertiary); overflow: hidden; }
++.timeline-progress-fill { display: block; height: 100%; background: var(--accent-color); border-radius: 999px; transition: width .5s cubic-bezier(.2,.7,.2,1); }
++.timeline-progress-fill.tl-rejected { background: var(--error-color); }
++
++.timeline-switcher { margin-bottom: 14px; }
++
++/* ---- stepper ---- */
++.timeline-nodes { list-style: none; margin: 0; padding: 0; }
++.timeline-node { position: relative; display: grid; grid-template-columns: 16px 1fr; gap: 0 13px; padding: 0 0 18px; }
++.timeline-node:last-child { padding-bottom: 0; }
++.timeline-node::before { content: ''; position: absolute; left: 8px; top: 17px; bottom: 0; width: 1.5px; background: var(--border-color); transform: translateX(-50%); transition: background .3s ease; }
++.timeline-node:last-child::before { display: none; }
++/* completed steps fill the connector spine in ink — the journey travelled so far reads at a glance */
++.timeline-node.tl-completed::before { background: var(--accent-color); }
++.timeline-node-marker {
++    position: relative; z-index: 1; margin-top: 3px; width: 16px; height: 16px; border-radius: 50%;
++    background: var(--bg-primary); border: 1.5px solid var(--border-color);
++    box-shadow: 0 0 0 3px var(--bg-primary);
++    display: grid; place-items: center;
++    transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
++}
++.timeline-node.tl-completed .timeline-node-marker { background: var(--accent-color); border-color: var(--accent-color); }
++/* tick is grid-centered in the dot; tiny upward shift optically centers it (its vertex hangs low) */
++.timeline-node.tl-completed .timeline-node-marker::after {
++    content: ''; width: 5px; height: 2.5px; position: relative; top: -0.5px;
++    border-left: 1.5px solid var(--on-accent); border-bottom: 1.5px solid var(--on-accent); transform: rotate(-45deg);
++}
++.timeline-node.is-current .timeline-node-marker {
++    background: var(--bg-primary); border: 2px solid var(--accent-color);
++    box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 4px var(--timeline-ring);
++    animation: timeline-pulse 2.4s ease-in-out infinite;
++}
++.timeline-node.tl-rejected .timeline-node-marker { background: var(--error-color); border-color: var(--error-color); }
++.timeline-node.tl-supplement_required .timeline-node-marker { background: var(--bg-primary); border: 2px dashed var(--text-secondary); }
++.timeline-node-body { min-width: 0; padding-top: 1px; }
++.timeline-node-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
++.timeline-node-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
++.timeline-node.tl-pending .timeline-node-title { color: var(--text-muted); font-weight: 500; }
++.timeline-node-state { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
++.timeline-node.is-current .timeline-node-state { color: var(--text-secondary); }
++.timeline-node.tl-rejected .timeline-node-state { color: var(--error-color); }
++.timeline-node-note { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
++.timeline-node-reminder { margin: 5px 0 0; font-size: 12px; color: var(--text-muted); }
++
++/* ---- chat overview card (matches .doc-prep-card chrome) ---- */
++.timeline-card { margin-top: 10px; max-width: 440px; }
++.timeline-card-inner {
++    border: 1px solid var(--border-color); border-radius: var(--radius-md);
++    background: var(--bg-primary); box-shadow: var(--shadow-sm); padding: 15px 16px;
++}
++.timeline-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
++.timeline-card-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
++.timeline-card-product { margin-top: 7px; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--text-primary); }
++.timeline-card-sub { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 11px; font-size: 13px; color: var(--text-secondary); }
++.timeline-card-step { font-variant-numeric: tabular-nums; color: var(--text-muted); }
++.timeline-card .timeline-progress { margin-bottom: 13px; }
++.timeline-card-btn {
++    appearance: none; cursor: pointer; width: 100%; font-size: 13px; font-weight: 500;
++    color: var(--text-primary); background: var(--bg-secondary);
++    border: 1px solid var(--border-color); border-radius: var(--radius-sm);
++    padding: 8px 12px; transition: background .15s ease, border-color .15s ease;
++}
++.timeline-card-btn:hover { background: var(--bg-hover); border-color: var(--text-muted); }
++
++/* ---- submit-blocking notice (ChatRaw-styled, restrained) ---- */
++.timeline-blocking {
++    margin: 0 14px 10px; padding: 10px 12px; font-size: 13px; color: var(--text-secondary);
++    background: var(--bg-secondary); border: 1px solid var(--border-color);
++    border-left: 2px solid var(--error-color); border-radius: var(--radius-sm);
++}
++.timeline-blocking-title { margin: 0 0 6px; font-weight: 600; color: var(--text-primary); }
++.timeline-blocking ul { margin: 0; padding-left: 16px; }
++.timeline-blocking li { margin: 2px 0; }
++
++/* ---- motion (calm) ---- */
++@keyframes timeline-pulse {
++    0%, 100% { box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 4px var(--timeline-ring); }
++    50%      { box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 6px transparent; }
++}
++@media (prefers-reduced-motion: reduce) {
++    .timeline-node-marker, .timeline-progress-fill { transition: none !important; }
++    .timeline-node.is-current .timeline-node-marker { animation: none !important; }
++}
 diff --git a/backend/static/styles.min.css b/backend/static/styles.min.css
 index 063268d..ff7aba9 100644
 --- a/backend/static/styles.min.css
