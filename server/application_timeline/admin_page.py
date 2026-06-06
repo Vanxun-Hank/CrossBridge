@@ -88,10 +88,11 @@ ADMIN_PAGE_HTML = """<!DOCTYPE html>
 </head>
 <body>
 <header>
-  <span class="wordmark">CrossBridge · 申请进度后台</span>
-  <span class="tag">银行端 · 内部</span>
+  <span class="wordmark" id="i18n-title"></span>
+  <span class="tag" id="i18n-tag"></span>
   <span class="spacer"></span>
-  <button class="ghost" id="refresh">刷新</button>
+  <button class="ghost" id="lang"></button>
+  <button class="ghost" id="refresh"></button>
 </header>
 <main>
   <section id="list" class="card"></section>
@@ -99,7 +100,33 @@ ADMIN_PAGE_HTML = """<!DOCTYPE html>
 </main>
 <script>
 const API = '/crossbridge-timeline-admin/v1';
-const STATE_LABELS = { pending:'待处理', in_progress:'进行中', completed:'已完成', rejected:'已拒绝', supplement_required:'需补件' };
+const I18N = {
+  zh: { title:'CrossBridge · 申请进度后台', tag:'银行端 · 内部', refresh:'刷新', langBtn:'EN',
+        loadFailed:'加载失败', noApps:'暂无申请', current:'当前', selectPrompt:'请选择左侧的一条申请',
+        application:'申请', reset:'重置(演示)', resetConfirm:'确定重置这条申请的进度到初始状态?(仅供演示)', resetFailed:'重置失败',
+        fieldState:'状态', fieldReminder:'提醒时间', fieldNoteZh:'客户可见说明(中文)', fieldNoteEn:'客户可见说明(English)',
+        fieldInternal:'内部备注(客户永不可见)', save:'保存', saving:'保存中…', saved:'已保存', failed:'失败', currentTag:'当前节点',
+        states:{ pending:'待处理', in_progress:'进行中', completed:'已完成', rejected:'已拒绝', supplement_required:'需补件' } },
+  en: { title:'CrossBridge · Application Console', tag:'Bank · Internal', refresh:'Refresh', langBtn:'中文',
+        loadFailed:'Failed to load', noApps:'No applications yet', current:'Current', selectPrompt:'Select an application on the left',
+        application:'Application', reset:'Reset (demo)', resetConfirm:'Reset this application to its initial state? (demo only)', resetFailed:'Reset failed',
+        fieldState:'Status', fieldReminder:'Reminder', fieldNoteZh:'Customer note (Chinese)', fieldNoteEn:'Customer note (English)',
+        fieldInternal:'Internal note (never shown to the customer)', save:'Save', saving:'Saving…', saved:'Saved', failed:'Failed', currentTag:'Current node',
+        states:{ pending:'Pending', in_progress:'In progress', completed:'Completed', rejected:'Rejected', supplement_required:'Supplement required' } }
+};
+let lang = localStorage.getItem('cbtl_admin_lang') || 'zh';
+const t = (k) => (I18N[lang] || I18N.zh)[k];
+const stateLabel = (s) => ((I18N[lang] || I18N.zh).states[s] || s);
+const nodeLabel = (n) => (lang === 'zh' ? n.label_zh : n.label_en);
+const productLabel = (a) => (lang === 'zh' ? a.product_label_zh : a.product_label_en) || a.product_id || a.origin_package_id;
+function applyStaticLang() {
+  document.documentElement.lang = lang;
+  document.title = t('title');
+  document.getElementById('i18n-title').textContent = t('title');
+  document.getElementById('i18n-tag').textContent = t('tag');
+  document.getElementById('refresh').textContent = t('refresh');
+  document.getElementById('lang').textContent = t('langBtn');
+}
 const SETTABLE = ['in_progress','completed','rejected','supplement_required'];
 let apps = [];
 let selectedId = null;
@@ -125,7 +152,7 @@ function h(tag, props) {
   }
   return el;
 }
-function badge(state) { return h('span', { class: 'badge ' + state }, STATE_LABELS[state] || state); }
+function badge(state) { return h('span', { class: 'badge ' + state }, stateLabel(state)); }
 
 async function load() {
   try {
@@ -136,17 +163,17 @@ async function load() {
     renderList();
     renderDetail();
   } catch (e) {
-    listEl.replaceChildren(h('div', { class: 'empty' }, '加载失败: ' + e.message));
+    listEl.replaceChildren(h('div', { class: 'empty' }, t('loadFailed') + ': ' + e.message));
   }
 }
 
 function renderList() {
-  if (!apps.length) { listEl.replaceChildren(h('div', { class: 'empty' }, '暂无申请')); return; }
+  if (!apps.length) { listEl.replaceChildren(h('div', { class: 'empty' }, t('noApps'))); return; }
   listEl.replaceChildren.apply(listEl, apps.map(a => {
     const stage = a.nodes.find(n => n.node_code === a.current_node_code) || {};
     return h('div', { class: 'app' + (a.id === selectedId ? ' active' : ''), onclick: () => selectApp(a.id) },
-      h('div', { class: 'name' }, a.product_label_zh || a.product_id || a.origin_package_id),
-      h('div', { class: 'meta' }, a.sme_id + ' · 当前: ' + (stage.label_zh || a.current_node_code) + ' ', badge(a.status))
+      h('div', { class: 'name' }, productLabel(a)),
+      h('div', { class: 'meta' }, a.sme_id + ' · ' + t('current') + ': ' + (nodeLabel(stage) || a.current_node_code) + ' ', badge(a.status))
     );
   }));
 }
@@ -168,27 +195,27 @@ function renderNode(a, n) {
   if (isCurrent) {
     stateSel = h('select');
     for (const s of SETTABLE) {
-      const o = h('option', { value: s }, STATE_LABELS[s]);
+      const o = h('option', { value: s }, stateLabel(s));
       if (s === n.state) o.selected = true;
       stateSel.appendChild(o);
     }
-    fields.push(field('状态', stateSel));
+    fields.push(field(t('fieldState'), stateSel));
   }
-  fields.push(field('提醒时间', remInput));
-  fields.push(field('客户可见说明(中文)', zhTa, true));
-  fields.push(field('客户可见说明(English)', enTa, true));
-  fields.push(field('内部备注(客户永不可见)', intTa, true));
+  fields.push(field(t('fieldReminder'), remInput));
+  fields.push(field(t('fieldNoteZh'), zhTa, true));
+  fields.push(field(t('fieldNoteEn'), enTa, true));
+  fields.push(field(t('fieldInternal'), intTa, true));
 
   const msg = h('span', { class: 'msg' });
   const refs = { zh: zhTa, en: enTa, internal: intTa, reminder: remInput, state: stateSel, msg: msg };
-  const btn = h('button', { onclick: () => saveNode(a.id, n.node_code, refs) }, '保存');
+  const btn = h('button', { onclick: () => saveNode(a.id, n.node_code, refs) }, t('save'));
 
   return h('div', { class: 'node ' + n.state + (isCurrent ? ' current' : '') },
     h('div', { class: 'row' },
       h('span', { class: 'dot' }),
-      h('span', { class: 'title' }, n.label_zh + ' / ' + n.label_en),
+      h('span', { class: 'title' }, nodeLabel(n)),
       badge(n.state),
-      isCurrent ? h('span', { class: 'current-tag' }, '当前节点') : null
+      isCurrent ? h('span', { class: 'current-tag' }, t('currentTag')) : null
     ),
     h('div', { class: 'fields' }, fields),
     h('div', { class: 'actions' }, btn, msg)
@@ -197,12 +224,12 @@ function renderNode(a, n) {
 
 function renderDetail() {
   const a = apps.find(x => x.id === selectedId);
-  if (!a) { detailEl.replaceChildren(h('div', { class: 'empty' }, '请选择左侧的一条申请')); return; }
+  if (!a) { detailEl.replaceChildren(h('div', { class: 'empty' }, t('selectPrompt'))); return; }
   const head = h('div', { class: 'head' },
-    h('h2', null, a.product_label_zh || a.product_id || '申请'),
+    h('h2', null, productLabel(a) || t('application')),
     badge(a.status),
     h('span', { class: 'sub' }, 'SME: ' + a.sme_id + ' · package: ' + a.origin_package_id),
-    h('button', { class: 'danger', style: 'margin-left:auto', onclick: () => resetApp(a.id) }, '重置(演示)')
+    h('button', { class: 'danger', style: 'margin-left:auto', onclick: () => resetApp(a.id) }, t('reset'))
   );
   detailEl.replaceChildren.apply(detailEl, [head].concat(a.nodes.map(n => renderNode(a, n))));
 }
@@ -215,30 +242,36 @@ async function saveNode(appId, nodeCode, refs) {
     reminder_at: refs.reminder.value || ''
   };
   if (refs.state) body.state = refs.state.value;
-  refs.msg.textContent = '保存中…'; refs.msg.className = 'msg';
+  refs.msg.textContent = t('saving'); refs.msg.className = 'msg';
   try {
     const res = await fetch(API + '/applications/' + appId + '/nodes/' + nodeCode, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
-    refs.msg.textContent = '已保存'; refs.msg.className = 'msg ok';
+    refs.msg.textContent = t('saved'); refs.msg.className = 'msg ok';
     await load();
   } catch (e) {
-    refs.msg.textContent = '失败: ' + e.message; refs.msg.className = 'msg err';
+    refs.msg.textContent = t('failed') + ': ' + e.message; refs.msg.className = 'msg err';
   }
 }
 
 async function resetApp(appId) {
-  if (!confirm('确定重置这条申请的进度到初始状态?(仅供演示)')) return;
+  if (!confirm(t('resetConfirm'))) return;
   try {
     const res = await fetch(API + '/applications/' + appId + '/reset', { method: 'POST' });
     if (!res.ok) throw new Error('reset failed');
     await load();
-  } catch (e) { alert('重置失败: ' + e.message); }
+  } catch (e) { alert(t('resetFailed') + ': ' + e.message); }
 }
 
 document.getElementById('refresh').addEventListener('click', load);
+document.getElementById('lang').addEventListener('click', () => {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('cbtl_admin_lang', lang);
+  applyStaticLang(); renderList(); renderDetail();
+});
+applyStaticLang();
 load();
 </script>
 </body>

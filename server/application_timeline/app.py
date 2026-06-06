@@ -510,7 +510,9 @@ def create_app(
 
     @app.get(ADMIN_PAGE_PATH, response_class=HTMLResponse)
     def admin_page() -> HTMLResponse:
-        return HTMLResponse(ADMIN_PAGE_HTML)
+        # no-store: the console has no ?v= cache-buster, so always serve the latest
+        # (operators should never get a stale cached copy after a deploy).
+        return HTMLResponse(ADMIN_PAGE_HTML, headers={"Cache-Control": "no-store"})
 
     return app
 
