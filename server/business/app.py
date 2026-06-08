@@ -17,7 +17,9 @@ from .catalog import OFFICIAL_CATALOG_PATH, list_active_products, seed_catalog_p
 from .db import build_engine, build_session_factory, get_database_url, run_migrations
 from .matching import (
     FIELD_LABELS,
+    REQUIRED_FIELDS,
     LlmClarifier,
+    extract_prefill,
     fallback_question,
     match_products,
     merge_profile,
@@ -26,12 +28,21 @@ from .matching import (
     route_intent,
     try_direct_numeric_fill,
 )
-from .models import AuditEvent, MatchResult, MatchingSession, SmeProfile, isoformat_utc, utcnow
+from .models import (
+    AuditEvent,
+    MatchResult,
+    MatchingSession,
+    SavedDraft,
+    SmeProfile,
+    isoformat_utc,
+    utcnow,
+)
 from .schemas import (
     ClarifyRequest,
     CreateSessionRequest,
     DraftProfile,
     RouteIntentRequest,
+    SaveDraftRequest,
     UpdateDraftRequest,
 )
 
@@ -108,6 +119,51 @@ def _serialize_session(session: MatchingSession, db: Session) -> dict[str, Any]:
             for result in results
         ],
     }
+
+
+SCENARIO_LABELS_ZH = {
+    "overseas_procurement": "海外采购",
+    "cross_border_ecommerce": "跨境电商",
+    "export_trade": "出口贸易",
+    "overseas_investment": "海外投资",
+}
+
+
+def _format_hkd(amount: int | None) -> str:
+    if not amount:
+        return ""
+    if amount >= 10000:
+        return f"{amount / 10000:g}万"
+    return str(amount)
+
+
+def _auto_draft_name(profile: DraftProfile, now: datetime) -> str:
+    scenario = SCENARIO_LABELS_ZH.get(profile.business_scenario or "", "贷款草稿")
+    amount = _format_hkd(profile.requested_amount_hkd)
+    parts = [scenario] + ([amount] if amount else []) + [now.strftime("%m-%d %H:%M")]
+    return " · ".join(parts)
+
+
+def _serialize_saved_draft(draft: SavedDraft, *, detail: bool = False) -> dict[str, Any]:
+    profile = _load_profile_json(draft.profile_json)
+    selected_ids = json.loads(draft.selected_product_ids_json)
+    snapshot = json.loads(draft.matched_snapshot_json)
+    selected_set = set(selected_ids)
+    data: dict[str, Any] = {
+        "id": draft.id,
+        "sme_id": draft.sme_id,
+        "name": draft.name,
+        "draft_profile": _serialize_profile(profile),
+        "selected_product_ids": selected_ids,
+        "selected_products": [p for p in snapshot if p.get("product_id") in selected_set],
+        "matched_count": len(snapshot),
+        "origin_session_id": draft.origin_session_id,
+        "created_at": isoformat_utc(draft.created_at),
+        "updated_at": isoformat_utc(draft.updated_at),
+    }
+    if detail:
+        data["matched_snapshot"] = snapshot
+    return data
 
 
 def create_app(
@@ -188,52 +244,21 @@ def create_app(
     def create_matching_session(
         request: CreateSessionRequest, db: Session = Depends(get_db)
     ) -> dict[str, Any]:
-        # resume-or-create：同一 sme_id 若已有未丢弃/未保存的开放 session，续填它而非新建。
-        # 这样「中途离开再回来」不会丢进度（原来每次新建 + 空 SmeProfile = 进度归零）。
-        existing = db.scalars(
+        # 每次进入都开一份全新的空白草稿——除非显式带 prefill（聊天 CTA、或从「已保存草稿」
+        # 列表点开某条时回填）。不再用「上一份已保存 profile」自动填满新会话，否则 4 个必填
+        # 字段直接齐全 → ready_to_match → 前端跳过建草稿、直弹旧候选（用户实测的 bug 根因）。
+        # 多份草稿改由 saved_drafts 显式管理。
+        stale_sessions = db.scalars(
             select(MatchingSession)
             .where(MatchingSession.sme_id == request.sme_id)
             .where(MatchingSession.status.in_(OPEN_SESSION_STATUSES))
-            .order_by(MatchingSession.updated_at.desc())
-        ).first()
-        if existing is not None:
-            existing_profile = _load_profile_json(existing.draft_profile_json)
-            # Re-entering F1 is a new visible interaction. Use the current UI setting
-            # until the user sends a clear natural-language answer.
-            existing.response_language = request.ui_language
-            # 续填语义：已填草稿优先，新 prefill 只补当前为空的字段。
-            merged = DraftProfile.model_validate(
-                {
-                    **request.prefill.model_dump(exclude_none=True),
-                    **existing_profile.model_dump(exclude_none=True),
-                }
-            )
-            if merged.model_dump() != existing_profile.model_dump():
-                db.execute(delete(MatchResult).where(MatchResult.session_id == existing.id))
-                existing.draft_profile_json = merged.model_dump_json()
-                if missing_required_fields(merged):
-                    existing.status = (
-                        "awaiting_clarification" if existing.clarification_count else "draft"
-                    )
-                else:
-                    existing.status = "ready_to_match"
-            existing.current_question = fallback_question(merged, existing.response_language)
-            existing.updated_at = utcnow()
-            _audit(
-                db,
-                sme_id=existing.sme_id,
-                session_id=existing.id,
-                event_type="matching_session_resumed",
-                payload={"prefill": request.prefill.model_dump(exclude_none=True)},
-            )
-            db.commit()
-            return _serialize_session(existing, db)
+        ).all()
+        now = utcnow()
+        for stale in stale_sessions:
+            stale.status = "discarded"
+            stale.updated_at = now
 
-        persisted = db.get(SmeProfile, request.sme_id)
-        profile = (
-            _load_profile_json(persisted.profile_json) if persisted else DraftProfile()
-        )
-        profile = merge_profile(profile, request.prefill)
+        profile = merge_profile(DraftProfile(), request.prefill)
         session = MatchingSession(
             id=str(uuid.uuid4()),
             sme_id=request.sme_id,
@@ -323,6 +348,20 @@ def create_app(
         applied: dict[str, Any] = {}
         made_progress = False
         clarifier_error: str | None = None
+
+        # 0) 开场叙述确定性兜底：用户直接进入贷款匹配、把整段需求打在这里时，
+        #    草稿还是全空的 —— 用与 chat route-intent 相同的抽取器先把画像 seed 出来，
+        #    不依赖 LLM。后续单字段回答（草稿已非空）不会触发，避免重复乱抓。
+        if all(getattr(profile, field) is None for field in REQUIRED_FIELDS):
+            seeded = merge_profile(profile, extract_prefill(request.message))
+            if seeded.model_dump() != profile.model_dump():
+                profile = seeded
+                session.draft_profile_json = profile.model_dump_json()
+                applied = profile.model_dump(exclude_none=True)
+                made_progress = True
+                mode = "prefill"
+                # seed 后重算「当前正在问的字段」，让裸值兜底 / LLM 接着补剩余字段
+                target_field = (missing_required_fields(profile) or [None])[0]
 
         # 1) 数值字段确定性兜底：用户这句基本就是个金额 → 直接填 target，跳过 LLM
         direct = try_direct_numeric_fill(target_field, request.message)
@@ -482,6 +521,96 @@ def create_app(
         )
         db.commit()
         return {"discarded": True, "session_id": session.id}
+
+    @app.post("/crossbridge/v1/loan-matching/sessions/{session_id}/save-draft")
+    def save_loan_draft(
+        session_id: str, request: SaveDraftRequest, db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        # 显式保存：把当前会话的 profile + 用户勾选的产品 + 候选快照存成一条 saved_drafts。
+        # 不再覆盖单份 SmeProfile —— 同一 sme_id 可保存多份。
+        session = get_matching_session(session_id, db)
+        if session.status == "discarded":
+            raise HTTPException(status_code=409, detail="discarded session cannot be saved")
+        profile = _load_profile_json(session.draft_profile_json)
+        results = db.scalars(
+            select(MatchResult)
+            .where(MatchResult.session_id == session.id)
+            .order_by(MatchResult.rank)
+        )
+        snapshot: list[dict[str, Any]] = []
+        for result in results:
+            product = json.loads(result.product_snapshot_json)
+            en_name = ((product.get("localization") or {}).get("en") or {}).get("product_name")
+            snapshot.append(
+                {
+                    "product_id": product.get("product_id"),
+                    "product_name": product.get("product_name"),
+                    "product_name_en": en_name or product.get("product_name"),
+                }
+            )
+        valid_ids = {item["product_id"] for item in snapshot}
+        selected = [pid for pid in request.selected_product_ids if pid in valid_ids]
+        now = utcnow()
+        name = (request.name or "").strip()[:200] or _auto_draft_name(profile, now)
+        draft = SavedDraft(
+            id=str(uuid.uuid4()),
+            sme_id=session.sme_id,
+            name=name,
+            profile_json=profile.model_dump_json(),
+            selected_product_ids_json=_json(selected),
+            matched_snapshot_json=_json(snapshot),
+            origin_session_id=session.id,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(draft)
+        session.status = "saved"
+        session.updated_at = now
+        _audit(
+            db,
+            sme_id=session.sme_id,
+            session_id=session.id,
+            event_type="loan_draft_saved",
+            payload={"draft_id": draft.id, "name": name, "selected_product_ids": selected},
+        )
+        db.commit()
+        return _serialize_saved_draft(draft, detail=True)
+
+    @app.get("/crossbridge/v1/loan-matching/saved-drafts")
+    def list_saved_drafts(
+        sme_id: str = DEMO_SME_ID, db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        rows = db.scalars(
+            select(SavedDraft)
+            .where(SavedDraft.sme_id == sme_id)
+            .order_by(SavedDraft.updated_at.desc())
+        )
+        return {
+            "sme_id": sme_id,
+            "saved_drafts": [_serialize_saved_draft(row) for row in rows],
+        }
+
+    @app.get("/crossbridge/v1/loan-matching/saved-drafts/{draft_id}")
+    def read_saved_draft(draft_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+        draft = db.get(SavedDraft, draft_id)
+        if draft is None:
+            raise HTTPException(status_code=404, detail="saved draft not found")
+        return _serialize_saved_draft(draft, detail=True)
+
+    @app.delete("/crossbridge/v1/loan-matching/saved-drafts/{draft_id}")
+    def delete_saved_draft(draft_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+        draft = db.get(SavedDraft, draft_id)
+        if draft is not None:
+            sme_id = draft.sme_id
+            db.delete(draft)
+            _audit(
+                db,
+                sme_id=sme_id,
+                event_type="loan_draft_deleted",
+                payload={"draft_id": draft_id},
+            )
+            db.commit()
+        return {"deleted": True, "draft_id": draft_id}
 
     @app.get("/crossbridge/v1/sme-profiles/{sme_id}")
     def read_sme_profile(sme_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:

@@ -29,15 +29,53 @@ Data boundary: F1 owns its FastAPI service on 8081, SQLite database, Alembic mig
 
 ## Function 2: Document Preparation
 
-1. The user enters from the sidebar or clicks `Prepare Documents` on an F1 product card.
-2. F1-to-F2 handoff passes only product preselection and optional context for recommendation highlighting. The user still chooses the import or export scenario inside F2.
-3. ChatRaw opens the F2 workbench as a right-side panel while preserving the chat transcript.
-4. The 8082 service creates or restores a document package for the SME and selected scenario.
-5. The panel combines the scenario base checklist with the selected product overlay. Publicly documented materials are labelled as public-source requirements; preparation suggestions remain suggestions; unpublished requirements remain relationship-manager confirmation items.
-6. The user checks items, edits the scenario-specific transaction form and financing cover sheet, reviews non-blocking validation warnings, switches compatible products, resets the package, or prints the preparation pack.
-7. Template drafts and checklist state auto-save. Switching products keeps base checklist progress and restores product-overlay progress when switching back.
+![Function 2 document-preparation workflow](assets/function2-document-preparation-workflow.svg)
 
-Data boundary: F2 owns its FastAPI service on 8082, separate SQLite database, separate Alembic environment, read-only document catalog snapshot, package state, template drafts, checklist states, and audit events. It never reads or writes F1 database tables.
+```mermaid
+flowchart TD
+    A["侧边栏材料准备入口，或 F1 产品卡点击准备材料"] --> B["打开聊天概览气泡 + 右侧材料面板"]
+    B --> C{"用户手选进口或出口场景？"}
+    C -->|"未选择"| D["停留场景选择器，等待用户确认"]
+    C -->|"已选择"| E["创建或恢复该 SME + 场景的材料包"]
+    E --> H["加载场景三档清单 + 产品叠加 + 官方 BOCHK 表单清单"]
+    H --> S["选择官方表单（精确匹配当前产品的表单置顶）"]
+    S --> T{"该表单需要贸易融资条款？"}
+    T -->|"需要且未接受"| U["弹出条款确认；接受后按 sme + 条款SHA 记录"]
+    T -->|"不需要 / 已接受"| V{"官方 PDF 已在本地缓存？"}
+    U --> V
+    V -->|"否"| W["显示缺失提示 + BOCHK 官方下载链接（绝不伪造表单）"]
+    V -->|"是"| X["内嵌 PDF.js 直接填写官方 AcroForm（同源 iframe）"]
+    X --> Y["字段变更 500ms 防抖 → 白名单过滤后按 source SHA 保存草稿"]
+    Y --> Z{"用户下一步操作"}
+    Z -->|"导出"| Z1["saveDocument() 下载填好的真实官方 PDF + 写 exported 审计"]
+    Z -->|"打印"| Z2["写 printed 审计 → 查看器打印真实 PDF"]
+    Z -->|"重置"| Z3["清空清单与官方表单草稿（保留同版本条款接受）+ 审计"]
+```
+
+F1-to-F2 handoff passes only product preselection and optional context for recommendation highlighting. The user still chooses the import or export scenario inside F2. Document preparation fills **genuine official BOCHK PDF forms** in-place via PDF.js (ENABLE_FORMS + `annotationStorage`, exported with `saveDocument()` — no flattening, no coordinate overlays), instead of self-made fill-in templates. Trade-finance forms are gated behind explicit acceptance of BOCHK's terms; an official PDF that is not present in the deployment's local cache shows a download hint rather than a fabricated form. Publicly documented materials remain public-source labelled; unpublished requirements remain relationship-manager confirmation items.
+
+Data boundary: F2 owns its FastAPI service on 8082, separate SQLite database, separate Alembic environment, read-only document catalog snapshot, the official-form registry, package state, official-form drafts (keyed by `package_id + form_id + source_sha256`), trade-terms acceptance (keyed by `sme_id + terms_sha256`), checklist states, and audit events. It never reads or writes F1 database tables. The encrypted official PDFs live only in a git-ignored local cache (`data/document_preparation/official_forms_cache/`); they are never committed.
+
+## Function 3: Application Timeline
+
+```mermaid
+flowchart TD
+    A["F2 工作台页脚『提交申请』"] --> B["flush 草稿（落盘当前官方表单 + 等待自动保存队列）"]
+    B --> C["调用 F2 submission-readiness（唯一事实来源）"]
+    C --> D{"ready?"}
+    D -->|"否"| E["留在 F2 工作台，内联展示 blocking 原因（复用校验文案）"]
+    D -->|"是"| F["POST 创建申请；origin_package_id 唯一 → 幂等"]
+    F --> G["初始化 6 个固定节点：已提交=completed、材料审核=in_progress、其余 pending"]
+    G --> H["右侧面板切到时间线 + 聊天插入常驻概览卡 + 打开 SSE"]
+    H --> I["银行端隐藏后台推进当前节点（禁跳级；完成自动推进下一节点）"]
+    I -->|"rejected / supplement_required"| J["强制中英文客户说明非空"]
+    I --> K["写库并 bump updated_at"]
+    K --> L["SME 端 SSE（DB 轮询）检测变化 → 重拉详情 → 无刷新更新卡片与面板"]
+```
+
+The SME submits a completed F2 package as a loan application. Submission-readiness is decided **only** by Function 2 (the same high-trust checks the client ran on the active form, now applied server-side across every applicable official form): malformed SWIFT/BIC, supplier-vs-beneficiary mismatch, invoice-vs-payment mismatch, pending charge bearer, unchecked published product materials, and core-field completeness are **blocking**; unaccepted trade terms is a non-blocking **warning**. One application per package (`origin_package_id` is unique, so re-submitting the same package returns the original). The bank advances six fixed nodes (`submitted → material_review → credit_assessment → approval_result → signing → disbursement`) from a hidden operator console: the current node cannot be skipped, completing it auto-advances the next, and `rejected` / `supplement_required` require bilingual customer notes. The SME watches progress update live over SSE without refreshing; the bank's `internal_note` is stripped from every SME-facing response.
+
+Data boundary: F3 owns its FastAPI service on 8083, a separate SQLite database (`data/crossbridge_application_timeline.db`), a separate Alembic environment, the applications, their six nodes, and audit events. It snapshots the product label and scenario at submit time (decoupled from F2's catalog) and reads readiness from F2 over HTTP; it never reads or writes the F1/F2 database tables. The SME-facing serialization never includes `internal_note`. The SME-facing timeline calls and the SSE stream go through ChatRaw (the SSE via a dedicated unbuffered streaming route); the hidden bank-operator console (`/crossbridge-admin/timeline`) is not part of the SME navigation and is protected in production by the nginx IP allowlist + the site's HTTP Basic Auth.
 
 ## Service Flow
 
@@ -51,4 +89,9 @@ flowchart LR
     C --> F2["Function 2 documents API :8082"]
     F2 --> D["F2 document catalog snapshot"]
     F1 -. "product preselection only" .-> F2
+    C --> F3["Function 3 timeline API :8083"]
+    F3 -. "submission-readiness (HTTP)" .-> F2
+    C -. "live SSE (unbuffered proxy)" .-> F3
+    BK["Bank operator"] --> ADM["nginx /crossbridge-admin · Basic Auth + IP allowlist"]
+    ADM --> F3
 ```

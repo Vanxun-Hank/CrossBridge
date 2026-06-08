@@ -13,7 +13,12 @@ sys.path.insert(0, str(ROOT / "files"))
 
 from fastapi.testclient import TestClient
 
-from files.language_utils import detect_response_language, resolve_response_language
+from files.language_utils import (
+    detect_explicit_language_request,
+    detect_response_language,
+    resolve_answer_language,
+    resolve_response_language,
+)
 from rag_engine import SYSTEM_PROMPTS, build_prompt
 from server.business.app import create_app
 from server.business.matching import ClarifierResult
@@ -59,6 +64,22 @@ def main() -> int:
         "first ambiguous input falls back to settings",
         resolve_response_language("12345", fallback="en") == "en",
     )
+    ev.check(
+        "explicit bilingual request wins over Chinese query",
+        detect_explicit_language_request("请用中英双语说明跨境付款要求") == "bilingual",
+    )
+    ev.check(
+        "explicit English request wins over Chinese query",
+        resolve_answer_language("请用英文回答进口融资需要什么材料？") == "en",
+    )
+    ev.check(
+        "explicit Chinese request wins over English query",
+        resolve_answer_language("Please reply in Chinese: what documents are required?") == "zh",
+    )
+    ev.check(
+        "policy answer language supports bilingual",
+        resolve_answer_language("请中英对照说明 BOCHK 汇款要求") == "bilingual",
+    )
 
     retrieved = [
         (
@@ -74,12 +95,16 @@ def main() -> int:
     ]
     english_prompt = build_prompt("What documents are required?", retrieved, response_language="en")
     chinese_prompt = build_prompt("需要什么材料？", retrieved, response_language="zh")
+    bilingual_prompt = build_prompt("请中英双语说明。", retrieved, response_language="bilingual")
     ev.check("English RAG prompt wrapper", "[Reference materials]" in english_prompt)
     ev.check("English RAG prompt source marker", "[Source1] (citable)" in english_prompt)
     ev.check("Chinese RAG prompt wrapper", "【参考资料】" in chinese_prompt)
     ev.check("Chinese RAG prompt source marker", "[资料1] (可引用)" in chinese_prompt)
+    ev.check("Bilingual RAG prompt wrapper", "【参考资料 / Reference materials】" in bilingual_prompt)
+    ev.check("Bilingual RAG prompt instruction", "中文和英文中英对照作答" in bilingual_prompt)
     ev.check("English system prompt is explicit", "Answer entirely in English" in SYSTEM_PROMPTS["en"])
     ev.check("Chinese system prompt is explicit", "必须全程使用中文回答" in SYSTEM_PROMPTS["zh"])
+    ev.check("Bilingual system prompt is explicit", "BOTH Chinese and English" in SYSTEM_PROMPTS["bilingual"])
 
     with tempfile.TemporaryDirectory() as temp_dir:
         db_url = f"sqlite:///{Path(temp_dir) / 'language_eval.db'}"

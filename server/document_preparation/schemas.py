@@ -12,6 +12,8 @@ class CreatePackageRequest(BaseModel):
     scenario_code: ScenarioCode
     selected_product_id: str | None = Field(default=None, max_length=64)
     origin_matching_session_id: str | None = Field(default=None, max_length=36)
+    # Link to the Function 1 saved draft this package belongs to (one-to-one).
+    saved_draft_id: str | None = Field(default=None, max_length=36)
 
 
 class UpdateProductRequest(BaseModel):
@@ -25,3 +27,9 @@ class UpdateChecklistRequest(BaseModel):
 
 class UpdateTemplateRequest(BaseModel):
     content: dict[str, Any] = Field(default_factory=dict)
+
+
+class UpdateOfficialFormDraftRequest(BaseModel):
+    # Raw PDF.js annotation values keyed by AcroForm field name. The server filters
+    # these against the registry whitelist before persisting; unknown keys are dropped.
+    values: dict[str, Any] = Field(default_factory=dict)

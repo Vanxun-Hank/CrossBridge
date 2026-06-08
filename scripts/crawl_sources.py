@@ -965,6 +965,114 @@ EVAL_GAP_FILL_SEEDS: list[SourceSeed] = [
 ]
 
 
+TARGETED_GAP_FILL_SEEDS: list[SourceSeed] = [
+    SourceSeed(
+        id="bochk_trade_finance_import",
+        url="https://www.bochk.com/en/corporate/tradefinance/import.html",
+        title="BOCHK Import Services",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_product_page",
+        region=["Hong Kong", "cross-border"],
+        topic=["import payment", "trade finance", "supplier payment"],
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK import trade finance page covering import L/C, import collection, import loan, trust receipt and import invoice financing.",
+        demo_relevance="Supports supplier-payment and import-finance answers with official bank product/workflow evidence.",
+    ),
+    SourceSeed(
+        id="bochk_trade_finance_export",
+        url="https://www.bochk.com/en/corporate/tradefinance/export.html",
+        title="BOCHK Export Services",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_product_page",
+        region=["Hong Kong", "cross-border"],
+        topic=["export trade finance", "trade documents", "working capital"],
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK export trade finance page covering export bills, packing loan, pre-shipment financing and export invoice discounting.",
+        demo_relevance="Supports HK/GBA SME expansion financing answers with trade-document and receivables-finance evidence.",
+    ),
+    SourceSeed(
+        id="bochk_supply_chain_finance_solution",
+        url="https://www.bochk.com/en/loan/loan/tradefinance/supply_chain_finance_solution.html",
+        title="BOCHK Supply Chain Finance Solution",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_product_page",
+        region=["Hong Kong", "cross-border"],
+        topic=["supply chain finance", "purchase order", "supplier financing"],
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK supply-chain finance page covering invoice payment and pre-shipment financing based on PO or confirmed sales order.",
+        demo_relevance="Supports q24-style cross-border expansion financing and supplier working-capital answers.",
+    ),
+    SourceSeed(
+        id="bochk_trade_finance_tariffs",
+        url="https://www.bochk.com/dam/corporatebanking/tfs_tariffs_en.pdf",
+        title="BOCHK Trade Finance Services and Charges",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_official_page",
+        region=["Hong Kong", "cross-border"],
+        topic=["trade finance fees", "import export charges", "bank charges"],
+        source_type="PDF",
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK trade finance services and charges tariff PDF.",
+        demo_relevance="Supports bank-fee caveats for import/export trade finance and avoids unsupported fee claims.",
+        effective_date="2026-03-25",
+    ),
+    SourceSeed(
+        id="bochk_sme_trade_finance_charges",
+        url="https://www.bochk.com/en/smeinone/acopen/servicecharge/tradefinance.html",
+        title="BOCHK SME in One Trade Finance Services and Charges",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_official_page",
+        region=["Hong Kong", "cross-border"],
+        topic=["SME trade finance fees", "service charges", "import export charges"],
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK SME in One trade finance services and charges page.",
+        demo_relevance="Supports SME borrower-facing answers about trade-finance fees and bank confirmation caveats.",
+    ),
+    SourceSeed(
+        id="bochk_corporate_crossborder_services",
+        url="https://www.bochk.com/en/corporate/crossborder.html",
+        title="BOCHK Cross-border Services for Corporate Customers",
+        issuer="Bank of China (Hong Kong)",
+        authority_level="bank_official_page",
+        region=["Hong Kong", "Greater Bay Area", "cross-border"],
+        topic=["cross-border services", "GBA expansion", "corporate banking"],
+        language="en",
+        trust_tier="bank",
+        country="HK",
+        subdivision="hk_sar",
+        agency="BOCHK",
+        crawl_frequency="monthly",
+        reason="Official BOCHK corporate cross-border services page for HK/GBA business expansion context.",
+        demo_relevance="Supports q24-style answers about BOCHK cross-border service coverage for Hong Kong SMEs with Mainland/GBA operations.",
+    ),
+]
+
+
 class VisibleTextParser(HTMLParser):
     BLOCK_TAGS = {
         "address", "article", "aside", "br", "dd", "div", "dl", "dt", "figcaption",
@@ -1234,6 +1342,8 @@ def seed_to_candidate(seed: SourceSeed, robots_allowed: bool, robots_status: str
 
 
 def load_seeds(source_set: str) -> list[SourceSeed]:
+    if source_set == "targeted_gap_fill":
+        return TARGETED_GAP_FILL_SEEDS
     if source_set == "boc_core":
         return BOC_CORE_SEEDS
     if source_set == "boc_expand":
@@ -1241,7 +1351,12 @@ def load_seeds(source_set: str) -> list[SourceSeed]:
     if source_set == "eval_gap_fill":
         return EVAL_GAP_FILL_SEEDS
     if source_set == "all":
-        return BOC_CORE_SEEDS + BOC_EXPAND_SEEDS + EVAL_GAP_FILL_SEEDS
+        return (
+            BOC_CORE_SEEDS
+            + BOC_EXPAND_SEEDS
+            + EVAL_GAP_FILL_SEEDS
+            + TARGETED_GAP_FILL_SEEDS
+        )
     raise ValueError(f"Unsupported source-set: {source_set}")
 
 
@@ -1522,7 +1637,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument(
         "--source-set",
         default="boc_core",
-        choices=["boc_core", "boc_expand", "eval_gap_fill", "all"],
+        choices=["targeted_gap_fill", "boc_core", "boc_expand", "eval_gap_fill", "all"],
     )
     parser.add_argument("--dry-run", action="store_true", help="Only write data/crawl_candidates.jsonl.")
     parser.add_argument("--limit", type=int, default=None, help="Maximum seeds to crawl.")

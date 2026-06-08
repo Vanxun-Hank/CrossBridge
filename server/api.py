@@ -35,7 +35,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "files"))
 
 from rag_engine import CrossBridgeRAG  # noqa: E402
-from language_utils import detect_response_language, normalize_language  # noqa: E402
+from language_utils import (  # noqa: E402
+    detect_explicit_language_request,
+    detect_response_language,
+    normalize_answer_language,
+)
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -84,6 +88,15 @@ TIER_LABELS = {
         "bank": "Bank",
         "industry": "Industry",
         "non_official": "Third party",
+    },
+    "bilingual": {
+        "regulator": "监管 / Regulator",
+        "central_bank": "央行 / Central bank",
+        "government": "政府 / Government",
+        "official_dev": "官方机构 / Official institution",
+        "bank": "银行 / Bank",
+        "industry": "业界 / Industry",
+        "non_official": "第三方 / Third party",
     },
 }
 
@@ -135,7 +148,9 @@ def _format_citations_markdown(citations: list[dict], response_language: str = "
     if not citations:
         return ""
     is_english = response_language == "en"
-    lines = ["", "---", "", f"**{'Sources' if is_english else '信息来源'}**", ""]
+    is_bilingual = response_language == "bilingual"
+    heading = "Sources" if is_english else "信息来源 / Sources" if is_bilingual else "信息来源"
+    lines = ["", "---", "", f"**{heading}**", ""]
     for i, c in enumerate(citations, 1):
         title = (c.get("title") or "").strip() or ("Untitled source" if is_english else "未命名资料")
         url = (c.get("url") or "").strip()
@@ -179,9 +194,11 @@ def _resolve_response_language(messages: list[dict], fallback: str | None = None
         if message.get("role") != "user":
             continue
         text = _extract_query_from_messages([message])
+        if requested := detect_explicit_language_request(text):
+            return requested
         if detected := detect_response_language(text):
             return detected
-    return normalize_language(fallback)
+    return normalize_answer_language(fallback)
 
 
 # ---------------------------------------------------------------------------

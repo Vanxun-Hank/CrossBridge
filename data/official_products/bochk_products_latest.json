@@ -73,14 +73,16 @@
       "loan_limit_text": "最高 HK$2,000,000",
       "localization": {
         "en": {
-          "application_thresholds": [],
+          "application_thresholds": [
+            "For businesses operating for 2 years or more"
+          ],
           "fee_text": null,
           "interest_rate_text": "Promotional rate: 25 bps annualised interest-rate discount for online applications (until 2026-03-31); subject to BOCHK's latest announcement",
           "loan_limit_text": "Up to HK$2,000,000",
           "product_description": "Flexible unsecured SME loan.",
           "product_name": "BOC \"Small Business Loan\" Unsecured Loan",
           "public_guidance": [],
-          "repayment_method_text": null,
+          "repayment_method_text": "Instalment loan, revolving loan, or a combination",
           "required_documents": [],
           "tenor_text": "Up to 60 months"
         }
@@ -190,14 +192,17 @@
       "loan_limit_text": "最高 HK$18,000,000",
       "localization": {
         "en": {
-          "application_thresholds": [],
+          "application_thresholds": [
+            "For businesses operating in Hong Kong for at least 1 year",
+            "Application period as published by HKMC from time to time"
+          ],
           "fee_text": null,
           "interest_rate_text": "Promotional rate: 25 bps annualised interest-rate discount for online applications (until 2026-06-30); subject to BOCHK's latest announcement. Standard rate is subject to BOCHK final approval.",
           "loan_limit_text": "Up to HK$18,000,000",
           "product_description": "BOCHK application path for the SFGS 80% Guarantee Product.",
           "product_name": "SME Financing Guarantee Scheme - 80% Guarantee Product",
           "public_guidance": [],
-          "repayment_method_text": null,
+          "repayment_method_text": "Non-revolving financing repaid by instalments; principal repayments at intervals not exceeding 3 months",
           "required_documents": [],
           "tenor_text": "Up to 10 years"
         }
@@ -420,14 +425,16 @@
       "localization": {
         "en": {
           "application_thresholds": [],
-          "fee_text": null,
+          "fee_text": "Handling fee: 1/4% of the financing amount, min. HK$500",
           "interest_rate_text": null,
           "loan_limit_text": null,
           "product_description": "Open-account import financing against a supplier invoice.",
           "product_name": "Import Invoice Financing",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Supplier invoice"
+          ],
           "tenor_text": null
         }
       },
@@ -544,7 +551,7 @@
           "product_description": "Take possession of goods or shipping documents under an L/C before payment.",
           "product_name": "Trust Receipt Facilities",
           "public_guidance": [],
-          "repayment_method_text": null,
+          "repayment_method_text": "Repayable on the trust receipt maturity date",
           "required_documents": [],
           "tenor_text": null
         }
@@ -650,14 +657,16 @@
       "localization": {
         "en": {
           "application_thresholds": [],
-          "fee_text": null,
+          "fee_text": "Handling fee: 1/8% of the financing amount, min. HK$350",
           "interest_rate_text": null,
           "loan_limit_text": null,
           "product_description": "Pre-shipment production-cost financing secured by an L/C.",
           "product_name": "Packing Loan",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Letter of credit"
+          ],
           "tenor_text": null
         }
       },
@@ -769,14 +778,16 @@
       "localization": {
         "en": {
           "application_thresholds": [],
-          "fee_text": null,
+          "fee_text": "Handling fee: 1/4% of the financing amount, min. HK$450",
           "interest_rate_text": null,
           "loan_limit_text": null,
           "product_description": "Financing for raw materials and overheads after receipt of a purchase order.",
           "product_name": "Pre-shipment Financing",
           "public_guidance": [],
-          "repayment_method_text": null,
-          "required_documents": [],
+          "repayment_method_text": "After shipment, repayable via export invoice discounting, export bills advance, or negotiation/discounting of export drafts under an L/C",
+          "required_documents": [
+            "Purchase order or sales contract"
+          ],
           "tenor_text": null
         }
       },
@@ -889,14 +900,17 @@
       "localization": {
         "en": {
           "application_thresholds": [],
-          "fee_text": null,
+          "fee_text": "Handling fee: 1/4% of the financing amount, min. HK$500",
           "interest_rate_text": null,
           "loan_limit_text": null,
           "product_description": "Short-term financing against an invoice and evidence of delivery.",
           "product_name": "Export Invoice Discounting",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Invoice",
+            "Proof of delivery"
+          ],
           "tenor_text": "Short-term loan; the public page does not state a specific number of days"
         }
       },
@@ -1236,7 +1250,9 @@
           "product_name": "Back-to-Back L/C",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Master L/C"
+          ],
           "tenor_text": null
         }
       },
@@ -1348,7 +1364,7 @@
           "product_description": "Import collection with release of documents after payment terms are fulfilled.",
           "product_name": "Import Bills for Collection",
           "public_guidance": [],
-          "repayment_method_text": null,
+          "repayment_method_text": "Documents against Payment (D/P) or Documents against Acceptance (D/A)",
           "required_documents": [],
           "tenor_text": null
         }
@@ -1677,7 +1693,9 @@
           "product_name": "L/C Transfer",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "L/C marked transferable"
+          ],
           "tenor_text": null
         }
       },
@@ -1788,8 +1806,10 @@
           "product_description": "Send export documents to the buyer's bank for release on payment or acceptance.",
           "product_name": "Export Bills for Collection",
           "public_guidance": [],
-          "repayment_method_text": null,
-          "required_documents": [],
+          "repayment_method_text": "Documents against Payment (D/P) or Documents against Acceptance (D/A)",
+          "required_documents": [
+            "Export documents"
+          ],
           "tenor_text": null
         }
       },
@@ -1901,7 +1921,9 @@
           "product_name": "Export Bills Advance",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Export collection documents"
+          ],
           "tenor_text": null
         }
       },
@@ -2013,7 +2035,9 @@
           "product_name": "Export Bills Under L/C for Collection",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Export documents under L/C"
+          ],
           "tenor_text": null
         }
       },
@@ -2125,7 +2149,9 @@
           "product_name": "Negotiation / Discount of Export Bills Under L/C",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Export documents under L/C"
+          ],
           "tenor_text": null
         }
       },
@@ -2676,7 +2702,10 @@
           "product_name": "Supply Chain Invoice Payment",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Invoice",
+            "Anchor buyer's payment undertaking"
+          ],
           "tenor_text": null
         }
       },
@@ -2792,7 +2821,9 @@
           "product_name": "SC Pre-shipment Financing",
           "public_guidance": [],
           "repayment_method_text": null,
-          "required_documents": [],
+          "required_documents": [
+            "Purchase order (PO) from the anchor buyer, or sales order (SO) confirmed by the anchor buyer"
+          ],
           "tenor_text": "Short-term financing; the public page does not state a specific number of days"
         }
       },

@@ -62,6 +62,11 @@ class UpdateDraftRequest(BaseModel):
     updates: DraftProfileUpdate
 
 
+class SaveDraftRequest(BaseModel):
+    name: str | None = Field(default=None, max_length=200)
+    selected_product_ids: list[str] = Field(default_factory=list)
+
+
 class ClarifyRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     ui_language: UiLanguage | None = None

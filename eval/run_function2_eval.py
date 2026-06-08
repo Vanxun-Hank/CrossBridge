@@ -23,6 +23,7 @@ from fastapi.testclient import TestClient
 
 from server.document_preparation.app import create_app
 from server.document_preparation import catalog as catalog_module
+from server.document_preparation import official_forms as official_forms_module
 from server.document_preparation.catalog import build_catalog
 from server.document_preparation.db import build_engine, build_session_factory, run_migrations
 from server.document_preparation.models import DocumentAuditEvent
@@ -190,6 +191,11 @@ def run_checks() -> Checks:
     with tempfile.TemporaryDirectory() as temp_dir:
         db_path = Path(temp_dir) / "f2.db"
         database_url = f"sqlite:///{db_path}"
+        # Keep this API test hermetic even when a developer has populated the real
+        # gitignored cache for browser testing. The ready-cache path is exercised by
+        # scripts/check_official_forms_pdfjs.mjs against the genuine local PDFs.
+        original_form_cache_dir = official_forms_module.FORM_CACHE_DIR
+        official_forms_module.FORM_CACHE_DIR = Path(temp_dir) / "missing-official-forms"
         run_migrations(database_url)
         app = create_app(database_url=database_url, migrate_on_startup=False)
         with TestClient(app) as client:
@@ -248,10 +254,44 @@ def run_checks() -> Checks:
                 set(pkg["checklist"].keys())
                 == {"public_source_hint", "suggested_preparation", "bank_to_confirm"},
             )
+            official_ids = [f["form_id"] for f in pkg["official_forms"]]
             result.check(
-                "import package exposes supplier form plus shared financing cover",
-                {template["code"] for template in pkg["templates"]}
-                == {"supplier_payment_form", "financing_cover_sheet"},
+                "import package exposes the official import-scenario forms",
+                set(official_ids)
+                == {
+                    "tt_remittance",
+                    "import_invoice_financing",
+                    "import_loan_drawdown",
+                    "irrevocable_documentary_credit",
+                },
+                json.dumps(official_ids),
+            )
+            result.check(
+                "the product-exact official form is ranked first",
+                official_ids[0] == "import_invoice_financing"
+                and pkg["official_forms"][0]["product_match"] is True,
+                json.dumps(official_ids),
+            )
+            result.check(
+                "official forms report a missing local cache in the hermetic eval env",
+                all(f["cache_status"] == "missing" for f in pkg["official_forms"]),
+            )
+            result.check(
+                "trade-finance forms are terms-gated; TT remittance is not",
+                next(
+                    f for f in pkg["official_forms"] if f["form_id"] == "import_invoice_financing"
+                )["trade_terms_required"] is True
+                and next(
+                    f for f in pkg["official_forms"] if f["form_id"] == "tt_remittance"
+                )["trade_terms_required"] is False,
+            )
+            result.check(
+                "package no longer exposes self-made templates",
+                "templates" not in pkg,
+            )
+            result.check(
+                "package surfaces unaccepted trade-terms status with a stable sha",
+                pkg["trade_terms"]["accepted"] is False and bool(pkg["trade_terms"]["sha256"]),
             )
 
             chk = client.patch(
@@ -276,21 +316,47 @@ def run_checks() -> Checks:
                 json.dumps(_checked_overlay_codes(overlay_chk.json())),
             )
 
-            tpl = client.patch(
+            gone = client.patch(
                 f"{API}/packages/{pid}/templates/supplier_payment_form",
-                json={"content": {"supplier_name": "ABC Co", "swift_bic": "BKCHHKHH"}},
+                json={"content": {"supplier_name": "ABC Co"}},
             )
-            result.check("PATCH /templates returns 200", tpl.status_code == 200)
-            cover_tpl = client.patch(
-                f"{API}/packages/{pid}/templates/financing_cover_sheet",
-                json={"content": {"financing_purpose": "Import working capital"}},
+            result.check("retired custom-template endpoint returns 410 Gone", gone.status_code == 410)
+
+            # Trade-finance forms are gated behind explicit terms acceptance.
+            gated = client.get(f"{API}/packages/{pid}/forms/import_invoice_financing/pdf")
+            result.check("trade-finance PDF is 403 before terms acceptance", gated.status_code == 403)
+            accepted = client.post(f"{API}/packages/{pid}/trade-terms/accept")
+            result.check("POST /trade-terms/accept returns 200", accepted.status_code == 200)
+            result.check(
+                "package reflects accepted trade terms",
+                accepted.json()["trade_terms"]["accepted"] is True,
             )
-            result.check("shared financing-cover template saves", cover_tpl.status_code == 200)
-            wrong_tpl = client.patch(
-                f"{API}/packages/{pid}/templates/export_fulfillment_form",
-                json={"content": {"buyer_name": "Wrong scenario"}},
+            after_accept = client.get(f"{API}/packages/{pid}/forms/import_invoice_financing/pdf")
+            result.check(
+                "after acceptance the terms gate opens (cache still missing -> 409)",
+                after_accept.status_code == 409,
             )
-            result.check("scenario-incompatible template is rejected", wrong_tpl.status_code == 400)
+            tt_pdf = client.get(f"{API}/packages/{pid}/forms/tt_remittance/pdf")
+            result.check(
+                "non-gated TT form skips 403 and reports missing cache (409)",
+                tt_pdf.status_code == 409,
+            )
+            unknown_form = client.get(f"{API}/packages/{pid}/forms/not_a_form/pdf")
+            result.check("unknown form_id is rejected (404)", unknown_form.status_code == 404)
+
+            draft = client.patch(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/draft",
+                json={"values": {"Name of Applicant": "ABC Co", "__not_in_form__": "x"}},
+            )
+            result.check("PATCH /forms/.../draft returns 200", draft.status_code == 200)
+            saved_draft = client.get(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/draft"
+            ).json()
+            result.check(
+                "official-form draft persists only registry-whitelisted fields",
+                saved_draft["values"] == {"Name of Applicant": "ABC Co"},
+                json.dumps(saved_draft["values"], ensure_ascii=False),
+            )
 
             resume = client.post(
                 f"{API}/packages",
@@ -310,13 +376,13 @@ def run_checks() -> Checks:
                 _checked_overlay_codes(fetched) == [overlay_code],
                 json.dumps(_checked_overlay_codes(fetched)),
             )
-            saved_tpl = next(
-                t for t in fetched["templates"] if t["code"] == "supplier_payment_form"
-            )
+            resumed_draft = client.get(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/draft"
+            ).json()
             result.check(
-                "template draft persists across resume",
-                saved_tpl["content"].get("swift_bic") == "BKCHHKHH",
-                json.dumps(saved_tpl["content"], ensure_ascii=False),
+                "official-form draft persists across resume",
+                resumed_draft["values"] == {"Name of Applicant": "ABC Co"},
+                json.dumps(resumed_draft["values"], ensure_ascii=False),
             )
 
             switched = client.patch(
@@ -353,14 +419,26 @@ def run_checks() -> Checks:
 
             after_reset = client.post(f"{API}/packages/{pid}/reset").json()
             result.check("reset clears checklist", _checked_codes(after_reset) == [])
-            reset_tpl = next(
-                t for t in after_reset["templates"] if t["code"] == "supplier_payment_form"
+            reset_draft = client.get(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/draft"
+            ).json()
+            result.check("reset clears official-form drafts", reset_draft["values"] == {})
+            result.check(
+                "reset keeps trade-terms acceptance (keyed by SME, not package)",
+                after_reset["trade_terms"]["accepted"] is True,
             )
-            result.check("reset clears template drafts", reset_tpl["content"] == {})
             result.check("reset clears overlay progress", _checked_overlay_codes(after_reset) == [])
 
             printed = client.post(f"{API}/packages/{pid}/printed")
             result.check("POST /printed returns 200", printed.status_code == 200)
+            exported_form = client.post(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/exported"
+            )
+            result.check("POST /forms/.../exported returns 200", exported_form.status_code == 200)
+            printed_form = client.post(
+                f"{API}/packages/{pid}/forms/import_invoice_financing/printed"
+            )
+            result.check("POST /forms/.../printed returns 200", printed_form.status_code == 200)
 
             exp = client.post(
                 f"{API}/packages",
@@ -375,10 +453,131 @@ def run_checks() -> Checks:
                 exp.status_code == 200
                 and exp.json()["scenario_code"] == "export_fulfillment",
             )
+            exp_forms = [f["form_id"] for f in exp.json()["official_forms"]]
             result.check(
-                "export package exposes export form plus shared financing cover",
-                {template["code"] for template in exp.json()["templates"]}
-                == {"export_fulfillment_form", "financing_cover_sheet"},
+                "export package exposes the official export-scenario forms",
+                set(exp_forms)
+                == {
+                    "export_invoice_discounting",
+                    "processing_export_documents",
+                    "packing_loan",
+                },
+                json.dumps(exp_forms),
+            )
+            result.check(
+                "the product-exact export form is ranked first",
+                exp_forms[0] == "export_invoice_discounting",
+                json.dumps(exp_forms),
+            )
+
+            # ---- submission-readiness (Function 3 submit gate; F2 is the source of truth) ----
+            rp = client.post(
+                f"{API}/packages",
+                json={"sme_id": "demo_ready_001", "scenario_code": "import_payment"},
+            ).json()
+            rpid = rp["id"]
+            tt_bind = next(
+                f["validation_bindings"]
+                for f in rp["official_forms"]
+                if f["form_id"] == "tt_remittance"
+            )
+
+            def _readiness(pkg_id: str = rpid) -> dict:
+                return client.get(f"{API}/packages/{pkg_id}/submission-readiness").json()
+
+            empty = _readiness()
+            empty_codes = {b["code"] for b in empty["blocking"]}
+            result.check(
+                "readiness: empty package is not ready (core_fields + charge_bearer block)",
+                empty["ready"] is False
+                and "core_fields" in empty_codes
+                and "charge_bearer" in empty_codes,
+                json.dumps(empty["blocking"]),
+            )
+
+            good_values = {
+                tt_bind["swift_bic"]: "HSBCHKHH",
+                tt_bind["beneficiary_account_name"]: "ACME LTD",
+                tt_bind["payment_amount"]: "1000",
+                tt_bind["payment_currency"]: "USD",
+                tt_bind["charge_bearer"]: "OUR",
+            }
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={"values": good_values},
+            )
+            ready = _readiness()
+            result.check(
+                "readiness: complete consistent form is ready to submit",
+                ready["ready"] is True and ready["blocking"] == [],
+                json.dumps(ready),
+            )
+            result.check(
+                "readiness: unaccepted trade terms surface as a non-blocking warning",
+                any(w["code"] == "trade_terms" for w in ready["warnings"]),
+                json.dumps(ready["warnings"]),
+            )
+
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={"values": dict(good_values, **{tt_bind["swift_bic"]: "BAD"})},
+            )
+            r_bic = _readiness()
+            result.check(
+                "readiness: malformed SWIFT/BIC blocks submission",
+                r_bic["ready"] is False
+                and any(b["code"] == "swift_bic" for b in r_bic["blocking"]),
+                json.dumps(r_bic["blocking"]),
+            )
+
+            client.patch(
+                f"{API}/packages/{rpid}/forms/tt_remittance/draft",
+                json={
+                    "values": dict(
+                        good_values, **{tt_bind["charge_bearer"]: "PENDING_CONFIRMATION"}
+                    )
+                },
+            )
+            r_cb = _readiness()
+            result.check(
+                "readiness: pending charge bearer blocks submission",
+                r_cb["ready"] is False
+                and any(b["code"] == "charge_bearer" for b in r_cb["blocking"]),
+                json.dumps(r_cb["blocking"]),
+            )
+
+            # published product materials: an overlay with unchecked required items blocks.
+            overlays = client.get(f"{API}/catalog").json()["product_overlays"]
+            import_overlay = next(
+                ov
+                for ov in overlays.values()
+                if "import_payment" in ov.get("scenarios", []) and ov.get("checklist_items")
+            )
+            pub = client.post(
+                f"{API}/packages",
+                json={
+                    "sme_id": "demo_ready_002",
+                    "scenario_code": "import_payment",
+                    "selected_product_id": import_overlay["product_id"],
+                },
+            ).json()
+            pub_id = pub["id"]
+            pub_before = {b["code"] for b in _readiness(pub_id)["blocking"]}
+            result.check(
+                "readiness: unchecked published product materials block submission",
+                "published_documents" in pub_before,
+                json.dumps(sorted(pub_before)),
+            )
+            for item in pub["product_overlay"]["checklist_items"]:
+                client.patch(
+                    f"{API}/packages/{pub_id}/checklist",
+                    json={"item_code": item["code"], "checked": True},
+                )
+            pub_after = {b["code"] for b in _readiness(pub_id)["blocking"]}
+            result.check(
+                "readiness: checking all published materials clears that block",
+                "published_documents" not in pub_after,
+                json.dumps(sorted(pub_after)),
             )
 
             unknown = client.post(
@@ -386,6 +585,7 @@ def run_checks() -> Checks:
                 json={"sme_id": "demo_sme_003", "scenario_code": "import_payment"},
             )
             result.check("unrelated SME gets its own package", unknown.json()["id"] != pid)
+        official_forms_module.FORM_CACHE_DIR = original_form_cache_dir
 
         engine = build_engine(database_url)
         session = build_session_factory(engine)()
@@ -396,10 +596,18 @@ def run_checks() -> Checks:
             }
         finally:
             session.close()
-        result.check("document audit events are recorded", audit_count >= 6, str(audit_count))
+        result.check("document audit events are recorded", audit_count >= 8, str(audit_count))
         result.check(
-            "reset and printed audit records are present",
-            {"document_package_reset", "document_package_printed"} <= audit_event_types,
+            "reset, printed, terms-acceptance and official-form audit records are present",
+            {
+                "document_package_reset",
+                "document_package_printed",
+                "document_trade_terms_accepted",
+                "document_official_form_draft_saved",
+                "document_official_form_exported",
+                "document_official_form_printed",
+            }
+            <= audit_event_types,
             json.dumps(sorted(audit_event_types)),
         )
 

@@ -410,6 +410,7 @@ def run_ui_i18n_static_eval(result: Eval) -> None:
         "cbSaveProfile",
         "cbQuestionScenario",
         "cbReasonScenario",
+        "cbCtaDismiss",
     ]
     result.check(
         "i18n",
@@ -443,6 +444,12 @@ def run_ui_i18n_static_eval(result: Eval) -> None:
         "loanCardDisclaimer(result.product)" in workspace
         and ':href="sourceRef.source_url"' in workspace
         and "loanReviewStatusLabel(result.product)" in workspace,
+    )
+    result.check(
+        "i18n",
+        "loan-matching CTA exposes a local dismiss action",
+        "dismissCtaCard(msg)" in html_source
+        and "msg.loanMatchingCta = null" in app_source,
     )
 
 

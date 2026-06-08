@@ -42,9 +42,22 @@ Function 2 使用独立数据库和快照：
 .venv/bin/uvicorn server.document_preparation.app:app --host 127.0.0.1 --port 8082
 ```
 
+Function 3 申请进度时间线服务（迁移开机自动跑；提交校验调用 Function 2，默认 `http://127.0.0.1:8082`）：
+
+```bash
+.venv/bin/uvicorn server.application_timeline.app:app --host 127.0.0.1 --port 8083
+# 隐藏银行后台单页：http://127.0.0.1:8083/crossbridge-admin/timeline
+```
+
+官方 BOCHK 表单 PDF 不入库 git；部署主机显式接受 BOCHK 条款后抓取到本地缓存（缓存缺失时前端显示官方下载提示，绝不伪造）：
+
+```bash
+.venv/bin/python scripts/fetch_official_forms.py --accept-bochk-trade-terms
+```
+
 ```bash
 git clone https://github.com/massif-01/ChatRaw chatraw-fork
-./scripts/apply_chatraw_patch.sh
+./scripts/apply_chatraw_patch.sh          # 应用定制补丁后会自动同步 vendor（含 PDF.js v5.7.284）
 cd chatraw-fork/backend
 pip install -r requirements.txt
 python main.py
@@ -104,7 +117,8 @@ server {
 - `PROJECT_MEMORY.md` — 产品背景 + pitch demo 场景剧本
 - `.venv/bin/python eval/run_function1_eval.py` — Function 1 独立自动化 eval，输出 JSON + Markdown 报告
 - `.venv/bin/python eval/run_function1_official_catalog_eval.py` — Function 1 BOCHK 官方公开来源目录 eval
-- `.venv/bin/python eval/run_function2_eval.py` — Function 2 独立自动化 eval
+- `.venv/bin/python eval/run_function2_eval.py` — Function 2 独立自动化 eval（含 submission-readiness 用例）
+- `.venv/bin/python eval/run_function3_eval.py` — Function 3 申请进度时间线独立自动化 eval（迁移可重复、幂等、禁跳级、双语说明校验、内部备注隔离、SSE diff、审计、重置）
 
 Function 1 官方目录抓取范围：
 
