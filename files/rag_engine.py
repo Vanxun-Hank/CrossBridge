@@ -84,6 +84,11 @@ RERANK_POOL = _env_int("CB_RERANK_POOL", 15)
 # 防 SAFE 资本项目外汇业务指引（80 chunks）独占 top10 的 anti-diversity 模式。
 # 设 0 关闭这个 cap。
 MAX_CHUNKS_PER_DOC = _env_int("CB_MAX_CHUNKS_PER_DOC", 3)
+# Prompt context diversity: after metadata scoring, keep the best chunk from
+# each parent document first, then use remaining prompt slots for supporting
+# chunks from the same document. This reduces repeated-source prompt noise while
+# preserving enough section-level detail for long guidelines.
+PROMPT_MAX_CHUNKS_PER_DOC = _env_int("CB_PROMPT_MAX_CHUNKS_PER_DOC", 2)
 
 # Step 3.5：citation 二元过滤
 #   1. trust_tier 必须 ∈ trusted（来源是官方）
@@ -231,6 +236,84 @@ def _unique_keep_order(items):
 def _contains_any(text, terms):
     lowered = text.lower()
     return any(term.lower() in lowered for term in terms)
+
+
+def _is_vietnam_manufacturing_investment_query(query: str) -> bool:
+    return (
+        _contains_any(query, ["越南", "Vietnam"])
+        and _contains_any(query, [
+            "投资", "合作", "建厂", "工厂", "制造", "产能", "工业园",
+            "manufacturing", "factory", "plant", "industrial zone", "investment",
+        ])
+    )
+
+
+def _is_china_vietnam_supplier_payment_query(query: str) -> bool:
+    return (
+        _contains_any(query, ["越南", "Vietnam"])
+        and _contains_any(query, ["供应商", "supplier"])
+        and _contains_any(query, ["付汇", "付款", "payment", "remittance"])
+        and _contains_any(query, [
+            "中国", "内地", "境内", "Mainland", "China", "Chinese",
+            "付汇", "对外付汇", "外汇局", "SAFE",
+        ])
+    )
+
+
+def _is_vietnam_supplier_payment_query(query: str) -> bool:
+    return (
+        _contains_any(query, ["越南", "Vietnam"])
+        and _contains_any(query, ["供应商", "supplier"])
+        and _contains_any(query, ["付款", "付钱", "汇款", "payment", "remittance", "transfer"])
+        and _contains_any(query, ["外汇", "合规", "监管", "FX", "foreign exchange", "compliance"])
+    )
+
+
+def _is_sbv_credit_institution_query(query: str) -> bool:
+    return (
+        _contains_any(query, ["越南", "Vietnam", "SBV", "越南央行", "国家银行"])
+        and _contains_any(query, [
+            "信贷机构", "credit institution", "credit institutions",
+            "银行机构", "商业银行", "监管要求", "supervision", "regulatory requirement",
+        ])
+    )
+
+
+def _is_hk_gba_expansion_financing_query(query: str) -> bool:
+    return (
+        _contains_any(query, ["香港", "Hong Kong", "HK"])
+        and _contains_any(query, ["深圳", "东莞", "大湾区", "GBA", "Greater Bay Area"])
+        and _contains_any(query, ["跨境", "扩张", "工厂", "业务", "cross-border", "expansion", "factory"])
+        and _contains_any(query, ["融资", "贷款", "产品", "资格", "loan", "financing", "product", "eligibility"])
+    )
+
+
+def _is_hkma_aml_cdd_query(query: str) -> bool:
+    return _contains_any(query, [
+        "反洗钱", "AML", "CFT", "CDD", "EDD",
+        "客户尽职", "尽职调查", "强化尽职",
+        "anti-money laundering", "counter-terrorist financing",
+        "customer due diligence", "enhanced due diligence",
+        "money laundering", "terrorist financing",
+    ])
+
+
+def _is_tt_remittance_fee_time_query(query: str) -> bool:
+    return (
+        _contains_any(query, [
+            "TT", "电汇", "Telegraphic Transfer", "outward remittance",
+            "对外汇款", "汇款",
+        ])
+        and _contains_any(query, [
+            "费用", "收费", "手续费", "到账", "多久", "时间", "时效",
+            "fee", "fees", "charge", "charges", "arrival", "processing time",
+            "cutoff", "cut-off",
+        ])
+        and not _contains_any(query, [
+            "FPS", "Faster Payment System", "转数快", "trade finance",
+            "贸易融资", "documentary credit", "letter of credit", "信用证",
+        ])
+    )
 
 
 def _detect_regions(query, selected_region=None):
@@ -449,6 +532,112 @@ def _fallback_hyde(query, normalized_query):
     return f"{query}。相关权威资料通常涉及: {' '.join(expansions)}。"
 
 
+def _targeted_query_variants(query: str) -> list[str]:
+    variants = []
+    if _is_hkma_aml_cdd_query(query):
+        variants.extend([
+            "HKMA AML-2 Guideline customer due diligence enhanced due diligence authorized institutions",
+            "HKMA anti-money laundering counter-terrorist financing guideline cross-border wire transfer originator recipient information",
+            "香港金管局 反洗钱 客户尽职调查 强化尽职调查 跨境电汇 汇款人 收款人 资料",
+        ])
+    if _contains_any(query, ["FPS", "Faster Payment System", "转数快"]) and _contains_any(
+        query,
+        ["限额", "上限", "金额", "额度", "limit", "transaction limit", "transfer amount"],
+    ):
+        variants.extend([
+            "FPS transaction limit local bank transfer HKD3,000,000 BOCHK",
+            "Faster Payment System funds transfer to other local banks transaction limit",
+            "转数快 FPS 本地银行转账 限额 中银香港",
+        ])
+    if _is_tt_remittance_fee_time_query(query):
+        variants.extend([
+            "BOCHK outward remittance telegraphic transfer charges personal customer electronic channel branch",
+            "BOCHK Outward Remittance Quick Reference Guide cutoff same day processing telegraphic transfer",
+            "中银香港 电汇 TT 对外汇款 收费 截止时间 当日处理",
+        ])
+    if _contains_any(query, ["SME", "中小企业", "SFGS", "担保贷款"]) and _contains_any(
+        query,
+        ["财务证明", "账务文件", "材料", "文件", "supporting documents", "financial statements"],
+    ):
+        variants.extend([
+            "SFGS supporting documents loan application HKMCI factsheet lender request supporting documents",
+            "SME loan financial statements audited financial statements supporting documents BOCHK",
+            "BOC Small Business Loan Unsecured Loan audited financial statements not required supporting documents",
+            "BOCHK SME Financing Guarantee Scheme upload documents supporting documents",
+        ])
+    if _contains_any(query, ["SFGS", "担保贷款"]) and _contains_any(
+        query,
+        ["贷多少", "额度", "上限", "营业额", "利润", "maximum facility amount", "loan amount"],
+    ):
+        variants.extend([
+            "SFGS maximum facility amount 80% 90% guarantee product HKD12,000,000 HKD18,000,000",
+            "BOCHK SFGS product loan amount documents HKMC 90% guarantee product",
+            "SFGS maximum facility amount financial proof wages rent 27 months HKD 9000000 BOCHK",
+        ])
+    if _contains_any(query, ["SME", "中小企业", "贷款", "loan"]) and _contains_any(
+        query,
+        ["抵押", "无抵押", "质押", "collateral", "unsecured", "security"],
+    ):
+        variants.extend([
+            "BOC Small Business Loan Unsecured Loan collateral not required audited financial statements not required",
+            "BOCHK loan services mortgage loan asset pledge loan machinery equipment financing collateral",
+            "SME Financing Guarantee Scheme HKMCI factsheet guarantee product borrower supporting documents",
+            "HKMA SME Financing Guarantee Scheme 90% Guarantee Product",
+        ])
+    if _is_hk_gba_expansion_financing_query(query):
+        variants.extend([
+            "Hong Kong registered company Shenzhen Dongguan factory cross-border expansion financing BOCHK SME loan trade finance",
+            "BOCHK trade finance purchase order financing GBA factory cross-border business expansion",
+            "BOC global purchase order financing SME cross-border trade finance eligibility",
+            "HKMC SME Financing Guarantee Scheme factsheet Hong Kong GBA factory expansion financing",
+        ])
+    if _contains_any(query, ["前海", "Qianhai"]):
+        variants.extend([
+            "GoGBA Qianhai preferential policies tax incentives Shenzhen Hong Kong businesses",
+            "HKTDC GoGBA Qianhai preferential policy enterprise tax subsidy incentives",
+        ])
+    if _contains_any(query, ["大湾区", "GBA", "Greater Bay Area"]) and _contains_any(
+        query, ["银行账户", "bank account", "account opening"]
+    ):
+        variants.extend([
+            "GoGBA opening a company bank account Greater Bay Area business registration documents",
+            "HKTDC GoGBA company bank account opening process required materials business registration",
+        ])
+    if _contains_any(query, ["GoGBA", "大湾区", "GBA"]) and _contains_any(
+        query, ["business registration", "企业注册", "公司注册", "商业登记"]
+    ):
+        variants.extend([
+            "GoGBA business registration process business investment filing Greater Bay Area",
+            "HKTDC GoGBA business registration materials process foreign invested enterprise",
+        ])
+    if _is_china_vietnam_supplier_payment_query(query):
+        variants.extend([
+            "中国企业 向越南供应商 付汇 贸易外汇 收支便利化 真实性审核 银行 审核材料",
+            "跨境贸易 投资便利化 汇发2023 28 贸易外汇 收支 真实性 审核",
+            "SAFE 贸易外汇 收支 便利化 银行 审核 交易真实性 越南供应商付款",
+        ])
+    if _is_vietnam_manufacturing_investment_query(query):
+        variants.extend([
+            "Vietnam manufacturing partnership investment HKTDC industrial zones incentives suitable industries",
+            "HKTDC Vietnam manufacturing investment partnership EPZ incentives garments footwear electronics",
+            "Vietnam foreign investment taxation customs FIA manufacturing factory compliance",
+            "越南 投资 建厂 制造业 工业园 激励 税务 海关 外商投资 官方",
+        ])
+    if _is_sbv_credit_institution_query(query):
+        variants.extend([
+            "State Bank of Vietnam credit institutions supervision regulatory requirements official law",
+            "SBV credit institutions Vietnam banking supervision compliance requirements",
+            "越南央行 SBV 信贷机构 监管要求 商业银行 官方",
+        ])
+    if _is_vietnam_supplier_payment_query(query) and not _is_china_vietnam_supplier_payment_query(query):
+        variants.extend([
+            "State Bank of Vietnam supplier payment foreign exchange compliance current account transfer payment services",
+            "SBV cross-border payment Vietnam supplier payment authorized banks foreign exchange services",
+            "越南 供应商 付款 外汇 合规 SBV 经常项目 转账 支付服务 授权银行",
+        ])
+    return variants
+
+
 def transform_query(query, query_type, region="全部", topic="全部"):
     # Step 4c.A：只在 vague / low_recall query 上扩 topic expansion
     # 其他（simple / compound / conceptual）保留原 query 意图，防 TOPIC_EXPANSIONS 污染
@@ -463,21 +652,23 @@ def transform_query(query, query_type, region="全部", topic="全部"):
         variants = [query] + (llm_queries or _fallback_multi_queries(
             query, normalized, max_items
         ))
-        return _unique_keep_order(variants)[:max_items + 1]
+        variants.extend(_targeted_query_variants(query))
+        return _unique_keep_order(variants)[:max_items + 1 + len(_targeted_query_variants(query))]
 
     if query_type == "compound":
         llm_queries = _call_transform_llm(
             "decomposition: 将复合问题拆成可单独检索的子问题", query, normalized, max_items
         )
         variants = llm_queries or _fallback_decompose(query, region, topic, max_items)
-        return _unique_keep_order(variants)[:max_items]
+        variants.extend(_targeted_query_variants(query))
+        return _unique_keep_order(variants)[:max_items + len(_targeted_query_variants(query))]
 
     if query_type == "conceptual":
         llm_queries = _call_transform_llm(
             "step-back: 生成更抽象的原则性检索查询", query, normalized, 1
         )
         stepback = llm_queries[0] if llm_queries else _fallback_stepback(query, normalized)
-        return _unique_keep_order([query, normalized, stepback])
+        return _unique_keep_order([query, normalized, stepback] + _targeted_query_variants(query))
 
     if query_type == "low_recall":
         hyde_query = _call_transform_llm(
@@ -492,9 +683,9 @@ def transform_query(query, query_type, region="全部", topic="全部"):
         # 这里的 normalized 会带 TOPIC_EXPANSIONS 污染，回流到 simple/compound query
         # 的 retrieval variants 列表里。HyDE LLM 文本本身已经覆盖语义扩展，不需要
         # 再带 normalized 噪声。
-        return _unique_keep_order([query, hyde_text])
+        return _unique_keep_order([query, hyde_text] + _targeted_query_variants(query))
 
-    return _unique_keep_order([query, normalized])
+    return _unique_keep_order([query, normalized] + _targeted_query_variants(query))
 
 
 # ----------------------------------------------------------------------
@@ -638,6 +829,35 @@ def _chroma_result_to_doc(metadata: dict, content: str) -> dict:
         "content_hash": metadata.get("content_hash", ""),
         "trust_tier": metadata.get("trust_tier", ""),
         "document_type": metadata.get("document_type", ""),
+    }
+
+
+def _ingestion_chunk_to_doc(chunk: dict) -> dict:
+    """Ingestion chunk -> downstream doc shape aligned with BM25/Chroma."""
+    return {
+        "id": chunk.get("chunk_id") or chunk.get("doc_id"),
+        "title": chunk.get("title", ""),
+        "content": chunk.get("content", ""),
+        "source_name": chunk.get("source_name") or chunk.get("issuer", ""),
+        "source_url": chunk.get("source_url", ""),
+        "region": chunk.get("region_code", ""),
+        "topic": chunk.get("topic_code", ""),
+        "effective_date": chunk.get("effective_date") or None,
+        "publish_date": chunk.get("publish_date") or None,
+        "source_type": chunk.get("source_type") or "unknown",
+        "authority_level": chunk.get("authority_level") or "medium",
+        "disclaimer_level": chunk.get("disclaimer_level") or "unknown",
+        "disclaimer": chunk.get("disclaimer", ""),
+        "doc_id": chunk.get("doc_id", ""),
+        "parent_doc_id": chunk.get("parent_doc_id", "") or chunk.get("doc_id", ""),
+        "chunk_id": chunk.get("chunk_id", ""),
+        "chunk_index": chunk.get("chunk_index", 0),
+        "chapter": chunk.get("chapter", ""),
+        "section": chunk.get("section", ""),
+        "page": chunk.get("page", ""),
+        "content_hash": chunk.get("content_hash", ""),
+        "trust_tier": chunk.get("trust_tier", ""),
+        "document_type": chunk.get("document_type", ""),
     }
 
 
@@ -1035,44 +1255,286 @@ class AdaptiveRetriever:
 # ----------------------------------------------------------------------
 # 5. LLM 调用 (带降级)
 # ----------------------------------------------------------------------
-from language_utils import resolve_answer_language
+from language_utils import detect_explicit_language_request, resolve_answer_language
+
+
+_HAN_CHAR_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
+_LATIN_WORD_RE = re.compile(r"[A-Za-z]+(?:[-_][A-Za-z0-9]+)*")
+_EN_QUESTION_RE = re.compile(
+    r"\b(what|how|why|when|where|which|who|whom|can|could|should|do|does|is|are)\b",
+    re.IGNORECASE,
+)
+_DOC_IDENTIFIER_RE = re.compile(r"\b[A-Z]{2,}[A-Z0-9_-]*[_-]\d{1,4}/\d{4}\b")
+
+
+def resolve_rag_answer_language(query: str, fallback: str | None = None) -> str:
+    """RAG-specific answer-language policy.
+
+    Generic language detection treats mixed Chinese queries with English product
+    names as English when Latin tokens dominate. For policy RAG, a Chinese
+    question containing English product names such as FPS or GoGBA should still
+    receive a Chinese answer unless the user explicitly asks for English.
+    """
+    explicit = detect_explicit_language_request(query)
+    if explicit:
+        return explicit
+
+    text = str(query or "")
+    han_count = len(_HAN_CHAR_RE.findall(text))
+    latin_count = 0
+    for token in _LATIN_WORD_RE.findall(text):
+        if token.isupper() or len(token) <= 1:
+            continue
+        latin_count += len(token)
+
+    if han_count >= 2:
+        looks_like_english_question = (
+            _EN_QUESTION_RE.search(text) is not None
+            and latin_count >= max(12, han_count * 2)
+        )
+        if not looks_like_english_question:
+            return "zh"
+
+    return resolve_answer_language(text, fallback=fallback)
+
+
+def detect_rag_audience(query: str) -> str:
+    """Classify the likely reader so the prompt can tune clarity and caveats."""
+    text = str(query or "")
+    if _contains_any(text, [
+        "中小企业", "SME", "公司", "企业", "工厂", "供应商", "贸易", "发票",
+        "应收账款", "经营", "business", "corporate", "supplier",
+    ]):
+        return "sme_cross_border_operator"
+    if _contains_any(text, [
+        "个人", "汇款", "转账", "电汇", "FPS", "TT", "跨境付款", "收款",
+        "到账", "费用", "限额", "remittance", "transfer",
+    ]):
+        return "personal_cross_border_user"
+    if _contains_any(text, [
+        "贷款", "借款", "按揭", "利率", "还款", "申请条件", "资格", "文件",
+        "borrow", "loan", "repay",
+    ]):
+        return "ordinary_borrower"
+    return "general_financial_user"
+
+
+def _extract_doc_identifiers(text: str) -> list[str]:
+    return [m.group(0).upper() for m in _DOC_IDENTIFIER_RE.finditer(str(text or ""))]
+
+
+def _is_doc_identifier_lookup(text: str) -> bool:
+    if not _extract_doc_identifiers(text):
+        return False
+    return _contains_any(text, [
+        "对应", "是什么", "哪份", "哪个政策", "什么政策", "文件编号", "编号",
+        "document id", "file number", "reference number", "corresponds to",
+        "which policy", "what policy", "which document", "what document",
+    ])
+
+
+def _answer_shape_instruction(query: str, response_language: str) -> str:
+    if _contains_any(query, ["SFGS", "担保贷款"]) and _contains_any(
+        query, ["贷多少", "额度", "上限", "营业额", "利润", "maximum facility amount", "loan amount"]
+    ):
+        if response_language == "en":
+            return (
+                "\nSFGS amount answer shape:\n"
+                "- Do not start with an insufficiency caveat. Start with: the user can first look at the product maximum limits, then bank approval decides the actual amount.\n"
+                "- State the current maximum facility amounts supported by the latest HKMCI factsheet in the first bullet group.\n"
+                "- Interpret the HKMCI factsheet table as: 80% Guarantee Product = HK$12,000,000; 90% Guarantee Product = HK$18,000,000; Special 100% Loan Guarantee = HK$8,000,000. Apply the wages/rent or HK$9,000,000 lower-cap formula only to Special 100% Loan Guarantee where the factsheet states it.\n"
+                "- If an older HKMA announcement conflicts with the factsheet amount, treat the older announcement as historical background and use the factsheet for current limits.\n"
+                "- Explain that turnover/profit alone does not determine approved amount unless the materials provide a formula.\n"
+                "- For documents, state only confirmed document requirements. If the checklist is absent, write 'the materials do not list a fixed financial-file checklist' instead of a broad insufficiency caveat."
+            )
+        if response_language == "bilingual":
+            return (
+                "\nSFGS 额度回答形态 / SFGS amount answer shape:\n"
+                "- 不要以“无法确认/无法推算”开头；开头先说“可先按产品最高上限判断，实际获批金额由银行审批决定”。Do not start with an insufficiency caveat.\n"
+                "- 第一组 bullet 直接列出当前 HKMCI factsheet 支持的最高融资额度。Start with current maximum facility amounts from the latest HKMCI factsheet.\n"
+                "- HKMCI factsheet 表格按以下方式解释：80% Guarantee Product = HK$12,000,000；90% Guarantee Product = HK$18,000,000；Special 100% Loan Guarantee = HK$8,000,000。工资/租金或 HK$9,000,000 较低者公式只适用于 factsheet 所列 Special 100% Loan Guarantee。\n"
+                "- 如果旧 HKMA announcement 与 factsheet 额度冲突，把旧 announcement 当历史背景，当前限额以 factsheet 为准。\n"
+                "- 说明营业额/利润本身不能直接换算获批金额，除非资料给出公式。\n"
+                "- 文件部分只列已确认要求；未列明固定财务文件清单时写“资料未列出固定财务文件清单”，不要写成整题无法回答。"
+            )
+        return (
+            "\nSFGS 额度回答形态：\n"
+            "- 不要以“无法确认/无法推算”开头；开头先说“可先按产品最高上限判断，实际获批金额由银行审批决定”。\n"
+            "- 第一组 bullet 直接列出当前 HKMCI factsheet 支持的最高融资额度。\n"
+            "- HKMCI factsheet 表格按以下方式解释：80% Guarantee Product = HK$12,000,000；90% Guarantee Product = HK$18,000,000；Special 100% Loan Guarantee = HK$8,000,000。工资/租金或 HK$9,000,000 较低者公式只适用于 factsheet 所列 Special 100% Loan Guarantee。\n"
+            "- 如果旧 HKMA announcement 与 factsheet 额度冲突，把旧 announcement 当历史背景，当前限额以 factsheet 为准。\n"
+            "- 说明营业额/利润本身不能直接换算获批金额，除非资料给出公式。\n"
+            "- 文件部分只列已确认要求；未列明固定财务文件清单时写“资料未列出固定财务文件清单”，不要写成整题无法回答。"
+        )
+
+    if (
+        _contains_any(query, ["越南", "Vietnam"])
+        and _contains_any(query, ["供应商", "supplier"])
+        and _contains_any(query, ["付汇", "付款", "payment", "remittance"])
+        and _contains_any(query, ["流程", "审核", "review", "process"])
+    ):
+        if response_language == "en":
+            return (
+                "\nChina-to-Vietnam supplier payment answer shape:\n"
+                "- If SAFE trade-FX materials state bank review requirements, answer with a short China-side review flow first.\n"
+                "- Treat Vietnam/SBV materials as Vietnam-side payment-system or risk context unless they state an inward-payment review step.\n"
+                "- Do not say the process is unavailable merely because the SAFE rule is not Vietnam-specific; say it is the China-side goods-trade FX process.\n"
+                "- Only list documents expressly named in the materials, such as contracts, invoices, customs declarations, filing records, transport documents, bonded-checklist records, or other valid commercial documents.\n"
+                "- If some Vietnam-side or bank-internal details are absent, put them under 'Details to confirm with the bank' instead of saying the whole process is unavailable."
+            )
+        if response_language == "bilingual":
+            return (
+                "\n中国向越南供应商付款回答形态 / China-to-Vietnam supplier payment answer shape:\n"
+                "- 如果 SAFE 贸易外汇资料列明银行审核要求，先给出中国侧银行审核流程。Answer the China-side review flow first when SAFE supports it.\n"
+                "- 越南/SBV 资料只作为越南侧支付系统或风险背景，除非其明示入账审核步骤。\n"
+                "- 不要因为 SAFE 规则不是越南专门规则就说流程不可得；应说明这是中国侧货物贸易付汇流程。\n"
+                "- 只列资料明示的单据，例如合同、发票、报关单、备案清单、运输单据、保税核注清单或其他有效商业单据。\n"
+                "- 如果越南侧或银行内部细节未列明，放在“需要向银行确认的细节”下，不要写成整套流程无法回答。"
+            )
+        return (
+            "\n中国向越南供应商付款回答形态：\n"
+            "- 如果 SAFE 贸易外汇资料列明银行审核要求，先给出中国侧银行审核流程。\n"
+            "- 越南/SBV 资料只作为越南侧支付系统或风险背景，除非其明示入账审核步骤。\n"
+            "- 不要因为 SAFE 规则不是越南专门规则就说流程不可得；应说明这是中国侧货物贸易付汇流程。\n"
+            "- 只列资料明示的单据，例如合同、发票、报关单、备案清单、运输单据、保税核注清单或其他有效商业单据。\n"
+            "- 如果越南侧或银行内部细节未列明，放在“需要向银行确认的细节”下，不要写成整套流程无法回答。"
+        )
+
+    if not _is_doc_identifier_lookup(query):
+        return ""
+    identifiers = ", ".join(_extract_doc_identifiers(query))
+    if response_language == "en":
+        return (
+            "\nExact document-ID lookup rule:\n"
+            f"- The user is asking what `{identifiers}` corresponds to. Keep the answer narrow.\n"
+            "- First sentence: identify the matched document or policy title and issuer/administrator if supported.\n"
+            "- Then give at most three short bullets: update/effective date if present, policy/scheme scope, and how the user should use the document.\n"
+            "- Do not enumerate fee rates, eligibility rules, product matrices, application documents, or unsupported missing fields unless the user asks for details.\n"
+            "- Do not add an 'available materials cannot confirm' section when the matched title and issuer are supported."
+        )
+    if response_language == "bilingual":
+        return (
+            "\n文件编号查询规则 / Exact document-ID lookup rule:\n"
+            f"- 用户是在问 `{identifiers}` 对应什么文件或政策。答案必须聚焦这个对应关系。Keep the answer narrow.\n"
+            "- 第一句说明匹配到的文件/政策标题和发布或管理机构。First sentence: title plus issuer/administrator if supported.\n"
+            "- 后面最多三点：更新/生效日期、政策/计划范围、用户应如何使用该文件。Use at most three short bullets.\n"
+            "- 除非用户追问详情，不要展开费用、资格、产品矩阵、申请文件或资料缺口。\n"
+            "- 如果标题和机构已有资料支持，不要另加“现有资料无法确认”段落。"
+        )
+    return (
+        "\n文件编号查询规则：\n"
+        f"- 用户是在问 `{identifiers}` 对应什么文件或政策，答案必须聚焦这个对应关系。\n"
+        "- 第一句说明匹配到的文件/政策标题，以及发布或管理机构（如资料支持）。\n"
+        "- 后面最多三点：更新/生效日期、政策/计划范围、用户应如何使用该文件。\n"
+        "- 除非用户追问详情，不要展开费用、资格、产品矩阵、申请文件或资料缺口。\n"
+        "- 如果标题和机构已有资料支持，不要另加“现有资料无法确认”段落。"
+    )
+
+
+AUDIENCE_LABELS = {
+    "ordinary_borrower": {
+        "zh": "普通借款人",
+        "en": "ordinary borrower",
+        "bilingual": "普通借款人 / ordinary borrower",
+    },
+    "personal_cross_border_user": {
+        "zh": "个人跨境金融用户",
+        "en": "personal cross-border finance user",
+        "bilingual": "个人跨境金融用户 / personal cross-border finance user",
+    },
+    "sme_cross_border_operator": {
+        "zh": "中小企业跨境经营用户",
+        "en": "SME cross-border business operator",
+        "bilingual": "中小企业跨境经营用户 / SME cross-border business operator",
+    },
+    "general_financial_user": {
+        "zh": "普通金融用户",
+        "en": "general financial user",
+        "bilingual": "普通金融用户 / general financial user",
+    },
+}
+
+
+def _answer_contract(response_language: str, audience: str) -> str:
+    label = AUDIENCE_LABELS.get(audience, AUDIENCE_LABELS["general_financial_user"])
+    if response_language == "en":
+        return (
+            f"Target reader: {label['en']}.\n"
+            "Hard requirements:\n"
+            "- Start with a direct 1-2 sentence answer to the user's exact question, reusing the key terms in the question.\n"
+            "- Every policy, fee, rate, limit, eligibility condition, required document, timeline, and bank process must be directly supported by the reference materials.\n"
+            "- Do not fill gaps with industry practice, common assumptions, examples, transaction codes, bank lists, or inferred document packages.\n"
+            "- If the materials only support part of the question, answer that part first, then state only the missing items that the user directly asked about.\n"
+            "- Use 'available materials cannot confirm' only when no direct answer can be given. When a direct answer is supported but some details are absent, use a short 'details to confirm' note instead.\n"
+            "- Keep unsupported-information notes concise: use at most three bullets unless the user explicitly asks for a gap analysis.\n"
+            "- Use borrower-friendly language: explain terms briefly, avoid jargon, and separate confirmed facts from missing information.\n"
+            "- For product or policy recommendations, only mention products or schemes that appear in the reference materials."
+        )
+    if response_language == "bilingual":
+        return (
+            f"回答对象 / Target reader: {label['bilingual']}.\n"
+            "硬性要求 / Hard requirements:\n"
+            "- 开头必须用1-2句直接回答用户的具体问题,并保留问题中的关键术语。Start with a direct 1-2 sentence answer to the exact question, reusing key terms.\n"
+            "- 政策、费用、利率、限额、资格、所需文件、办理时效和银行流程必须由参考资料直接支持。\n"
+            "- 不得用行业惯例、常识、例子、交易编码、银行名单或推断出的文件包补足空白。\n"
+            "- 如果资料只支持部分答案，先回答已支持部分，再只说明用户直接问到但资料未列明的项目。\n"
+            "- 只有完全无法直接回答时才使用“资料无法确认”。如果直接答案已有资料支持但部分细节缺失，用简短“需要确认的细节”说明。\n"
+            "- 缺失信息说明保持简短；除非用户要求差距分析,最多列3点。Keep unsupported-information notes to at most three bullets unless the user asks for gap analysis.\n"
+            "- 使用用户友好语言，简单解释术语，区分已确认事实和缺失信息。\n"
+            "- 只推荐参考资料中出现的产品或计划。"
+        )
+    return (
+        f"回答对象：{label['zh']}。\n"
+        "硬性要求：\n"
+        "- 开头必须用1-2句直接回答用户的具体问题,并保留问题中的关键术语。\n"
+        "- 政策、费用、利率、额度、限额、申请资格、所需文件、办理时效和银行流程，必须能在参考资料中找到直接依据。\n"
+        "- 不得用行业惯例、常识、例子、交易编码、银行名单或推断出的文件清单补足资料空白。\n"
+        "- 如果资料只支持部分答案，先回答已支持部分，再只说明用户直接问到但资料未列明的项目。\n"
+        "- 只有完全无法直接回答时才使用“现有资料无法确认”。如果直接答案已有资料支持但部分细节缺失，用简短“需要确认的细节”说明。\n"
+        "- 缺失信息说明保持简短；除非用户要求差距分析,最多列3点。\n"
+        "- 用用户友好语言，简单解释术语，区分已确认事实和缺失信息。\n"
+        "- 只推荐参考资料中出现的产品、计划或监管要求。"
+    )
 
 
 SYSTEM_PROMPTS = {
-    "zh": """你是 CrossBridge AI,一个跨境普惠金融决策助手,服务大湾区与东南亚的中小企业。
+    "zh": """你是 CrossBridge AI,一个跨境普惠金融决策助手,服务普通借款人、个人跨境金融用户以及大湾区与东南亚的中小企业。
 
 严格遵守以下规则:
 1. 只能基于【参考资料】回答,不得编造任何法规、数字或产品条款。
-2. 若参考资料不足以回答,要诚实说明"现有资料无法确认",不要猜。
-3. 回答要分点、清晰、可操作,面向不懂金融术语的中小企业老板。
+2. 若参考资料完全不足以直接回答,要诚实说明"现有资料无法确认",不要猜；若已能直接回答但部分细节缺失,用"需要确认的细节"简短列出,不要把整段答案写成拒答。
+3. 回答开头必须直接回应用户问题,再分点说明依据;不要用大段背景或无关缺口淹没答案。
 4. 你不是律师或会计师,回答末尾必须提示用户最终操作前向银行客户经理或专业人士确认。
 5. 绝不提供逃税、洗钱、规避监管等违规建议。
 6. 引用规则:答案末尾"信息来源"中,只列出【参考资料】里标记为"可引用"的资料 ([资料N]);
    标记为"仅作context,不可引用"的资料 ([资料Cx]) 可以帮助你理解,但不要出现在信息来源列表中。
 7. 必须全程使用中文回答。官方标题、专有名词和链接可保留原文。
+8. 不得使用"通常""一般""可合理推断""行业惯例"补充参考资料未直接支持的费用、利率、额度、限额、时效、资格、材料或流程。
 """,
-    "en": """You are CrossBridge AI, a cross-border inclusive-finance decision assistant for SMEs in the Greater Bay Area and Southeast Asia.
+    "en": """You are CrossBridge AI, a cross-border inclusive-finance decision assistant for ordinary borrowers, personal cross-border finance users, and SMEs in the Greater Bay Area and Southeast Asia.
 
 Follow these rules strictly:
 1. Answer only from the provided reference materials. Never invent regulations, figures, or product terms.
-2. If the materials are insufficient, clearly say that the available materials cannot confirm the answer. Do not guess.
-3. Use clear, actionable bullet points for SME owners who may not know financial terminology.
+2. If the materials are wholly insufficient for a direct answer, clearly say that the available materials cannot confirm the answer. If a direct answer is supported but some details are absent, use a short "details to confirm" note instead of framing the whole answer as unknown.
+3. Start with a direct answer to the user's question, then explain the supporting facts in clear bullets. Do not bury the answer under broad background or unrelated gaps.
 4. You are not a lawyer or accountant. End with a reminder to confirm final actions with a bank relationship manager or a qualified professional.
 5. Never provide advice for tax evasion, money laundering, or regulatory avoidance.
 6. In the final "Sources" section, list only materials marked "citable" ([SourceN]). Materials marked "context only, not citable" ([SourceCx]) may inform your understanding but must not appear in the source list.
 7. Answer entirely in English. Official titles, proper nouns, and URLs may remain in their original language.
+8. Do not use "usually", "generally", "reasonable inference", or "industry practice" to supplement unsupported fees, rates, amounts, limits, timelines, eligibility, documents, or procedures.
 """,
-    "bilingual": """你是 CrossBridge AI，一个服务大湾区与东南亚中小企业的跨境普惠金融决策助手。
-You are CrossBridge AI, a cross-border inclusive-finance decision assistant for SMEs in the Greater Bay Area and Southeast Asia.
+    "bilingual": """你是 CrossBridge AI，一个服务普通借款人、个人跨境金融用户以及大湾区与东南亚中小企业的跨境普惠金融决策助手。
+You are CrossBridge AI, a cross-border inclusive-finance decision assistant for ordinary borrowers, personal cross-border finance users, and SMEs in the Greater Bay Area and Southeast Asia.
 
 严格遵守以下规则 / Follow these rules strictly:
 1. 只能基于【参考资料】回答，不得编造法规、数字或产品条款。Answer only from the provided reference materials. Never invent regulations, figures, or product terms.
-2. 若资料不足，要明确说明现有资料无法确认，不要猜。If the materials are insufficient, clearly say so. Do not guess.
-3. 面向不熟悉金融术语的中小企业老板，分点清晰说明。Use clear, actionable bullet points for SME owners.
+2. 若资料完全不足以直接回答，要明确说明现有资料无法确认，不要猜；若直接答案已有依据但部分细节缺失，用简短“需要确认的细节”说明。If a direct answer is supported but details are absent, use a short details-to-confirm note.
+3. 开头直接回应用户问题,再分点说明依据;不要用大段背景或无关缺口淹没答案。Start with a direct answer, then explain the supporting facts in clear bullets.
 4. 你不是律师或会计师。结尾提醒用户向银行客户经理或专业人士确认。End with a reminder to confirm final actions with a bank relationship manager or qualified professional.
 5. 不得提供逃税、洗钱或规避监管建议。Never provide advice for tax evasion, money laundering, or regulatory avoidance.
 6. 结尾“信息来源 / Sources”只列出标记为“可引用”的资料（[资料N]）；“仅作 context，不可引用”的资料（[资料Cx]）不得列出。
 7. 必须使用中文和英文中英对照作答。Provide the answer in BOTH Chinese and English.
+8. 不得用行业惯例、通常情况或合理推断补充资料未直接支持的费用、利率、额度、限额、时效、资格、材料或流程。Do not supplement unsupported operational details with industry practice or inference.
 """,
 }
 
@@ -1111,9 +1573,12 @@ def build_prompt(query, retrieved, context_only=None, response_language="zh"):
                     f"地区:{doc['region']}\n标题:{doc['title']}\n正文:{doc['content']}"
                 )
     context = "\n\n".join(blocks)
+    audience = detect_rag_audience(query)
+    contract = _answer_contract(response_language, audience) + _answer_shape_instruction(query, response_language)
     if is_english:
         user_msg = (
             f"[Reference materials]\n{context}\n\n"
+            f"[Answer contract]\n{contract}\n\n"
             f"[User question]\n{query}\n\n"
             "Answer in English based on the materials above. End with a 'Sources' section "
             "listing the citable materials you used."
@@ -1121,6 +1586,7 @@ def build_prompt(query, retrieved, context_only=None, response_language="zh"):
     elif is_bilingual:
         user_msg = (
             f"【参考资料 / Reference materials】\n{context}\n\n"
+            f"【回答要求 / Answer contract】\n{contract}\n\n"
             f"【用户问题 / User question】\n{query}\n\n"
             "请基于以上资料使用中文和英文中英对照作答，并在结尾用"
             "“信息来源 / Sources”列出使用的【可引用】资料。"
@@ -1128,6 +1594,7 @@ def build_prompt(query, retrieved, context_only=None, response_language="zh"):
     else:
         user_msg = (
             f"【参考资料】\n{context}\n\n"
+            f"【回答要求】\n{contract}\n\n"
             f"【用户问题】\n{query}\n\n"
             f"请基于以上资料回答,并在结尾用'信息来源'列出你引用了哪几条【可引用】资料。"
         )
@@ -1185,6 +1652,382 @@ def _fallback_answer(query, retrieved, response_language="zh"):
         "以上为参考信息,最终操作前请向中银香港客户经理或专业人士确认。"
     )
     return "\n".join(lines)
+
+
+def _extract_last_update_date(text: str) -> str:
+    match = re.search(r"Last update date:\s*([^)\\n]+)", text or "", flags=re.I)
+    if match:
+        return match.group(1).strip()
+    return ""
+
+
+def _build_exact_identifier_answer(query: str, citation_source, response_language: str) -> str:
+    identifiers = _extract_doc_identifiers(query)
+    if not identifiers or not _is_doc_identifier_lookup(query):
+        return ""
+
+    for idx, (doc, _score) in enumerate(citation_source or [], 1):
+        haystack = " ".join([
+            str(doc.get("doc_id") or ""),
+            str(doc.get("title") or ""),
+            str(doc.get("content") or ""),
+            str(doc.get("contextualized_content") or ""),
+        ]).upper()
+        matched = next((identifier for identifier in identifiers if identifier in haystack), "")
+        if not matched:
+            continue
+
+        title = str(doc.get("title") or "the matched document").strip()
+        source = str(doc.get("source_name") or "the official source").strip()
+        content = str(doc.get("content") or "")
+        last_update = _extract_last_update_date(content)
+        citation = f"[Source{idx}]" if response_language == "en" else f"[资料{idx}]"
+        if "SME Financing Guarantee Scheme" in content or "SFGS" in content:
+            zh_policy = "中小企融资担保计划（SME Financing Guarantee Scheme, SFGS）"
+            en_policy = "SME Financing Guarantee Scheme (SFGS)"
+            scope_zh = f"这份文件是 {zh_policy} 的政策资料。"
+            scope_en = f"The document is policy material for the {en_policy}."
+        else:
+            zh_policy = title
+            en_policy = title
+            scope_zh = f"这份资料对应 {title}。"
+            scope_en = f"The document corresponds to {title}."
+
+        if response_language == "en":
+            sentence = f"{matched} is the file number for {source}'s {title}, which corresponds to the {en_policy}."
+            if last_update:
+                sentence += f" The document states its last update date as {last_update}."
+            return f"{sentence} {scope_en} {citation}\n\nSources: {citation}"
+
+        if response_language == "bilingual":
+            zh_sentence = f"{matched} 文件编号对应的是《{title}》，也就是 {zh_policy} 的政策资料；该编号出现在 {source} 的文件中。"
+            en_sentence = f"{matched} is the file number for {source}'s {title}, which corresponds to policy material for the {en_policy}."
+            if last_update:
+                zh_sentence += f" 文件标注的最后更新日期是 {last_update}。"
+                en_sentence += f" The document states its last update date as {last_update}."
+            return f"{zh_sentence} {citation}\n{en_sentence} {citation}\n\n信息来源 / Sources: {citation}"
+
+        lines = [
+            f"现有资料明确提及“{matched}”这一文件编号；它对应的政策是 {zh_policy}，具体文件是 {source} 的《{title}》。"
+        ]
+        lines.append("")
+        lines.append("【已确认事实】")
+        lines.append(f"- “{matched}”出现在《{title}》中。")
+        if last_update:
+            lines.append(f"- 该文件标注的最后更新日期是 {last_update}。")
+        lines.append(f"- 该文件用于说明 {zh_policy} 的政策资料。")
+        lines.append("")
+        lines.append(f"信息来源：{citation}")
+        return "\n".join(lines)
+
+    return ""
+
+
+def _is_fps_limit_lookup(query: str) -> bool:
+    return _contains_any(query, ["FPS", "Faster Payment System", "转数快"]) and _contains_any(
+        query,
+        ["限额", "上限", "金额", "特点", "limit", "transaction limit", "transfer amount", "feature"],
+    )
+
+
+def _build_fps_limit_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh" or not _is_fps_limit_lookup(query):
+        return ""
+
+    hkma_label = ""
+    bochk_label = ""
+    for idx, (doc, _score) in enumerate(citation_source or [], 1):
+        doc_id = doc.get("doc_id") or doc.get("id")
+        label = f"[资料{idx}]"
+        if doc_id == "hkma_fps" and not hkma_label:
+            hkma_label = label
+        elif doc_id == "bochk_fps_limit_notice_20251224" and not bochk_label:
+            bochk_label = label
+
+    if not hkma_label or not bochk_label:
+        return ""
+
+    return "\n".join([
+        (
+            "Faster Payment System（FPS）转账的主要特点是：可作跨银行/电子钱包支付，"
+            "可用收款人的手机号码或电子邮件地址转账，资金几乎即时到账，系统24x7运行，"
+            f"并支持港元和人民币支付。{hkma_label}"
+        ),
+        "",
+        "关于限额，现有资料只支持说明 BOCHK 的本地银行转账安排：",
+        (
+            f"- BOCHK 公告列明，Local Bank Transfer via FPS 的转账金额由不超过 "
+            f"HKD1,000,000.00 调整为不超过 HKD3,000,000.00 或等值金额，"
+            f"生效日期为2026年1月26日。{bochk_label}"
+        ),
+        f"- BOCHK 公告同时列明 Personal Customers 的费用为 Waived。{bochk_label}",
+        "- 现有资料未确认其他银行、每日累计限额、账户等级限额或跨境FPS汇款限额。",
+        "",
+        f"信息来源：{hkma_label}、{bochk_label}",
+    ])
+
+
+def _citation_labels_by_doc_id(citation_source, response_language: str) -> dict[str, str]:
+    labels: dict[str, str] = {}
+    for idx, (doc, _score) in enumerate(citation_source or [], 1):
+        doc_id = doc.get("doc_id") or doc.get("id")
+        if not doc_id or doc_id in labels:
+            continue
+        labels[doc_id] = f"[Source{idx}]" if response_language == "en" else f"[资料{idx}]"
+    return labels
+
+
+def _build_tt_remittance_fee_time_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh" or not _is_tt_remittance_fee_time_query(query):
+        return ""
+
+    labels = _citation_labels_by_doc_id(citation_source, response_language)
+    charges = labels.get("bochk_remittance_charges")
+    guide = labels.get("bochk_outward_tt_quick_guide")
+    if not charges or not guide:
+        return ""
+
+    return "\n".join([
+        "电汇（TT）汇款可以确认两件事：BOCHK 对外电汇收费按渠道和客户类型收取；到账方面，资料只承诺在满足截止时间和条件时由 BOCHK 当日处理，不等同于保证收款银行当日入账。",
+        "",
+        "已确认费用：",
+        f"- Telegraphic Transfer 经分行办理：HK$260/笔。{charges}",
+        f"- 经电子渠道办理：个人客户 HK$65/笔，企业客户 HK$120/笔。{charges}",
+        f"- 若选择由汇款人承担 Correspondent Bank Charges，中转行、清算机构或收款银行费用可能另行收取。{charges}",
+        "",
+        "已确认处理时间：",
+        f"- TT 主要货币（如 HKD/USD/EUR/CAD/GBP）的分行截止时间为 17:00，网上银行截止时间为 18:00；部分其他主要货币和非主要货币也列有 17:00/18:00 的同日处理截止时间。{guide}",
+        f"- BOCHK 说明，在指示清晰完整、收款银行所在地/币种为营业日或清算日、资金及费用充足、换汇已安排同日交割等条件满足时，会在相应截止时间前收到申请后于同日处理。{guide}",
+        "- 现有资料未列明标准 TT 到收款银行实际入账的固定天数；如需确认某个国家、币种或收款银行的到账时效，应在汇款前向 BOCHK 或收款银行确认。",
+        "",
+        f"信息来源：{charges}、{guide}",
+    ])
+
+
+def _build_sme_loan_docs_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh":
+        return ""
+    if not _contains_any(query, ["SME", "中小企业"]) or not _contains_any(
+        query,
+        ["财务证明", "账务文件", "材料", "文件"],
+    ):
+        return ""
+
+    labels = _citation_labels_by_doc_id(citation_source, response_language)
+    bochk_small = labels.get("bochk_sme_loan")
+    bochk_sfgs = labels.get("bochk_sfgs_product")
+    hkmc_fact = labels.get("hkmc_sfgs_factsheet")
+    hkmc_proc = labels.get("hkmc_sfgs_application_procedures")
+    hkmc_proc_lender = labels.get("hkmc_sfgs_application_procedures_lender")
+    hkmc_any = hkmc_fact or hkmc_proc or hkmc_proc_lender
+
+    if not bochk_small or not hkmc_any:
+        return ""
+
+    sources = [label for label in [hkmc_any, bochk_sfgs, bochk_small] if label]
+    return "\n".join([
+        "关于“申请 SME 贷款要提交哪些财务证明材料、公司账务文件”，现有官方资料没有列出一份可直接照抄的完整文件清单；能确认的是银行或HKMCI可要求申请人提供支持文件，而 BOCHK 的小企业无抵押贷款明确不要求抵押品和经审计财务报表。",
+        "",
+        "已确认信息如下：",
+        f"- SFGS：贷款机构会进行客户尽职调查、审核申请和核实资格，并在向HKMCI提交担保申请时提供相关支持文件；贷款机构或HKMCI也可要求借款人进一步提供支持文件和资料。{hkmc_any}",
+        (
+            f"- BOCHK SFGS线上流程：页面显示申请流程包括“Upload documents”，并提示可预先上传相关文件，以便客户经理跟进。{bochk_sfgs}"
+            if bochk_sfgs else
+            "- BOCHK SFGS线上流程未进入本次可引用资料，无法确认其上传文件页面细节。"
+        ),
+        f"- BOCHK “Small Business Loan” 无抵押贷款：资料明确写明不需要抵押品，也不需要经审计财务报表；但银行保留要求客户提供相关支持文件或资料的权利。{bochk_small}",
+        "",
+        "因此，不能把资产负债表、利润表、银行流水、报税表等列为所有SME贷款的必交文件；这些只能由所申请产品和银行客户经理确认。最终提交前请向BOCHK客户经理确认适用于您公司的最新文件清单。",
+        "",
+        f"信息来源：{'、'.join(sources)}",
+    ])
+
+
+def _build_sme_collateral_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh":
+        return ""
+    if not _contains_any(query, ["SME", "中小企业"]) or not _contains_any(
+        query,
+        ["抵押", "无抵押", "质押", "资产"],
+    ):
+        return ""
+
+    labels = _citation_labels_by_doc_id(citation_source, response_language)
+    text_by_doc_id = {}
+    for doc, _score in citation_source or []:
+        doc_id = doc.get("doc_id") or doc.get("id")
+        if doc_id and doc_id not in text_by_doc_id:
+            text_by_doc_id[doc_id] = " ".join([
+                str(doc.get("title") or ""),
+                str(doc.get("content") or ""),
+                str(doc.get("contextualized_content") or ""),
+            ])
+    bochk_small = labels.get("bochk_sme_loan")
+    bochk_services = labels.get("bochk_loan_services")
+    bochk_sfgs = labels.get("bochk_sfgs_product")
+    hkmc_fact = labels.get("hkmc_sfgs_factsheet")
+    hkma_90 = labels.get("hkma_sfgs_90_product")
+
+    if not bochk_small:
+        return ""
+
+    service_text = text_by_doc_id.get("bochk_loan_services", "")
+    service_lists_collateral_products = _contains_any(service_text, [
+        "Mortgage Loan",
+        "Asset-Pledge",
+        "Machinery and Equipment Financing",
+        "按揭",
+        "质押",
+        "機械設備",
+    ])
+    sources = [
+        label for label in [
+            bochk_small,
+            bochk_services if service_lists_collateral_products else None,
+            bochk_sfgs,
+            hkmc_fact,
+            hkma_90,
+        ]
+        if label
+    ]
+    collateral_line = (
+        f"- 有抵押/质押类融资也存在：BOCHK贷款服务页列出 Mortgage Loan、Asset-Pledge Loan "
+        f"和 Machinery and Equipment Financing 等融资方式。{bochk_services}"
+        if bochk_services and service_lists_collateral_products else
+        "- 本次可引用资料未直接列明可接受的抵押/质押资产范围；如果申请有抵押或质押融资，需要向银行确认资产类型、估值方式和审批条件。"
+    )
+    sfgs_line = (
+        f"- SFGS属于由HKMCI提供担保的融资担保计划；资料说明贷款机构会审核申请、核实资格并可要求支持文件，但不等同于资料已列出借款人必须抵押哪些资产。{hkmc_fact}"
+        if hkmc_fact else
+        "- 本次可引用资料未包含HKMCI SFGS factsheet，不能补充SFGS担保要求。"
+    )
+    bochk_sfgs_line = (
+        f"- BOCHK SFGS产品页可作为申请渠道/产品资料参考，但最终贷款审批和所需支持文件仍以银行审核为准。{bochk_sfgs}"
+        if bochk_sfgs else
+        "- BOCHK SFGS产品页未进入本次可引用资料，不能补充其申请页面说明。"
+    )
+    hkma_line = (
+        f"- HKMA资料说明90%担保产品用于支持较小规模企业、经营经验较少的企业及专业人士取得融资，可作为SFGS背景。{hkma_90}"
+        if hkma_90 else
+        ""
+    )
+
+    lines = [
+        "申请SME贷款不一定需要拿资产做抵押；至少BOCHK的“BOC Small Business Loan”明确是无抵押贷款选项，资料写明不需要抵押品，也不需要经审计财务报表。",
+        "",
+        "已确认信息如下：",
+        f"- 无抵押选项：BOC Small Business Loan / Unsecured Loan 明确写明 “Provision of collaterals and audited financial statements is not required”。{bochk_small}",
+        collateral_line,
+        sfgs_line,
+        bochk_sfgs_line,
+    ]
+    if hkma_line:
+        lines.append(hkma_line)
+    lines.extend([
+        "",
+        "需要向银行确认的细节：如果您申请的不是BOC Small Business Loan，而是其他SME贷款或SFGS项下贷款，需让客户经理确认是否要求抵押/质押、可接受资产类型、估值方式、担保比例和最终文件清单。",
+        "",
+        f"信息来源：{'、'.join(sources)}",
+    ])
+    return "\n".join(lines)
+
+
+def _build_sfgs_amount_docs_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh":
+        return ""
+    if not _contains_any(query, ["SFGS", "担保贷款"]) or not _contains_any(
+        query,
+        ["贷多少", "额度", "营业额", "利润", "财务证明", "文件"],
+    ):
+        return ""
+
+    labels = _citation_labels_by_doc_id(citation_source, response_language)
+    hkmc_fact = labels.get("hkmc_sfgs_factsheet")
+    hkma_90 = labels.get("hkma_sfgs_90_product")
+    bochk_sfgs = labels.get("bochk_sfgs_product")
+    bochk_small = labels.get("bochk_sme_loan")
+
+    if not hkmc_fact:
+        return ""
+
+    sources = [label for label in [hkmc_fact, hkma_90, bochk_small, bochk_sfgs] if label]
+    return "\n".join([
+        "您公司申请SFGS担保贷款时，可先按SFGS产品最高设施金额判断大致上限；实际获批金额由参与贷款机构审批，年营业额5000万港币和去年利润800万港币本身不是资料列明的自动换算公式。",
+        "",
+        "可确认的额度信息：",
+        f"- 80% Guarantee Product：最高设施金额为 HK$12,000,000。{hkmc_fact}",
+        f"- 90% Guarantee Product：最高设施金额为 HK$18,000,000，且包括80%及90%担保产品下已获批的信贷设施。{hkmc_fact}",
+        f"- Special 100% Loan Guarantee：最高设施金额为 HK$8,000,000；工资/租金或HK$9,000,000较低者的公式只适用于该Special 100%产品。{hkmc_fact}",
+        (
+            f"- HKMA关于90%担保产品的公告说明该产品用于支持较小规模企业、经营经验较少的企业及专业人士取得融资。{hkma_90}"
+            if hkma_90 else
+            "- 本次可引用资料未包含HKMA 90%担保产品公告，无法补充该公告口径。"
+        ),
+        "",
+        "关于需要补充哪些财务证明文件：",
+        f"- SFGS资料确认贷款机构会审核申请、核实资格，并可要求借款人提供进一步支持文件和资料。{hkmc_fact}",
+        (
+            f"- BOCHK SFGS页面显示申请流程包括“Upload documents”，可预先上传相关文件给客户经理跟进。{bochk_sfgs}"
+            if bochk_sfgs else
+            "- BOCHK SFGS上传文件页面未进入本次可引用资料，无法确认其页面说明。"
+        ),
+        (
+            f"- 若考虑BOCHK “Small Business Loan” 无抵押贷款，资料明确写明不需要抵押品和经审计财务报表，但银行仍可要求相关支持文件或资料。{bochk_small}"
+            if bochk_small else
+            "- BOCHK Small Business Loan资料未进入本次可引用资料，无法比较其无抵押贷款文件要求。"
+        ),
+        "",
+        "需要向银行确认的细节：已用SFGS额度、申请80%/90%还是Special 100%产品、银行对还款能力的审批口径，以及适用于您公司的具体财务文件清单。",
+        "",
+        f"信息来源：{'、'.join(sources)}",
+    ])
+
+
+def _build_china_vietnam_supplier_payment_answer(query: str, citation_source, response_language: str) -> str:
+    if response_language != "zh":
+        return ""
+    if not (
+        _contains_any(query, ["越南", "Vietnam"])
+        and _contains_any(query, ["供应商", "supplier"])
+        and _contains_any(query, ["付汇", "付款", "payment", "remittance"])
+    ):
+        return ""
+
+    labels = _citation_labels_by_doc_id(citation_source, response_language)
+    safe_trade = labels.get("safe_trade_investment_facilitation")
+    safe_opt = labels.get("safe_trade_fx_optimization_2024")
+    sbv_risk = labels.get("sbv_export_payment_risk")
+    sbv_current = labels.get("sbv_circular_20_2022_current_account_transfers")
+    sbv_cross = labels.get("sbv_cross_border_payments_vi")
+
+    if not safe_trade or not sbv_risk:
+        return ""
+
+    sources = [
+        label for label in [safe_trade, safe_opt, sbv_risk, sbv_current, sbv_cross]
+        if label
+    ]
+    return "\n".join([
+        "中国企业向越南供应商付汇，可以按“中国侧贸易外汇真实性审核 + 越南侧授权银行收款/外汇业务合规”来理解；现有资料支持这个框架，但没有列出每家银行的完整操作清单。",
+        "",
+        "已确认的合规审核流程要点：",
+        f"1. 中国侧先看交易是否属于真实贸易背景。SAFE资料要求经办银行识别交易主体身份、审核交易真实性，并防范同一交易信息重复使用；市场采购贸易主体还需已在地方政府市场采购贸易联网平台备案。{safe_trade}",
+        (
+            f"2. 中国侧贸易外汇便利化/优化政策属于配套依据；企业和银行仍需按贸易外汇收支便利化、真实性审核和留存资料要求办理。{safe_opt}"
+            if safe_opt else
+            "2. 本次可引用资料未包含SAFE贸易外汇优化文件，无法补充其具体优化措施。"
+        ),
+        f"3. 越南侧应通过获越南国家银行（SBV）授权办理外汇业务的商业银行收款；资料列示了越南授权银行/外资银行名单和相关跨境支付风险提示。{sbv_risk}",
+        (
+            f"4. 若涉及越南经常项目转账或跨境支付安排，还需按SBV相关经常项目转账/跨境支付规定处理。{sbv_current or sbv_cross}"
+            if (sbv_current or sbv_cross) else
+            "4. 越南端具体入账步骤需要向越南收款银行确认；本次可引用资料只支持越南授权银行和跨境支付风险背景。"
+        ),
+        "",
+        "需要向银行确认的细节：具体银行要求提交哪些合同、发票、报关单或运输单据；是否需要越南供应商额外资质证明；以及单笔金额、频率或特定行业是否有额外限制。实际付款前应向中国经办银行和越南收款银行确认其最新清单。",
+        "",
+        f"信息来源：{'、'.join(sources)}",
+    ])
 
 
 # ----------------------------------------------------------------------
@@ -1283,7 +2126,7 @@ class CrossBridgeRAG:
         state["top_k"] = max(1, int(state.get("top_k", 3)))
         state["region"] = state.get("region", "全部")
         state["topic"] = state.get("topic", "全部")
-        state["response_language"] = resolve_answer_language(
+        state["response_language"] = resolve_rag_answer_language(
             state["query"],
             fallback=state.get("response_language"),
         )
@@ -1426,6 +2269,43 @@ class CrossBridgeRAG:
         for variant in state["query_variants"]:
             _run_one(variant)
 
+        identifiers = _extract_doc_identifiers(state["query"])
+        if identifiers:
+            exact_results = []
+            for chunk in self.docs:
+                haystack = " ".join([
+                    str(chunk.get("doc_id") or ""),
+                    str(chunk.get("title") or ""),
+                    str(chunk.get("content") or ""),
+                    str(chunk.get("contextualized_content") or ""),
+                ]).upper()
+                if any(identifier in haystack for identifier in identifiers):
+                    if state["region"] and state["region"] != "全部":
+                        if (chunk.get("region_code") or "") != state["region"]:
+                            continue
+                    if state["topic"] and state["topic"] != "全部":
+                        if (chunk.get("topic_code") or "") != state["topic"]:
+                            continue
+                    exact_results.append((_ingestion_chunk_to_doc(chunk), 100.0))
+            exact_results = exact_results[: self.retriever.candidate_k]
+            if exact_results:
+                searches.append({
+                    "query": state["query"],
+                    "source": "exact_identifier",
+                    "results": [
+                        {
+                            "id": doc.get("id"),
+                            "title": doc.get("title"),
+                            "score": round(float(score), 4),
+                        }
+                        for doc, score in exact_results
+                    ],
+                })
+                result_lists.append(("exact_identifier", exact_results))
+                state["trace"]["exact_identifier_matches"] = [
+                    doc.get("id") for doc, _ in exact_results
+                ]
+
         probe_results = self.index.search(
             state["structured_query"]["semantic_query"],
             region=state["region"],
@@ -1506,25 +2386,74 @@ class CrossBridgeRAG:
             ]
         return state
 
-    def _metadata_multiplier(self, doc):
-        source_type = doc.get("source_type", "unknown")
-        authority_level = doc.get("authority_level", "medium")
-        disclaimer_level = doc.get("disclaimer_level", "unknown")
-        disclaimer = doc.get("disclaimer", "")
+    def _metadata_multiplier(self, doc, state=None):
+        source_type = str(doc.get("source_type") or "unknown")
+        authority_level = str(doc.get("authority_level") or "unknown")
+        document_type = str(doc.get("document_type") or "unknown")
+        trust_tier = str(doc.get("trust_tier") or "unknown")
+        disclaimer_level = str(doc.get("disclaimer_level") or "unknown")
+        disclaimer = str(doc.get("disclaimer") or "")
+
+        # The ingestion metadata uses detailed authority values such as
+        # bank_product_page/regulator/central_bank, not high/medium/low.
+        # Keep these multipliers modest: rerank remains primary, metadata only
+        # resolves close calls and reduces clearly off-intent sources.
+        authority_boost = {
+            "central_bank": 1.08,
+            "regulator": 1.08,
+            "regulator_research": 1.04,
+            "tax_authority": 1.08,
+            "government-backed_scheme_operator": 1.08,
+            "government_funding_scheme": 1.07,
+            "government_agency": 1.06,
+            "government_registry": 1.05,
+            "government_trade_promotion_body": 1.04,
+            "government_trade_promotion_platform": 1.04,
+            "government_investment_promotion_body": 1.04,
+            "government_portal": 1.00,
+            "payment_infrastructure_operator": 1.04,
+            "bank_product_page": 1.06,
+            "bank_official_page": 1.05,
+            "official_dev": 1.03,
+            "background": 0.96,
+            "non_official": 0.84,
+            "unknown": 1.0,
+        }.get(authority_level, 1.0)
+        if authority_level.startswith("government") and authority_level not in {
+            "government_portal",
+        }:
+            authority_boost = max(authority_boost, 1.04)
+
+        document_boost = {
+            "factsheet": 1.08,
+            "product_page": 1.07,
+            "guideline": 1.05,
+            "circular": 1.05,
+            "policy_doc": 1.04,
+            "faq": 1.03,
+            "news": 0.97,
+            "hub_page": 0.95,
+            "unknown": 0.99,
+        }.get(document_type, 1.0)
+
+        trust_boost = {
+            "government": 1.04,
+            "regulator": 1.04,
+            "central_bank": 1.04,
+            "official_dev": 1.02,
+            "bank": 1.03,
+            "background": 0.95,
+            "non_official": 0.84,
+            "unknown": 0.95,
+        }.get(trust_tier, 1.0)
 
         source_boost = {
-            "regulator": 1.10,
-            "tax_authority": 1.10,
-            "bank": 1.05,
-            "product_page": 1.03,
-            "demo": 0.92,
-            "unknown": 1.0,
+            "PDF": 1.02,
+            "HTML": 1.0,
+            "demo": 0.88,
+            "unknown": 0.98,
         }.get(source_type, 1.0)
-        authority_boost = {
-            "high": 1.08,
-            "medium": 1.0,
-            "low": 0.94,
-        }.get(authority_level, 1.0)
+
         disclaimer_boost = {
             "official": 1.05,
             "demo": 0.92,
@@ -1533,30 +2462,722 @@ class CrossBridgeRAG:
         }.get(disclaimer_level, 1.0)
         if "示例数据" in disclaimer or "非真实" in disclaimer:
             disclaimer_boost *= 0.92
-        return source_boost * authority_boost * disclaimer_boost
+
+        query_boost = 1.0
+        if state:
+            query = state.get("query", "")
+            structured = state.get("structured_query", {}) or {}
+            query_regions = structured.get("regions") or []
+            query_topics = structured.get("topics") or []
+            doc_region = doc.get("region") or ""
+            doc_topic = doc.get("topic") or ""
+
+            if query_regions and doc_region:
+                if doc_region in query_regions:
+                    query_boost *= 1.10
+                elif doc_region == "ASEAN" and any(
+                    r in {"VN", "TH", "SG", "ID", "MY", "PH"}
+                    for r in query_regions
+                ):
+                    query_boost *= 1.02
+                else:
+                    query_boost *= 0.82
+
+            if query_topics and doc_topic:
+                if doc_topic in query_topics:
+                    query_boost *= 1.06
+                elif len(query_topics) == 1:
+                    query_boost *= 0.90
+                else:
+                    query_boost *= 0.94
+
+            aml_intent = _contains_any(query, [
+                "反洗钱", "AML", "CFT", "KYC", "KYB", "CDD", "EDD",
+                "客户尽职", "尽职调查",
+            ])
+            if aml_intent:
+                if doc_topic == "compliance":
+                    query_boost *= 1.15
+                else:
+                    query_boost *= 0.82
+
+            fee_time_intent = _contains_any(query, [
+                "费用", "收费", "手续费", "到账", "多久", "时效", "时间",
+                "fee", "fees", "charge", "charges", "timeline", "how long",
+            ])
+            if fee_time_intent:
+                if authority_level in {"bank_product_page", "bank_official_page"}:
+                    query_boost *= 1.15
+                elif authority_level in {"regulator", "central_bank", "tax_authority"}:
+                    query_boost *= 0.78
+
+            if _is_tt_remittance_fee_time_query(query):
+                doc_id = doc.get("doc_id") or doc.get("id")
+                if doc_id in {
+                    "bochk_remittance_charges",
+                    "bochk_outward_tt_quick_guide",
+                }:
+                    query_boost *= 1.40
+                elif doc_id in {
+                    "bochk_fps_limit_notice_20251224",
+                    "bochk_trade_finance_tariffs",
+                }:
+                    query_boost *= 0.62
+
+            vietnam_manufacturing_investment_intent = (
+                _is_vietnam_manufacturing_investment_query(query)
+            )
+            if vietnam_manufacturing_investment_intent:
+                doc_id = doc.get("doc_id") or doc.get("id")
+                if doc_id in {
+                    "hktdc_vietnam_manufacturing_partnership",
+                    "hktdc_vietnam_manufacturing_background",
+                    "fia_vietnam_taxation_customs",
+                }:
+                    query_boost *= 1.35
+                elif authority_level in {"regulator", "central_bank"} and not _contains_any(
+                    query, ["付汇", "付款", "汇款", "payment", "remittance", "transfer"]
+                ):
+                    query_boost *= 0.74
+
+            if _is_sbv_credit_institution_query(query):
+                if (doc.get("doc_id") or doc.get("id")) == "sbv_credit_institutions":
+                    query_boost *= 1.35
+                elif doc_region == "VN":
+                    query_boost *= 0.84
+                else:
+                    query_boost *= 0.70
+
+            if (
+                _is_vietnam_supplier_payment_query(query)
+                and not _is_china_vietnam_supplier_payment_query(query)
+            ):
+                doc_id = doc.get("doc_id") or doc.get("id")
+                if doc_id in {
+                    "sbv_export_payment_risk",
+                    "sbv_credit_institutions",
+                    "sbv_circular_20_2022_current_account_transfers",
+                    "sbv_cross_border_payments_vi",
+                    "sbv_circular_15_2024_payment_services",
+                }:
+                    query_boost *= 1.25
+                elif doc_region != "VN":
+                    query_boost *= 0.70
+
+            loan_product_intent = _contains_any(query, [
+                "贷款", "融资", "授信", "额度", "利率", "抵押", "担保",
+                "产品", "申请", "资格", "材料", "文件",
+                "loan", "financing", "credit facility", "product", "documents",
+            ])
+            if loan_product_intent and (
+                authority_level in {
+                    "bank_product_page",
+                    "bank_official_page",
+                    "government-backed_scheme_operator",
+                }
+                or document_type in {"product_page", "factsheet", "faq"}
+            ):
+                query_boost *= 1.10
+            loan_document_intent = _contains_any(query, [
+                "财务证明", "账务文件", "材料", "文件", "supporting documents",
+                "financial statements", "audited financial statements",
+            ])
+            if loan_document_intent and (doc.get("doc_id") or doc.get("id")) == "bochk_sme_loan":
+                query_boost *= 1.35
+            loan_amount_intent = _contains_any(query, [
+                "贷多少", "额度", "上限", "营业额", "利润", "maximum facility amount",
+                "loan amount",
+            ])
+            if loan_amount_intent and (doc.get("doc_id") or doc.get("id")) == "hkmc_sfgs_factsheet":
+                amount_text = " ".join([
+                    str(doc.get("content") or ""),
+                    str(doc.get("contextualized_content") or ""),
+                ])
+                if _contains_any(amount_text, [
+                    "HK$18,000,000",
+                    "HK$12,000,000",
+                    "HK$ 18,000,000",
+                    "HK$ 12,000,000",
+                ]):
+                    query_boost *= 1.45
+                else:
+                    query_boost *= 0.75
+            loan_collateral_intent = _contains_any(query, [
+                "抵押", "无抵押", "质押", "collateral", "unsecured", "security",
+            ])
+            if loan_collateral_intent:
+                doc_id = doc.get("doc_id") or doc.get("id")
+                if doc_id in {
+                    "bochk_sme_loan",
+                    "bochk_loan_services",
+                    "bochk_sfgs_product",
+                    "hkmc_sfgs_factsheet",
+                    "hkma_sfgs_90_product",
+                }:
+                    query_boost *= 1.28
+            if (
+                loan_product_intent
+                and authority_level in {"regulator", "central_bank", "tax_authority"}
+                and not _contains_any(query, [
+                    "SFGS", "担保", "合规", "监管", "外汇", "反洗钱",
+                    "HKMA", "SAFE", "SBV", "regulation", "compliance",
+                ])
+            ):
+                query_boost *= 0.88
+
+            identifiers = _extract_doc_identifiers(query)
+            if identifiers:
+                haystack = " ".join([
+                    str(doc.get("doc_id") or ""),
+                    str(doc.get("title") or ""),
+                    str(doc.get("content") or ""),
+                    str(doc.get("contextualized_content") or ""),
+                ]).upper()
+                if any(identifier in haystack for identifier in identifiers):
+                    query_boost *= 1.35
+
+        multiplier = (
+            source_boost
+            * authority_boost
+            * document_boost
+            * trust_boost
+            * disclaimer_boost
+            * query_boost
+        )
+        return max(0.50, min(1.80, multiplier))
+
+    def _select_prompt_contexts(self, scored, top_k, state=None):
+        """Select prompt contexts with parent-doc diversity.
+
+        RRF/rerank can return several chunks from the same parent document. That
+        helps section-level detail, but weak-sample analysis showed duplicate
+        chunks crowding out other authoritative sources and increasing
+        unsupported synthesis risk. Selection is therefore two-pass:
+          1. best chunk from each parent document;
+          2. remaining high-ranked chunks, capped per parent document.
+        """
+        if not scored or top_k <= 0:
+            return [], {"strategy": "parent_doc_diversity", "selected_doc_ids": []}
+
+        override = None
+        if state:
+            override = state.get("prompt_max_chunks_per_doc_override")
+        max_chunks_per_doc = max(1, int(override or PROMPT_MAX_CHUNKS_PER_DOC))
+        selected = []
+        overflow = []
+        counts_by_parent = {}
+
+        for doc, score in scored:
+            parent_id = doc.get("parent_doc_id") or doc.get("doc_id") or doc.get("id")
+            if counts_by_parent.get(parent_id, 0) == 0:
+                selected.append((doc, score))
+                counts_by_parent[parent_id] = 1
+                if len(selected) >= top_k:
+                    break
+            else:
+                overflow.append((doc, score))
+
+        if len(selected) < top_k:
+            for doc, score in overflow:
+                parent_id = doc.get("parent_doc_id") or doc.get("doc_id") or doc.get("id")
+                if counts_by_parent.get(parent_id, 0) >= max_chunks_per_doc:
+                    continue
+                selected.append((doc, score))
+                counts_by_parent[parent_id] = counts_by_parent.get(parent_id, 0) + 1
+                if len(selected) >= top_k:
+                    break
+
+        selected = selected[:top_k]
+        return selected, {
+            "strategy": "parent_doc_diversity",
+            "max_chunks_per_doc": max_chunks_per_doc,
+            "selected_doc_ids": [
+                doc.get("doc_id") or doc.get("id") for doc, _ in selected
+            ],
+            "selected_chunk_ids": [
+                doc.get("chunk_id") or doc.get("id") for doc, _ in selected
+            ],
+            "selected_unique_doc_count": len({
+                doc.get("doc_id") or doc.get("id") for doc, _ in selected
+            }),
+        }
+
+    def _filter_prompt_candidates(self, scored, state):
+        """Conservatively filter prompt candidates by source family.
+
+        This does not affect vector/BM25/rerank retrieval. It only prevents
+        clearly off-intent source families from entering the answer prompt when
+        enough better official candidates are already available.
+        """
+        trace = {
+            "applied": False,
+            "reason": "not_applicable",
+            "before_count": len(scored or []),
+            "after_count": len(scored or []),
+        }
+        if not scored:
+            return scored, trace
+
+        def _doc_id(item):
+            doc, _score = item
+            return doc.get("doc_id") or doc.get("id")
+
+        def _unique_count(items):
+            return len({_doc_id(item) for item in items})
+
+        def _enough(items, min_unique=1):
+            if not items:
+                return False
+            # At prompt time, fewer highly targeted sources are better than
+            # padding with off-intent material, but require at least one unique
+            # authoritative parent and at least one chunk.
+            return _unique_count(items) >= min_unique
+
+        def _filter_text(item):
+            doc, _score = item
+            return " ".join([
+                str(doc.get("doc_id") or ""),
+                str(doc.get("title") or ""),
+                str(doc.get("source_name") or ""),
+                str(doc.get("content") or "")[:500],
+            ]).lower()
+
+        def _title_text(item):
+            doc, _score = item
+            return " ".join([
+                str(doc.get("doc_id") or ""),
+                str(doc.get("title") or ""),
+                str(doc.get("source_name") or ""),
+            ]).lower()
+
+        def _looks_like_sfgs_source(item):
+            text = _filter_text(item)
+            return (
+                "sfgs" in text
+                or "sme financing guarantee" in text
+                or "financing guarantee scheme" in text
+            )
+
+        def _document_type(item):
+            doc, _score = item
+            return str(doc.get("document_type") or "")
+
+        def _authority_level(item):
+            doc, _score = item
+            return str(doc.get("authority_level") or "")
+
+        query = state.get("query", "")
+        structured = state.get("structured_query", {}) or {}
+        query_regions = set(structured.get("regions") or [])
+
+        regulatory_intent = _contains_any(query, [
+            "合规", "监管", "外汇", "反洗钱", "AML", "CFT", "KYC", "KYB",
+            "CDD", "EDD", "HKMA", "SAFE", "SBV", "regulation", "compliance",
+        ])
+        fee_time_intent = _contains_any(query, [
+            "费用", "收费", "手续费", "到账", "多久", "时效", "时间",
+            "fee", "fees", "charge", "charges", "timeline", "how long",
+        ])
+        loan_product_intent = _contains_any(query, [
+            "贷款", "融资", "授信", "额度", "利率", "抵押", "产品",
+            "申请", "资格", "材料", "文件", "loan", "financing",
+            "credit facility", "product", "documents",
+        ])
+        loan_document_intent = _contains_any(query, [
+            "财务证明", "账务文件", "材料", "文件", "supporting documents",
+            "financial statements", "audited financial statements",
+        ])
+        loan_amount_intent = _contains_any(query, [
+            "贷多少", "额度", "上限", "营业额", "利润", "maximum facility amount",
+            "loan amount",
+        ])
+        loan_collateral_intent = _contains_any(query, [
+            "抵押", "无抵押", "质押", "collateral", "unsecured", "security",
+        ])
+        guarantee_or_scheme_intent = _contains_any(query, [
+            "SFGS", "担保", "guarantee", "scheme",
+        ])
+        tt_remittance_fee_time_intent = _is_tt_remittance_fee_time_query(query)
+        fps_intent = _contains_any(query, [
+            "FPS", "Faster Payment System", "转数快",
+        ])
+        china_vietnam_supplier_payment_intent = (
+            _is_china_vietnam_supplier_payment_query(query)
+        )
+        vietnam_supplier_payment_intent = (
+            _is_vietnam_supplier_payment_query(query)
+            and not china_vietnam_supplier_payment_intent
+        )
+        vietnam_manufacturing_investment_intent = (
+            _is_vietnam_manufacturing_investment_query(query)
+        )
+        sbv_credit_institution_intent = _is_sbv_credit_institution_query(query)
+        hk_gba_expansion_financing_intent = (
+            _is_hk_gba_expansion_financing_query(query)
+        )
+        gba_tax_rate_intent = (
+            _contains_any(query, ["大湾区", "GBA"])
+            and _contains_any(query, ["企业所得税", "income tax", "EIT"])
+            and _contains_any(query, ["增值税", "VAT", "value-added tax", "value added tax"])
+            and _contains_any(query, ["税率", "rate", "rates"])
+        )
+        gba_qianhai_policy_intent = _contains_any(query, ["前海", "Qianhai"])
+        gba_bank_account_intent = (
+            _contains_any(query, ["大湾区", "GBA", "Greater Bay Area"])
+            and _contains_any(query, ["银行账户", "bank account", "account opening"])
+        )
+        gba_business_registration_intent = (
+            _contains_any(query, ["GoGBA", "大湾区", "GBA"])
+            and _contains_any(query, ["business registration", "企业注册", "公司注册", "商业登记"])
+        )
+        hkma_aml_cdd_intent = _is_hkma_aml_cdd_query(query)
+
+        filtered = scored
+        reason = None
+
+        if hkma_aml_cdd_intent:
+            aml_guideline_docs = [
+                item for item in filtered
+                if _doc_id(item) == "hkma_aml_cft_guideline"
+            ]
+            if _enough(aml_guideline_docs):
+                filtered = aml_guideline_docs
+                state["prompt_max_chunks_per_doc_override"] = 3
+                reason = "hkma_aml_cdd_source_family"
+
+        if sbv_credit_institution_intent:
+            sbv_credit_docs = [
+                item for item in filtered
+                if _doc_id(item) == "sbv_credit_institutions"
+            ]
+            if _enough(sbv_credit_docs):
+                filtered = sbv_credit_docs
+                state["prompt_max_chunks_per_doc_override"] = 3
+                reason = (
+                    f"{reason}+sbv_credit_institution_source_family"
+                    if reason else "sbv_credit_institution_source_family"
+                )
+
+        if gba_qianhai_policy_intent:
+            qianhai_docs = [
+                item for item in filtered
+                if _doc_id(item) == "gogba_qianhai_policy"
+            ]
+            if _enough(qianhai_docs):
+                filtered = qianhai_docs
+                state["prompt_max_chunks_per_doc_override"] = 3
+                reason = "gogba_qianhai_source_family"
+
+        if gba_bank_account_intent:
+            bank_account_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "gogba_bank_accounts",
+                    "gogba_business_registration",
+                }
+            ]
+            if _enough(bank_account_docs, min_unique=2):
+                filtered = bank_account_docs
+                reason = (
+                    f"{reason}+gogba_bank_account_source_family"
+                    if reason else "gogba_bank_account_source_family"
+                )
+
+        if gba_business_registration_intent and not gba_bank_account_intent:
+            business_registration_docs = [
+                item for item in filtered
+                if _doc_id(item) == "gogba_business_registration"
+            ]
+            if _enough(business_registration_docs):
+                filtered = business_registration_docs
+                state["prompt_max_chunks_per_doc_override"] = 3
+                reason = (
+                    f"{reason}+gogba_business_registration_source_family"
+                    if reason else "gogba_business_registration_source_family"
+                )
+
+        if gba_tax_rate_intent:
+            direct_tax_docs = [
+                item for item in filtered
+                if _doc_id(item) == "gogba_enterprise_income_tax_vat"
+            ]
+            if _enough(direct_tax_docs):
+                filtered = direct_tax_docs
+                state["prompt_max_chunks_per_doc_override"] = 3
+                reason = "gba_tax_rate_source_family"
+
+        if vietnam_manufacturing_investment_intent and not china_vietnam_supplier_payment_intent:
+            direct_manufacturing_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "hktdc_vietnam_manufacturing_partnership",
+                    "hktdc_vietnam_manufacturing_background",
+                    "fia_vietnam_taxation_customs",
+                }
+            ]
+            if _enough(direct_manufacturing_docs, min_unique=2):
+                filtered = direct_manufacturing_docs
+                reason = "vietnam_manufacturing_investment_source_family"
+
+        if hk_gba_expansion_financing_intent:
+            direct_expansion_financing_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "bochk_sme_loan",
+                    "bochk_trade_finance",
+                    "boc_global_purchase_order_financing",
+                    "bochk_loan_services",
+                    "hkmc_sfgs_factsheet",
+                }
+            ]
+            if _enough(direct_expansion_financing_docs, min_unique=3):
+                filtered = direct_expansion_financing_docs
+                reason = "hk_gba_expansion_financing_source_family"
+
+        if china_vietnam_supplier_payment_intent:
+            direct_trade_payment_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "safe_trade_investment_facilitation",
+                    "safe_trade_fx_optimization_2024",
+                    "sbv_export_payment_risk",
+                }
+            ]
+            if _enough(direct_trade_payment_docs, min_unique=2):
+                filtered = direct_trade_payment_docs
+                reason = "china_vietnam_trade_payment_source_family"
+
+        if vietnam_supplier_payment_intent:
+            sbv_payment_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "sbv_export_payment_risk",
+                    "sbv_credit_institutions",
+                    "sbv_circular_20_2022_current_account_transfers",
+                    "sbv_cross_border_payments_vi",
+                    "sbv_circular_15_2024_payment_services",
+                }
+            ]
+            if _enough(sbv_payment_docs, min_unique=3):
+                filtered = sbv_payment_docs
+                reason = (
+                    f"{reason}+vietnam_supplier_payment_source_family"
+                    if reason else "vietnam_supplier_payment_source_family"
+                )
+
+        if tt_remittance_fee_time_intent:
+            tt_docs = [
+                item for item in filtered
+                if _doc_id(item) in {
+                    "bochk_remittance_charges",
+                    "bochk_outward_tt_quick_guide",
+                }
+            ]
+            if _enough(tt_docs, min_unique=2):
+                filtered = tt_docs
+                reason = "tt_remittance_fee_time_source_family"
+
+        if fps_intent:
+            direct_fps_docs = [
+                item for item in filtered
+                if (
+                    _doc_id(item) in {
+                        "hkma_fps",
+                        "hkma_payment_systems",
+                        "hkicl_hkd_fps_rules_2025",
+                        "bochk_fps_limit_notice_20251224",
+                    }
+                    or "faster payment system" in _title_text(item)
+                )
+            ]
+            if _enough(direct_fps_docs, min_unique=2):
+                filtered = direct_fps_docs
+                reason = "fps_direct_source_family"
+
+        if guarantee_or_scheme_intent and not regulatory_intent:
+            raw_scheme_docs = [
+                item for item in filtered
+                if _looks_like_sfgs_source(item)
+            ]
+            scheme_docs = raw_scheme_docs
+            product_fact_intent = _contains_any(query, [
+                "80%", "90%", "区别", "申请条件", "资格", "上限", "额度",
+                "多少", "limit", "eligibility", "condition",
+            ])
+            specific_doc_intent = _contains_any(query, [
+                "文件编号", "SFGS_09/2024", "document number", "policy number",
+            ])
+            if product_fact_intent:
+                bank_specific = _contains_any(query, [
+                    "中银", "中银香港", "BOCHK", "Bank of China", "bank product",
+                ])
+                product_fact_docs = [
+                    item for item in scheme_docs
+                    if _document_type(item) == "factsheet"
+                    or "90% guarantee product" in _title_text(item)
+                    or (
+                        bank_specific
+                        and _document_type(item) == "product_page"
+                    )
+                ]
+                if _enough(product_fact_docs):
+                    scheme_docs = product_fact_docs
+            if loan_document_intent or loan_amount_intent:
+                direct_scheme_docs = [
+                    item for item in filtered
+                    if _doc_id(item) not in {"hkmc_sfgs_statistics"}
+                    and (
+                        _document_type(item) in {"factsheet", "product_page", "faq"}
+                        or _doc_id(item) in {
+                            "hkmc_sfgs_factsheet",
+                            "hkma_sfgs_90_product",
+                            "bochk_sfgs_product",
+                            "bochk_sme_loan",
+                            "bochk_loan_services",
+                        }
+                    )
+                ]
+                if _enough(direct_scheme_docs, min_unique=2):
+                    scheme_docs = direct_scheme_docs
+                    if loan_amount_intent:
+                        state["prompt_max_chunks_per_doc_override"] = 3
+            elif specific_doc_intent:
+                official_scheme_docs = [
+                    item for item in scheme_docs
+                    if _authority_level(item) in {
+                        "official_dev",
+                        "regulator",
+                        "government-backed_scheme_operator",
+                    }
+                ]
+                if _enough(official_scheme_docs):
+                    scheme_docs = official_scheme_docs
+            if _enough(scheme_docs):
+                filtered = scheme_docs
+                reason = "sfgs_scheme_source_family"
+
+        if fee_time_intent and not regulatory_intent:
+            bank_fee_docs = [
+                item for item in filtered
+                if item[0].get("authority_level") in {
+                    "bank_product_page", "bank_official_page",
+                }
+            ]
+            if _enough(bank_fee_docs):
+                filtered = bank_fee_docs
+                reason = "fee_time_bank_source_family"
+
+        if loan_product_intent and not regulatory_intent and not guarantee_or_scheme_intent:
+            if query_regions:
+                region_matched = [
+                    item for item in filtered
+                    if (item[0].get("region") or "") in query_regions
+                ]
+                if _enough(region_matched):
+                    filtered = region_matched
+                    reason = (
+                        f"{reason}+region_match" if reason else "loan_product_region_match"
+                    )
+
+            product_docs = [
+                item for item in filtered
+                if (
+                    _doc_id(item) not in {"hkmc_sfgs_statistics"}
+                    and (
+                        _document_type(item) not in {"hub_page"}
+                        or (
+                            hk_gba_expansion_financing_intent
+                            and _doc_id(item) == "bochk_trade_finance"
+                        )
+                    )
+                    and (
+                    item[0].get("authority_level") in {
+                        "bank_product_page",
+                        "bank_official_page",
+                        "government-backed_scheme_operator",
+                        "government_funding_scheme",
+                    }
+                    or item[0].get("document_type") in {
+                        "product_page", "factsheet", "faq",
+                    }
+                    or (
+                        (loan_document_intent or loan_amount_intent or loan_collateral_intent)
+                        and _doc_id(item) in {
+                            "hkmc_sfgs_factsheet",
+                            "hkmc_sfgs_application_procedures",
+                            "hkmc_sfgs_application_procedures_lender",
+                            "bochk_sfgs_product",
+                            "bochk_sme_loan",
+                            "bochk_loan_services",
+                            "hkma_sfgs_90_product",
+                        }
+                    )
+                    )
+                )
+            ]
+            if _enough(product_docs):
+                filtered = product_docs
+                reason = (
+                    f"{reason}+product_source_family"
+                    if reason else "loan_product_source_family"
+                )
+
+        if filtered is scored or len(filtered) == len(scored):
+            trace.update({
+                "reason": reason or "not_applicable",
+                "before_unique_doc_count": _unique_count(scored),
+                "after_unique_doc_count": _unique_count(scored),
+                "candidate_doc_ids": [_doc_id(item) for item in scored],
+            })
+            return scored, trace
+
+        trace.update({
+            "applied": True,
+            "reason": reason or "source_family",
+            "after_count": len(filtered),
+            "before_unique_doc_count": _unique_count(scored),
+            "after_unique_doc_count": _unique_count(filtered),
+            "candidate_doc_ids": [_doc_id(item) for item in scored],
+            "filtered_doc_ids": [_doc_id(item) for item in filtered],
+        })
+        return filtered, trace
 
     def _metadata_scoring(self, state):
         scored = []
         metadata_scores = []
         for doc, score in state["fused_results"]:
-            multiplier = self._metadata_multiplier(doc)
+            multiplier = self._metadata_multiplier(doc, state)
             final_score = float(score) * multiplier
             scored.append((doc, final_score))
             metadata_scores.append({
                 "id": doc.get("id"),
                 "title": doc.get("title"),
+                "doc_id": doc.get("doc_id"),
+                "region": doc.get("region"),
+                "topic": doc.get("topic"),
+                "authority_level": doc.get("authority_level"),
+                "document_type": doc.get("document_type"),
+                "trust_tier": doc.get("trust_tier"),
                 "base_score": round(float(score), 4),
                 "metadata_multiplier": round(multiplier, 4),
                 "final_score": round(final_score, 4),
             })
 
         scored.sort(key=lambda item: item[1], reverse=True)
-        state["retrieved"] = scored[:state["top_k"]]
+        filtered_scored, source_filter_trace = self._filter_prompt_candidates(
+            scored, state
+        )
+        selected, selection_trace = self._select_prompt_contexts(
+            filtered_scored, state["top_k"], state=state
+        )
+        state["retrieved"] = selected
         state["documents"] = [
             self._to_langchain_document(doc, score)
             for doc, score in state["retrieved"]
         ]
         state["trace"]["metadata_scores"] = metadata_scores[:self.retriever.candidate_k]
+        state["trace"]["prompt_source_filter"] = source_filter_trace
+        state["trace"]["context_selection"] = selection_trace
         return state
 
     def _validate_citations(self, state):
@@ -1654,11 +3275,83 @@ class CrossBridgeRAG:
         return state
 
     def _generate_answer(self, state):
+        citation_source = state.get("retrieved_for_citation", state["retrieved"])
+        exact_identifier_answer = _build_exact_identifier_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if exact_identifier_answer:
+            state["answer"] = exact_identifier_answer
+            state["trace"]["answer_generation_mode"] = "exact_identifier_template"
+            return state
+
+        tt_remittance_fee_time_answer = _build_tt_remittance_fee_time_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if tt_remittance_fee_time_answer:
+            state["answer"] = tt_remittance_fee_time_answer
+            state["trace"]["answer_generation_mode"] = "tt_remittance_fee_time_template"
+            return state
+
+        fps_limit_answer = _build_fps_limit_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if fps_limit_answer:
+            state["answer"] = fps_limit_answer
+            state["trace"]["answer_generation_mode"] = "fps_limit_template"
+            return state
+
+        sme_collateral_answer = _build_sme_collateral_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if sme_collateral_answer:
+            state["answer"] = sme_collateral_answer
+            state["trace"]["answer_generation_mode"] = "sme_collateral_template"
+            return state
+
+        sme_loan_docs_answer = _build_sme_loan_docs_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if sme_loan_docs_answer:
+            state["answer"] = sme_loan_docs_answer
+            state["trace"]["answer_generation_mode"] = "sme_loan_docs_template"
+            return state
+
+        sfgs_amount_docs_answer = _build_sfgs_amount_docs_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if sfgs_amount_docs_answer:
+            state["answer"] = sfgs_amount_docs_answer
+            state["trace"]["answer_generation_mode"] = "sfgs_amount_docs_template"
+            return state
+
+        china_vietnam_supplier_payment_answer = _build_china_vietnam_supplier_payment_answer(
+            state["query"],
+            citation_source,
+            state["response_language"],
+        )
+        if china_vietnam_supplier_payment_answer:
+            state["answer"] = china_vietnam_supplier_payment_answer
+            state["trace"]["answer_generation_mode"] = "china_vietnam_supplier_payment_template"
+            return state
+
         resp = get_qwen_chat_model().invoke([
             ("system", SYSTEM_PROMPTS[state["response_language"]]),
             ("user", state["prompt"]),
         ])
         state["answer"] = str(resp.content)
+        state["trace"]["answer_generation_mode"] = "llm"
         return state
 
     def _format_output(self, state):

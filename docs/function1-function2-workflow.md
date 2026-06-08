@@ -56,6 +56,27 @@ F1-to-F2 handoff passes only product preselection and optional context for recom
 
 Data boundary: F2 owns its FastAPI service on 8082, separate SQLite database, separate Alembic environment, read-only document catalog snapshot, the official-form registry, package state, official-form drafts (keyed by `package_id + form_id + source_sha256`), trade-terms acceptance (keyed by `sme_id + terms_sha256`), checklist states, and audit events. It never reads or writes F1 database tables. The encrypted official PDFs live only in a git-ignored local cache (`data/document_preparation/official_forms_cache/`); they are never committed.
 
+## Function 3: Application Timeline
+
+```mermaid
+flowchart TD
+    A["F2 工作台页脚『提交申请』"] --> B["flush 草稿（落盘当前官方表单 + 等待自动保存队列）"]
+    B --> C["调用 F2 submission-readiness（唯一事实来源）"]
+    C --> D{"ready?"}
+    D -->|"否"| E["留在 F2 工作台，内联展示 blocking 原因（复用校验文案）"]
+    D -->|"是"| F["POST 创建申请；origin_package_id 唯一 → 幂等"]
+    F --> G["初始化 6 个固定节点：已提交=completed、材料审核=in_progress、其余 pending"]
+    G --> H["右侧面板切到时间线 + 聊天插入常驻概览卡 + 打开 SSE"]
+    H --> I["银行端隐藏后台推进当前节点（禁跳级；完成自动推进下一节点）"]
+    I -->|"rejected / supplement_required"| J["强制中英文客户说明非空"]
+    I --> K["写库并 bump updated_at"]
+    K --> L["SME 端 SSE（DB 轮询）检测变化 → 重拉详情 → 无刷新更新卡片与面板"]
+```
+
+The SME submits a completed F2 package as a loan application. Submission-readiness is decided **only** by Function 2 (the same high-trust checks the client ran on the active form, now applied server-side across every applicable official form): malformed SWIFT/BIC, supplier-vs-beneficiary mismatch, invoice-vs-payment mismatch, pending charge bearer, unchecked published product materials, and core-field completeness are **blocking**; unaccepted trade terms is a non-blocking **warning**. One application per package (`origin_package_id` is unique, so re-submitting the same package returns the original). The bank advances six fixed nodes (`submitted → material_review → credit_assessment → approval_result → signing → disbursement`) from a hidden operator console: the current node cannot be skipped, completing it auto-advances the next, and `rejected` / `supplement_required` require bilingual customer notes. The SME watches progress update live over SSE without refreshing; the bank's `internal_note` is stripped from every SME-facing response.
+
+Data boundary: F3 owns its FastAPI service on 8083, a separate SQLite database (`data/crossbridge_application_timeline.db`), a separate Alembic environment, the applications, their six nodes, and audit events. It snapshots the product label and scenario at submit time (decoupled from F2's catalog) and reads readiness from F2 over HTTP; it never reads or writes the F1/F2 database tables. The SME-facing serialization never includes `internal_note`. The SME-facing timeline calls and the SSE stream go through ChatRaw (the SSE via a dedicated unbuffered streaming route); the hidden bank-operator console (`/crossbridge-admin/timeline`) is not part of the SME navigation and is protected in production by the nginx IP allowlist + the site's HTTP Basic Auth.
+
 ## Service Flow
 
 ```mermaid
@@ -68,4 +89,9 @@ flowchart LR
     C --> F2["Function 2 documents API :8082"]
     F2 --> D["F2 document catalog snapshot"]
     F1 -. "product preselection only" .-> F2
+    C --> F3["Function 3 timeline API :8083"]
+    F3 -. "submission-readiness (HTTP)" .-> F2
+    C -. "live SSE (unbuffered proxy)" .-> F3
+    BK["Bank operator"] --> ADM["nginx /crossbridge-admin · Basic Auth + IP allowlist"]
+    ADM --> F3
 ```

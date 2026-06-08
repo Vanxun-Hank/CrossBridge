@@ -138,68 +138,136 @@ def _parse_hkd_amount(text: str) -> int | None:
     return int(value * multiplier)
 
 
-def _find_amount_near(text: str, anchors: list[str]) -> int | None:
+def _strip_thousands(text: str) -> str:
+    """去掉数字之间的千分位分隔符（半角/全角逗号），保留句子里的逗号。"""
+    return re.sub(r"(?<=\d)[,，](?=\d)", "", text)
+
+
+# 金额 token：数字 + 可选量级单位。无量级单位的裸数字需 ≥ 1 万才算金额，
+# 否则像「90 天」「2024 年」这类期限/年份会被误当成金额。
+_AMOUNT_TOKEN = re.compile(r"(\d+(?:\.\d+)?)\s*(亿|億|萬|万|千|k|m|million)?", re.IGNORECASE)
+_TIME_PERCENT = re.compile(r"^\s*(天|日|周|週|月|年|%|days?|weeks?|months?|years?)", re.IGNORECASE)
+
+
+def _iter_amounts(text: str) -> list[tuple[int, int, int]]:
+    """文本中所有金额候选 (value_hkd, start, end)，按出现顺序。
+    紧跟时间/百分号单位的数字（期限、年份、占比）一律跳过。"""
+    results: list[tuple[int, int, int]] = []
+    for match in _AMOUNT_TOKEN.finditer(text):
+        unit = match.group(2)
+        if _TIME_PERCENT.match(text[match.end():]):
+            continue
+        value = _parse_hkd_amount(match.group(0))
+        if value is None or value <= 0:
+            continue
+        if unit is None and value < 10000:
+            continue
+        results.append((value, match.start(), match.end()))
+    return results
+
+
+def _pick_amount_for(
+    text: str,
+    amounts: list[tuple[int, int, int]],
+    anchors: list[str],
+    *,
+    window: int = 20,
+) -> int | None:
+    """选出离任一 anchor 最近的金额候选下标。金额通常紧跟在 anchor 之后
+    （如「营业额 800 万」），也允许紧贴在前（如「120 万港币支付」）。"""
+    best_idx: int | None = None
+    best_dist: int | None = None
     for anchor in anchors:
-        match = re.search(
-            rf"{anchor}.{{0,16}}?(\d+(?:\.\d+)?)\s*(亿|萬|万|千|m|million|k)?",
-            text,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return _parse_hkd_amount(match.group(1) + (match.group(2) or ""))
-    return None
+        start = 0
+        while True:
+            pos = text.find(anchor, start)
+            if pos < 0:
+                break
+            anchor_end = pos + len(anchor)
+            for idx, (_value, amt_start, amt_end) in enumerate(amounts):
+                if amt_start >= anchor_end:
+                    dist = amt_start - anchor_end          # 金额在 anchor 之后
+                elif amt_end <= pos:
+                    dist = (pos - amt_end) + 4              # 金额在 anchor 之前，略加惩罚
+                else:
+                    dist = 0
+                if dist <= window and (best_dist is None or dist < best_dist):
+                    best_idx, best_dist = idx, dist
+            start = anchor_end
+    return best_idx
+
+
+# 场景信号（按特异性排序）：出口/应收账款最先，避免「我们是一家…供应商」
+# 这种公司自我描述被误判成进口采购。
+_SCENARIO_EXPORT = (
+    r"(出口|export|应收账款|應收帳款|receivable|已?交货|已?發貨|已?发货|"
+    r"开出.{0,2}发票|開出.{0,2}發票|开具发票|開具發票|已开发票|invoice|"
+    r"收汇|收匯|海外客户|海外買家|海外买家|境外客户|境外客戶)"
+)
+_SCENARIO_ECOM = r"(跨境电商|跨境電商|e-?commerce)"
+# 采购：只认「付款语境」，不认裸「供应商」（公司常自称「…供应商」）。
+_PROCURE = (
+    r"(采购|採購|进口|進口|import|procurement|"
+    r"(?:支付|付|向|给|給).{0,6}供应商|(?:支付|付|向|给|給).{0,6}供應商|"
+    r"供应商.{0,6}(?:货款|付款)|供應商.{0,6}(?:貨款|付款))"
+)
+_SCENARIO_INVEST = r"(海外投资|海外投資|overseas investment)"
+# 用途信号。
+_PURPOSE_WORKING = r"(周转|週轉|现金周转|現金週轉|流动资金|流動資金|working capital|应收账款|應收帳款|receivable)"
+_PURPOSE_ORDER = r"(履约|履約|订单融资|訂單融資|履行.{0,4}订单|履行.{0,4}訂單|order fulfil)"
+_PURPOSE_STOCK = r"(备货|備貨|库存|庫存|stock|inventory)"
+_PURPOSE_INVEST = r"(投资|投資|investment)"
 
 
 def extract_prefill(message: str) -> DraftProfileUpdate:
-    text = message.strip()
+    text = _strip_thousands(message.strip())
     lower = text.lower()
     updates: dict[str, Any] = {}
 
-    if re.search(r"(供应商|採購|采购|supplier|procurement)", lower):
-        updates["business_scenario"] = "overseas_procurement"
-    elif re.search(r"(跨境电商|跨境電商|e-?commerce)", lower):
-        updates["business_scenario"] = "cross_border_ecommerce"
-    elif re.search(r"(出口|export)", lower):
+    if re.search(_SCENARIO_EXPORT, lower):
         updates["business_scenario"] = "export_trade"
-    elif re.search(r"(海外投资|海外投資|overseas investment)", lower):
+    elif re.search(_SCENARIO_ECOM, lower):
+        updates["business_scenario"] = "cross_border_ecommerce"
+    elif re.search(_PROCURE, lower):
+        updates["business_scenario"] = "overseas_procurement"
+    elif re.search(_SCENARIO_INVEST, lower):
         updates["business_scenario"] = "overseas_investment"
 
-    turnover = _find_amount_near(lower, ["年营业额", "年營業額", "营业额", "營業額", "turnover", "revenue"])
-    if turnover:
-        updates["annual_turnover_hkd"] = turnover
-
-    requested = _find_amount_near(
-        lower,
-        [
-            "融资金额",
-            "融資金額",
-            "申请",
-            "申請",
-            "融资",
-            "融資",
-            "贷款",
-            "貸款",
-            "支付",
-            "付",
-            "amount",
-            "finance",
-            "loan",
-            "pay",
-        ],
+    # 金额：收集全部「带量级单位（或 ≥1 万）」的候选；营业额取「营业额」anchor 最近的，
+    # 融资金额取余下里离融资关键词最近的（否则第一个）。
+    amounts = _iter_amounts(lower)
+    turnover_idx = _pick_amount_for(
+        lower, amounts, ["年营业额", "年營業額", "营业额", "營業額", "turnover", "revenue"]
     )
-    if requested and requested != turnover:
-        updates["requested_amount_hkd"] = requested
+    if turnover_idx is not None:
+        updates["annual_turnover_hkd"] = amounts[turnover_idx][0]
 
-    if re.search(r"(供应商|採購|采购|supplier|procurement)", lower):
-        updates["financing_purpose"] = "procurement_payment"
-    elif re.search(r"(备货|備貨|stock|inventory)", lower):
-        updates["financing_purpose"] = "stocking"
-    elif re.search(r"(履约|履約|订单|訂單|order fulfillment)", lower):
-        updates["financing_purpose"] = "order_fulfillment"
-    elif re.search(r"(周转|週轉|working capital)", lower):
+    requested_pool = [amount for idx, amount in enumerate(amounts) if idx != turnover_idx]
+    if requested_pool:
+        fin_idx = _pick_amount_for(
+            lower,
+            requested_pool,
+            [
+                "融资金额", "融資金額", "融资", "融資", "贷款", "貸款",
+                "申请", "申請", "需要", "采购金额", "採購金額", "支付",
+                "amount", "finance", "loan",
+            ],
+        )
+        chosen = requested_pool[fin_idx] if fin_idx is not None else requested_pool[0]
+        updates["requested_amount_hkd"] = chosen[0]
+
+    # 用途优先级：working_capital → procurement_payment → order_fulfillment。
+    # stocking/investment 在目录中无活产品，分别折叠到最近的活用途，避免抽出后 0 候选。
+    if re.search(_PURPOSE_WORKING, lower):
         updates["financing_purpose"] = "working_capital"
-    elif re.search(r"(投资|投資|investment)", lower):
-        updates["financing_purpose"] = "investment"
+    elif re.search(_PROCURE, lower):
+        updates["financing_purpose"] = "procurement_payment"
+    elif re.search(_PURPOSE_ORDER, lower):
+        updates["financing_purpose"] = "order_fulfillment"
+    elif re.search(_PURPOSE_STOCK, lower):
+        updates["financing_purpose"] = "procurement_payment"
+    elif re.search(_PURPOSE_INVEST, lower):
+        updates["financing_purpose"] = "working_capital"
 
     markets = {
         "越南": "越南",

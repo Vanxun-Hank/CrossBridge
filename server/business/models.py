@@ -98,6 +98,23 @@ class MatchResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class SavedDraft(Base):
+    """An explicitly-saved loan-matching draft: a profile snapshot + the products
+    the user picked. Unlike SmeProfile (one row per sme_id), a user can keep many."""
+
+    __tablename__ = "saved_drafts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    sme_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    profile_json: Mapped[str] = mapped_column(Text, nullable=False)
+    selected_product_ids_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    matched_snapshot_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    origin_session_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class AuditEvent(Base):
     __tablename__ = "audit_events"
 

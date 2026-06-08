@@ -27,6 +27,9 @@ class DocumentPackage(Base):
     catalog_version: Mapped[str] = mapped_column(String(128), nullable=False, default="unknown")
     selected_product_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     origin_matching_session_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    # One document package per Function 1 saved draft (true one-to-one). Null = legacy
+    # per-scenario package created from a live candidate card (no saved draft).
+    saved_draft_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
