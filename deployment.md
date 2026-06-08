@@ -16,3 +16,30 @@ nginx on :80 fronts :51111 with HTTP Basic Auth + an IP allowlist, so the public
 - `location /crossbridge-timeline-admin/v1/` — the admin API that console calls.
 
 F3 reads submission-readiness from F2 over HTTP (`CROSSBRIDGE_DOCUMENTS_API_URL`, default `http://127.0.0.1:8082`); both that and `CROSSBRIDGE_TIMELINE_API_URL` (default `http://127.0.0.1:8083`, used by ChatRaw) are correct on the host, so no new secrets/env are required. First deploy of F3: rsync `server/application_timeline/`, install + enable `crossbridge-timeline.service`, then restart `crossbridge-chatraw`. **Demo-only**: the admin backend has no app-level auth/RBAC — it relies entirely on the nginx Basic Auth + IP allowlist; add RBAC + operator audit before any real use.
+
+## Server-side git-pull deploy (primary update path)
+
+`/opt/crossbridge` **stays the runtime root and is still NOT a git repo** (the invariant holds). Updates now pull `main` into a **separate source clone** and sync code into the runtime — no dependency on a local machine.
+
+One-time setup (server, as `ubuntu`):
+```bash
+git clone https://github.com/Vanxun-Hank/CrossBridge-AI.git /opt/crossbridge-src   # anonymous https works
+git clone https://github.com/massif-01/ChatRaw ~/chatraw-upstream                  # patch base for the frontend
+```
+
+Each update is one script — `git pull main` + sync backend + rebuild the patched frontend over upstream `9408fa8` + reinstall units + restart + health-check (it **never** uses `rsync --delete` on the runtime root):
+```bash
+bash /opt/crossbridge-src/deploy/server-update.sh
+```
+
+**One-button deploy console** (`server/deploy_console`, port :8090, `crossbridge-deploy.service`): a page at `/deploy/` lets a teammate click "deploy latest main" and watch the streamed log — no SSH, no server key. It runs the same `server-update.sh` (`flock`-guarded; the script deliberately does **not** restart `crossbridge-deploy`, so the console survives its own deploy). Add an nginx location behind the same Basic Auth:
+```nginx
+location /deploy/ {
+    proxy_pass http://127.0.0.1:8090;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_buffering off;          # stream the deploy log live
+    proxy_read_timeout 300s;
+}
+```
+Demo-grade: a fixed, no-argument script behind Basic Auth + IP allowlist. Before real use, scope ubuntu's sudo to specific commands and add per-user auth + a "who deployed" audit. The old rsync-from-local path still works as a fallback.

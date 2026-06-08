@@ -109,6 +109,23 @@ server {
 }
 ```
 
+### 更新已部署的服务器（git pull / 一键部署）
+
+`/opt/crossbridge` 仍**不是** git 仓库；更新走**独立源码克隆 + 一条脚本**（详见 `deployment.md`）。一次性：
+
+```bash
+git clone https://github.com/Vanxun-Hank/CrossBridge-AI.git /opt/crossbridge-src
+git clone https://github.com/massif-01/ChatRaw ~/chatraw-upstream
+```
+
+之后每次更新（git pull main + 同步后端 + 重建前端 + 重启 + 自检）：
+
+```bash
+bash /opt/crossbridge-src/deploy/server-update.sh
+```
+
+或队友打开 `http://<host>/deploy/`（走现有 BasicAuth）**点一下按钮**即可部署并看实时日志——无需 ssh / 服务器 key。
+
 ---
 
 ## 开发笔记
