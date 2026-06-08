@@ -92,8 +92,10 @@ async def run() -> StreamingResponse | JSONResponse:
     )
 
 
-# Plain (non-f) string: { } are literal CSS/JS braces. Log uses textContent only (no innerHTML).
-_PAGE = """<!DOCTYPE html>
+# Raw (non-f) string: { } are literal CSS/JS braces AND backslash escapes like \n in the
+# JS stay literal (a plain string would let Python turn them into real newlines, breaking
+# the inline script). Log uses textContent only (no innerHTML).
+_PAGE = r"""<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="utf-8">
