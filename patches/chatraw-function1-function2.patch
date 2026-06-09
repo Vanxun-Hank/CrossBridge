@@ -302,7 +302,7 @@ index 79e7920..c7180b1 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..748aec3 100644
+index 17f8244..16fa6e5 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -313,7 +313,7 @@ index 17f8244..748aec3 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,252 @@ const i18n = {
+@@ -182,7 +183,253 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -419,6 +419,7 @@ index 17f8244..748aec3 100644
 +        cbTlSwitcher: 'Application',
 +        cbTlOverviewTitle: 'Loan application progress',
 +        cbTlViewProgress: 'View progress',
++        cbTlLocate: 'Locate',
 +        cbTlCurrentStage: 'Current stage',
 +        cbTlStatusLabel: 'Status',
 +        cbTlProduct: 'Product',
@@ -567,7 +568,7 @@ index 17f8244..748aec3 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +523,7 @@ const i18n = {
+@@ -277,6 +524,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -575,7 +576,7 @@ index 17f8244..748aec3 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +563,251 @@ const i18n = {
+@@ -316,7 +564,252 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -680,6 +681,7 @@ index 17f8244..748aec3 100644
 +        cbTlSwitcher: '申请',
 +        cbTlOverviewTitle: '贷款申请进度',
 +        cbTlViewProgress: '查看进度',
++        cbTlLocate: '定位',
 +        cbTlCurrentStage: '当前阶段',
 +        cbTlStatusLabel: '状态',
 +        cbTlProduct: '关联产品',
@@ -828,7 +830,7 @@ index 17f8244..748aec3 100644
      }
  };
  
-@@ -346,24 +837,43 @@ marked.setOptions({
+@@ -346,24 +839,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -873,7 +875,7 @@ index 17f8244..748aec3 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +883,10 @@ function app() {
+@@ -373,6 +885,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -884,7 +886,7 @@ index 17f8244..748aec3 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +901,82 @@ function app() {
+@@ -387,7 +903,82 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -968,7 +970,7 @@ index 17f8244..748aec3 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1055,1746 @@ function app() {
+@@ -466,110 +1057,1836 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -1428,10 +1430,11 @@ index 17f8244..748aec3 100644
 +        async saveLoanProfile() {
 +            if (!this.loanMatching.session || !confirm(this.t('cbConfirmSaveProfile'))) return;
 +            this.loanMatching.saveLoading = true;
++            const sessionId = this.loanMatching.session.id;
 +            try {
 +                // 多份草稿：每次保存新建一条 saved_drafts（含勾选的产品），不再覆盖单份 profile。
 +                // 草稿名在前端生成 → 随当前 UI 语言本地化，并带上时间（后端中文兜底用不到）。
-+                await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/save-draft`, {
++                const draft = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${sessionId}/save-draft`, {
 +                    method: 'POST',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({
@@ -1439,6 +1442,10 @@ index 17f8244..748aec3 100644
 +                        selected_product_ids: this.loanMatching.selectedProductIds
 +                    })
 +                });
++                // "Confirm and Save" also links the document package the user prepared for
++                // this session, so resuming from either list reopens the SAME filled package
++                // (no orphan, no fresh-empty package on return).
++                await this.linkDocumentPackageToDraft(draft, sessionId);
 +                this.showToast(this.t('cbDraftSavedToast'), 'success');
 +                await this.loadSavedDrafts();
 +                this.loanMatching.listOpen = true;   // surface the list with the new entry
@@ -1447,6 +1454,23 @@ index 17f8244..748aec3 100644
 +            } finally {
 +                this.loanMatching.saveLoading = false;
 +            }
++        },
++
++        // Back-link the currently-open document package (if any) to the just-saved loan draft.
++        // Best-effort: the loan draft is already saved regardless of whether this succeeds.
++        async linkDocumentPackageToDraft(draft, sessionId) {
++            const pkg = this.documentPreparation.package;
++            const draftId = draft && draft.id;
++            if (!pkg || !draftId || pkg.saved_draft_id) return;                       // none open, or already linked
++            if (pkg.origin_matching_session_id && pkg.origin_matching_session_id !== sessionId) return;  // belongs to another session
++            try {
++                const linked = await this.cbFetchJson(
++                    `/api/crossbridge-documents/v1/packages/${pkg.id}/saved-draft`,
++                    { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ saved_draft_id: draftId }) }
++                );
++                this.documentPreparation.package = linked;
++                if (this.documentPreparation.listOpen) await this.loadDocumentPackages();
++            } catch (e) { /* link is best-effort; the loan draft already saved */ }
 +        },
 +
 +        async clearLoanProfile() {
@@ -1967,6 +1991,65 @@ index 17f8244..748aec3 100644
 +            return this.docValidationMessage(item);
 +        },
 +
++        // Resolve each submit-blocking item → {code, formId, fieldNames[]} via every form's
++        // validation_bindings (semantic code → AcroForm field name). published_documents is a
++        // checklist, not a PDF field → flagged {code, overlay:true}.
++        docBlockingTargets() {
++            const forms = this.documentPreparation.package?.official_forms || [];
++            const codesFor = (item) => {
++                if (item.code === 'core_fields') return item.fields || [];
++                if (item.code === 'beneficiary_name') return ['supplier_name', 'beneficiary_account_name'];
++                if (item.code === 'invoice_payment') return ['invoice_amount', 'payment_amount', 'invoice_currency', 'payment_currency'];
++                return [item.code]; // swift_bic, charge_bearer
++            };
++            const resolveOnForms = (codes) => {
++                for (const form of forms) {
++                    const b = form.validation_bindings || {};
++                    const fieldNames = codes.map(c => b[c]).filter(Boolean);
++                    if (fieldNames.length) return { formId: form.form_id, fieldNames };
++                }
++                return null;
++            };
++            const targets = [];
++            for (const item of (this.documentTimeline.blocking || [])) {
++                if (item.code === 'published_documents') { targets.push({ code: item.code, overlay: true }); continue; }
++                const t = resolveOnForms(codesFor(item));
++                if (t) targets.push({ code: item.code, formId: t.formId, fieldNames: t.fieldNames });
++            }
++            return targets;
++        },
++
++        // Open the given official form (if not already shown) and red-highlight + scroll to its
++        // problem fields. Highlight is queued until the viewer reports the form loaded.
++        async highlightFormFields(formId, fieldNames) {
++            if (!formId || !fieldNames || !fieldNames.length) return;
++            if (this.documentPreparation.viewerFormId === formId && this.documentPreparation.viewerReady) {
++                this.postToViewer('highlight-fields', { fieldNames });
++                return;
++            }
++            this._pendingHighlight = { formId, fieldNames };
++            const form = (this.documentPreparation.package?.official_forms || []).find(f => f.form_id === formId);
++            if (form) await this.selectOfficialForm(form);
++        },
++
++        // Per-item「Locate」in the blocking list: jump to that field (or the overlay checklist).
++        docLocateBlocking(item) {
++            if (item.code === 'published_documents') { this.locateUncheckedOverlay(); return; }
++            const t = this.docBlockingTargets().find(x => x.code === item.code && x.formId);
++            if (t) this.highlightFormFields(t.formId, t.fieldNames);
++        },
++
++        // published_documents isn't a PDF field — scroll to the overlay checklist card and flash it.
++        locateUncheckedOverlay() {
++            this.$nextTick(() => {
++                const card = document.querySelector('.doc-overlay-card');
++                if (!card) return;
++                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
++                card.classList.add('doc-overlay-flag');
++                setTimeout(() => card.classList.remove('doc-overlay-flag'), 2400);
++            });
++        },
++
 +        async loadTimelineApplications() {
 +            try {
 +                const data = await this.cbFetchJson(
@@ -2084,6 +2167,9 @@ index 17f8244..748aec3 100644
 +                if (!readiness.ready) {
 +                    this.documentTimeline.blocking = readiness.blocking || [];
 +                    this.showToast(this.t('cbTlSubmitBlockedTitle'), 'error');
++                    // Auto-locate: open the form holding the first problem field + red-highlight it.
++                    const firstPdf = this.docBlockingTargets().find(t => t.formId && t.fieldNames?.length);
++                    if (firstPdf) this.highlightFormFields(firstPdf.formId, firstPdf.fieldNames);
 +                    return; // stay in the F2 workbench showing the reasons
 +                }
 +                // 3. Snapshot product/scenario labels and create the application.
@@ -2210,11 +2296,7 @@ index 17f8244..748aec3 100644
 +            } catch (e) {
 +                this.showToast(`${this.t('cbClearFailed')}: ${e.message}`, 'error');
 +            }
-         },
--        
--        // Translation helper
--        t(key) {
--            return i18n[this.lang][key] || key;
++        },
 +
 +        // Load a full server package into the workbench panel (shared by prepare/open).
 +        _applyDocPackage(data) {
@@ -2229,10 +2311,9 @@ index 17f8244..748aec3 100644
 +            this.updateLatestDocOverview();
          },
 -        
--        // Set language
--        setLanguage(newLang) {
--            this.lang = newLang;
--            localStorage.setItem('justchat_lang', newLang);
+-        // Translation helper
+-        t(key) {
+-            return i18n[this.lang][key] || key;
 +
 +        async openDocumentPreparation(productId = '', matchingSessionId = null) {
 +            if (this.docPreparationAlreadyOpened(productId)) return;
@@ -2267,14 +2348,10 @@ index 17f8244..748aec3 100644
 +            this.$nextTick(() => this.scrollToBottom());
          },
 -        
--        // Get model type display name
--        getModelTypeName(type) {
--            const names = {
--                chat: this.t('chat'),
--                embedding: this.t('embedding'),
--                rerank: this.t('reranker')
--            };
--            return names[type] || type;
+-        // Set language
+-        setLanguage(newLang) {
+-            this.lang = newLang;
+-            localStorage.setItem('justchat_lang', newLang);
 +
 +        async resumeDocumentPreparation(overview) {
 +            this.activeWorkspace = 'chat';
@@ -2289,6 +2366,23 @@ index 17f8244..748aec3 100644
 +            }
          },
 -        
+-        // Get model type display name
+-        getModelTypeName(type) {
+-            const names = {
+-                chat: this.t('chat'),
+-                embedding: this.t('embedding'),
+-                rerank: this.t('reranker')
+-            };
+-            return names[type] || type;
++
++        updateLatestDocOverview() {
++            const message = [...this.messages].reverse().find(item => item.docOverview);
++            if (!message) return;
++            message.docOverview.productId = this.docSelectedProductValue();
++            message.docOverview.scenarioCode = this.documentPreparation.scenario;
++            message.docOverview.recommendedScenario = this.documentPreparation.recommendedScenario;
+         },
+-        
 -        // Initialize
 -        async init() {
 -            this.initResponsiveLayout();
@@ -2301,21 +2395,6 @@ index 17f8244..748aec3 100644
 -            // Note: favicon is updated by loadLogo() which is called from loadSettings()
 -            // Initialize plugin system
 -            this.initPluginSystem();
-+
-+        updateLatestDocOverview() {
-+            const message = [...this.messages].reverse().find(item => item.docOverview);
-+            if (!message) return;
-+            message.docOverview.productId = this.docSelectedProductValue();
-+            message.docOverview.scenarioCode = this.documentPreparation.scenario;
-+            message.docOverview.recommendedScenario = this.documentPreparation.recommendedScenario;
-         },
--        
--        // Responsive layout sync (mobile drawer + desktop collapse)
--        initResponsiveLayout() {
--            this.syncSidebarForViewport(true);
--            const onViewportChange = () => {
--                if (this._resizeRaf) {
--                    cancelAnimationFrame(this._resizeRaf);
 +
 +        async selectDocScenario(scenarioCode, options = {}) {
 +            if (!scenarioCode || !await this.ensureDocumentCatalog()) return;
@@ -2350,16 +2429,21 @@ index 17f8244..748aec3 100644
 +                this.updateLatestDocOverview();
 +                if (clearedIncompatible && !options.silent) {
 +                    this.showToast(this.t('cbDocIncompatibleCleared'), 'error');
-                 }
--                this._resizeRaf = requestAnimationFrame(() => {
--                    this.syncSidebarForViewport(false);
++                }
 +            } catch (e) {
 +                this.documentPreparation.error = e.message;
 +                this.showToast(`${this.t('cbDocLoadFailed')}: ${e.message}`, 'error');
 +            } finally {
 +                this.documentPreparation.loading = false;
 +            }
-+        },
+         },
+-        
+-        // Responsive layout sync (mobile drawer + desktop collapse)
+-        initResponsiveLayout() {
+-            this.syncSidebarForViewport(true);
+-            const onViewportChange = () => {
+-                if (this._resizeRaf) {
+-                    cancelAnimationFrame(this._resizeRaf);
 +
 +        async selectDocProduct(productId) {
 +            const selectedProductId = productId || null;
@@ -2369,7 +2453,9 @@ index 17f8244..748aec3 100644
 +                    && !overlay.scenarios.includes(this.documentPreparation.scenario))) {
 +                    this.showToast(this.t('cbDocIncompatibleCleared'), 'error');
 +                    return;
-+                }
+                 }
+-                this._resizeRaf = requestAnimationFrame(() => {
+-                    this.syncSidebarForViewport(false);
 +            }
 +            this.documentPreparation.pendingProductId = selectedProductId || '';
 +            if (!this.documentPreparation.scenario || !this.documentPreparation.package) {
@@ -2440,6 +2526,11 @@ index 17f8244..748aec3 100644
 +                        && msg.loadId === this.documentPreparation.viewerLoadId) {
 +                        this.documentPreparation.viewerReady = true;
 +                        this._pendingViewerLoad = null;   // PDF loaded — nothing left to push
++                        if (this._pendingHighlight && this._pendingHighlight.formId === msg.formId) {
++                            const fn = this._pendingHighlight.fieldNames;
++                            this._pendingHighlight = null;
++                            this.$nextTick(() => this.postToViewer('highlight-fields', { fieldNames: fn }));
++                        }
 +                    }
 +                    this.flushViewerLoad();               // push any queued load now the viewer is up
 +                } else if (msg.type === 'draft-changed') {
@@ -2619,6 +2710,7 @@ index 17f8244..748aec3 100644
 +                && formId === this.documentPreparation.activeFormId) {
 +                this.documentPreparation.activeFormValues = plainValues;
 +                this.runDocValidation();
++                this.postToViewer('clear-highlights');   // user is editing → drop the red highlight
              }
 +            const saveKey = `${packageId}:${formId}`;
 +            clearTimeout(this.documentPreparation.draftSaveTimers[saveKey]);
@@ -2801,7 +2893,7 @@ index 17f8244..748aec3 100644
          },
          
          // Apply theme
-@@ -658,13 +2883,31 @@ function app() {
+@@ -658,13 +2975,31 @@ function app() {
              }
          },
          
@@ -2834,7 +2926,7 @@ index 17f8244..748aec3 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +2923,10 @@ function app() {
+@@ -680,9 +3015,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -2846,7 +2938,7 @@ index 17f8244..748aec3 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +2990,16 @@ function app() {
+@@ -746,7 +3082,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -2864,7 +2956,7 @@ index 17f8244..748aec3 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3015,9 @@ function app() {
+@@ -762,7 +3107,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -2875,7 +2967,7 @@ index 17f8244..748aec3 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3044,8 @@ function app() {
+@@ -789,7 +3136,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -2885,7 +2977,7 @@ index 17f8244..748aec3 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3073,6 @@ function app() {
+@@ -817,7 +3165,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -2893,7 +2985,7 @@ index 17f8244..748aec3 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3083,7 @@ function app() {
+@@ -828,6 +3175,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -2901,7 +2993,7 @@ index 17f8244..748aec3 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3140,7 @@ function app() {
+@@ -884,7 +3232,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2910,7 +3002,7 @@ index 17f8244..748aec3 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3149,7 @@ function app() {
+@@ -893,7 +3241,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2919,7 +3011,7 @@ index 17f8244..748aec3 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3157,7 @@ function app() {
+@@ -901,7 +3249,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -2928,7 +3020,7 @@ index 17f8244..748aec3 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3186,15 @@ function app() {
+@@ -930,12 +3278,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -2948,7 +3040,7 @@ index 17f8244..748aec3 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3206,7 @@ function app() {
+@@ -947,7 +3298,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -2957,7 +3049,7 @@ index 17f8244..748aec3 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +3824,77 @@ function app() {
+@@ -1565,12 +3916,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3037,7 +3129,7 @@ index 17f8244..748aec3 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +3903,21 @@ function app() {
+@@ -1579,6 +3995,21 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7107,7 +7199,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..ac49444 100644
+index 370c42e..10960f5 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7118,8 +7210,8 @@ index 370c42e..ac49444 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev30" as="style">
-+    <link rel="preload" href="app.js?v=cbdev30" as="script">
++    <link rel="preload" href="styles.css?v=cbdev31" as="style">
++    <link rel="preload" href="app.js?v=cbdev31" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7138,7 +7230,7 @@ index 370c42e..ac49444 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev30">
++    <link rel="stylesheet" href="styles.css?v=cbdev31">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -7579,7 +7671,7 @@ index 370c42e..ac49444 100644
                              <!-- Plugin Toolbar Buttons Extension Area -->
                              <div class="plugin-toolbar-area" x-show="pluginToolbarButtons.length > 0" x-cloak>
                                  <div class="plugin-toolbar-divider"></div>
-@@ -448,8 +739,614 @@
+@@ -448,8 +739,618 @@
                  </div>
              </div>
          </div>
@@ -7970,7 +8062,7 @@ index 370c42e..ac49444 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev30" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev31" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -7995,7 +8087,11 @@ index 370c42e..ac49444 100644
 +            <p class="timeline-blocking-title" x-text="t('cbTlSubmitBlockedTitle')"></p>
 +            <ul>
 +                <template x-for="item in documentTimeline.blocking" :key="item.code">
-+                    <li x-text="tlSubmitBlockingMessage(item)"></li>
++                    <li>
++                        <span x-text="tlSubmitBlockingMessage(item)"></span>
++                        <button type="button" class="timeline-blocking-locate"
++                                @click="docLocateBlocking(item)" x-text="t('cbTlLocate')"></button>
++                    </li>
 +                </template>
 +            </ul>
 +        </div>
@@ -8194,20 +8290,20 @@ index 370c42e..ac49444 100644
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -949,6 +1846,6 @@
+@@ -949,6 +1850,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev30"></script>
++    <script src="app.js?v=cbdev31"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
 new file mode 100644
-index 0000000..2cf5eb2
+index 0000000..3ecd524
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.css
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,71 @@
 +/* Minimal layout for the embedded official-form PDF viewer.
 +   Page chrome lives in the parent workbench; this iframe is just the document surface. */
 +html,
@@ -8256,9 +8352,32 @@ index 0000000..2cf5eb2
 +    background-color: rgba(0, 84, 166, 0.12);
 +    outline: 2px solid rgba(0, 84, 166, 0.7);
 +}
++
++/* CrossBridge: red-highlight the required fields the user must resolve before submitting,
++   so they're easy to find (strong outline + tinted fill + a brief attention pulse). */
++.pdfViewer .annotationLayer .ofv-highlight {
++    outline: 2px solid #dc2626;
++    outline-offset: 2px;
++    border-radius: 2px;
++    animation: ofv-pulse 1.1s ease-out 2;
++}
++.pdfViewer .annotationLayer .ofv-highlight-field,
++.pdfViewer .annotationLayer .ofv-highlight input,
++.pdfViewer .annotationLayer .ofv-highlight textarea,
++.pdfViewer .annotationLayer .ofv-highlight select {
++    background-color: rgba(220, 38, 38, 0.14) !important;
++    outline: 2px solid #dc2626 !important;
++}
++@keyframes ofv-pulse {
++    0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
++    100% { box-shadow: 0 0 0 9px rgba(220, 38, 38, 0); }
++}
++@media (prefers-reduced-motion: reduce) {
++    .pdfViewer .annotationLayer .ofv-highlight { animation: none; }
++}
 diff --git a/backend/static/official-pdf-viewer.html b/backend/static/official-pdf-viewer.html
 new file mode 100644
-index 0000000..0a2d681
+index 0000000..dcd5a22
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.html
 @@ -0,0 +1,19 @@
@@ -8271,22 +8390,22 @@ index 0000000..0a2d681
 +    <!-- Same-origin sandboxed viewer for genuine BOCHK AcroForm PDFs. Driven only by
 +         the parent workbench via a restricted postMessage protocol. -->
 +    <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css?v=cbdev19">
-+    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev19">
++    <link rel="stylesheet" href="official-pdf-viewer.css?v=cbdev31">
 +</head>
 +<body>
 +    <div id="status" class="ofv-status" role="status" aria-live="polite"></div>
 +    <div id="viewerContainer" class="ofv-container">
 +        <div id="viewer" class="pdfViewer"></div>
 +    </div>
-+    <script type="module" src="official-pdf-viewer.js?v=cbdev20"></script>
++    <script type="module" src="official-pdf-viewer.js?v=cbdev31"></script>
 +</body>
 +</html>
 diff --git a/backend/static/official-pdf-viewer.js b/backend/static/official-pdf-viewer.js
 new file mode 100644
-index 0000000..2a3d06f
+index 0000000..e758f62
 --- /dev/null
 +++ b/backend/static/official-pdf-viewer.js
-@@ -0,0 +1,344 @@
+@@ -0,0 +1,388 @@
 +// Sandboxed viewer for genuine BOCHK official AcroForm PDFs.
 +//
 +// Contract with the parent workbench (same-origin only):
@@ -8606,6 +8725,44 @@ index 0000000..2a3d06f
 +    }
 +}
 +
++// ---- required-field highlighting (red outline + scroll to the offending fields) ----
++function annotationElementFor(annotationId) {
++    return document.querySelector(`[data-annotation-id="${annotationId}"]`)
++        || document.querySelector(`[data-element-id="${annotationId}"]`)
++        || document.getElementById(annotationId);
++}
++
++function clearHighlights() {
++    document.querySelectorAll(".ofv-highlight").forEach((el) => el.classList.remove("ofv-highlight"));
++    document.querySelectorAll(".ofv-highlight-field").forEach((el) => el.classList.remove("ofv-highlight-field"));
++}
++
++// Highlight by AcroForm field NAME (via nameToIds → annotation id → widget DOM). The
++// annotation layer renders lazily, so retry briefly until the widgets exist; then
++// scroll the first into view.
++function highlightFields(fieldNames, attempt = 0) {
++    if (!pdfDocument || !Array.isArray(fieldNames)) return;
++    clearHighlights();
++    let first = null;
++    let count = 0;
++    for (const name of fieldNames) {
++        for (const id of nameToIds.get(name) || []) {
++            const el = annotationElementFor(id);
++            if (!el) continue;
++            el.classList.add("ofv-highlight");
++            el.querySelectorAll("input, textarea, select").forEach((f) => f.classList.add("ofv-highlight-field"));
++            if (!first) first = el;
++            count += 1;
++        }
++    }
++    if (count === 0 && attempt < 15) {
++        setTimeout(() => highlightFields(fieldNames, attempt + 1), 200);
++        return;
++    }
++    if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
++    post("highlight-applied", { count });
++}
++
 +window.addEventListener("message", (event) => {
 +    if (event.origin !== PARENT_ORIGIN) return;
 +    const message = event.data || {};
@@ -8626,13 +8783,19 @@ index 0000000..2a3d06f
 +        case "print":
 +            printPdf();
 +            break;
++        case "highlight-fields":
++            highlightFields(message.fieldNames);
++            break;
++        case "clear-highlights":
++            clearHighlights();
++            break;
 +    }
 +});
 +
 +// Announce readiness so the parent knows it can send load-draft.
 +post("ready", { booted: true });
 diff --git a/backend/static/styles.css b/backend/static/styles.css
-index 4be8751..4ad6129 100644
+index 4be8751..1ce1a77 100644
 --- a/backend/static/styles.css
 +++ b/backend/static/styles.css
 @@ -189,8 +189,8 @@ select:focus:not(:focus-visible),
@@ -8686,7 +8849,7 @@ index 4be8751..4ad6129 100644
  .input-container-inner {
      max-width: 800px;
      margin: 0 auto;
-@@ -3237,3 +3265,1449 @@ input[type=range]::-webkit-slider-thumb:hover {
+@@ -3237,3 +3265,1472 @@ input[type=range]::-webkit-slider-thumb:hover {
          border-color: var(--border-color);
      }
  }
@@ -10125,7 +10288,30 @@ index 4be8751..4ad6129 100644
 +}
 +.timeline-blocking-title { margin: 0 0 6px; font-weight: 600; color: var(--text-primary); }
 +.timeline-blocking ul { margin: 0; padding-left: 16px; }
-+.timeline-blocking li { margin: 2px 0; }
++.timeline-blocking li { margin: 3px 0; display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
++.timeline-blocking li > span { flex: 1; min-width: 0; }
++/* per-item "Locate" → jumps to + red-highlights the field in the PDF viewer */
++.timeline-blocking-locate {
++    flex: none; appearance: none; cursor: pointer; white-space: nowrap;
++    font: inherit; font-size: 12px; font-weight: 500;
++    color: var(--error-color); background: transparent;
++    border: 1px solid var(--error-color); border-radius: var(--radius-sm);
++    padding: 1px 9px; transition: background .15s ease;
++}
++.timeline-blocking-locate:hover { background: rgba(220, 38, 38, 0.08); }
++
++/* published_documents has no PDF field — flash the overlay checklist card when located */
++.doc-overlay-card.doc-overlay-flag {
++    animation: doc-overlay-flash 1.2s ease-out 2;
++    border-color: var(--error-color);
++}
++@keyframes doc-overlay-flash {
++    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
++    100% { box-shadow: 0 0 0 7px rgba(220, 38, 38, 0); }
++}
++@media (prefers-reduced-motion: reduce) {
++    .doc-overlay-card.doc-overlay-flag { animation: none; }
++}
 +
 +/* ---- motion (calm) ---- */
 +@keyframes timeline-pulse {

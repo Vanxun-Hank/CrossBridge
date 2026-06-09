@@ -580,6 +580,51 @@ def run_checks() -> Checks:
                 json.dumps(sorted(pub_after)),
             )
 
+            # ---- "Confirm and Save" back-links an orphan package to a saved loan draft ----
+            orphan = client.post(
+                f"{API}/packages",
+                json={
+                    "sme_id": "demo_link_001",
+                    "scenario_code": "import_payment",
+                    "origin_matching_session_id": "sess-link-1",
+                },
+            ).json()
+            result.check(
+                "package from a candidate card starts unlinked (saved_draft_id null)",
+                orphan["saved_draft_id"] is None,
+            )
+            linked = client.patch(
+                f"{API}/packages/{orphan['id']}/saved-draft",
+                json={"saved_draft_id": "draft-link-1"},
+            )
+            result.check(
+                "PATCH /saved-draft links the package to the loan draft",
+                linked.status_code == 200 and linked.json()["saved_draft_id"] == "draft-link-1",
+                json.dumps(linked.json().get("saved_draft_id")),
+            )
+            resumed = client.post(
+                f"{API}/packages",
+                json={
+                    "sme_id": "demo_link_001",
+                    "scenario_code": "import_payment",
+                    "saved_draft_id": "draft-link-1",
+                },
+            ).json()
+            result.check(
+                "resuming by saved_draft_id returns the SAME package (not a fresh empty one)",
+                resumed["id"] == orphan["id"] and resumed.get("resumed") is True,
+                json.dumps({"orphan": orphan["id"], "resumed": resumed["id"]}),
+            )
+            relinked = client.patch(
+                f"{API}/packages/{orphan['id']}/saved-draft",
+                json={"saved_draft_id": "draft-link-2"},
+            )
+            result.check(
+                "link is idempotent — an already-linked package is not re-pointed",
+                relinked.json()["saved_draft_id"] == "draft-link-1",
+                json.dumps(relinked.json().get("saved_draft_id")),
+            )
+
             unknown = client.post(
                 f"{API}/packages",
                 json={"sme_id": "demo_sme_003", "scenario_code": "import_payment"},

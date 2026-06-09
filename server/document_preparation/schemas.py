@@ -20,6 +20,12 @@ class UpdateProductRequest(BaseModel):
     selected_product_id: str | None = Field(default=None, max_length=64)
 
 
+class LinkSavedDraftRequest(BaseModel):
+    # Back-link an existing (orphan) package to the Function 1 saved loan draft, so
+    # "Confirm and Save" ties the filled materials to that loan and both lists resume it.
+    saved_draft_id: str = Field(..., min_length=1, max_length=36)
+
+
 class UpdateChecklistRequest(BaseModel):
     item_code: str = Field(..., min_length=1, max_length=80)
     checked: bool

@@ -32,6 +32,7 @@ from .official_forms import (
 )
 from .schemas import (
     CreatePackageRequest,
+    LinkSavedDraftRequest,
     UpdateChecklistRequest,
     UpdateOfficialFormDraftRequest,
     UpdateProductRequest,
@@ -559,6 +560,28 @@ def create_app(
         )
         db.commit()
         db.refresh(package)
+        return _serialize_package(db, package)
+
+    @app.patch(f"{API_PREFIX}/packages/{{package_id}}/saved-draft")
+    def link_saved_draft(
+        package_id: str, request: LinkSavedDraftRequest, db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        # "Confirm and Save" back-links a (previously orphan) package to the F1 saved
+        # loan draft, so resuming from either list returns this same filled package.
+        # Idempotent: only fills the link when empty; never re-points an existing link.
+        package = _get_package_or_404(db, package_id)
+        if package.saved_draft_id is None:
+            package.saved_draft_id = request.saved_draft_id
+            package.updated_at = utcnow()
+            _audit(
+                db,
+                sme_id=package.sme_id,
+                package_id=package.id,
+                event_type="document_package_linked_saved_draft",
+                payload={"saved_draft_id": request.saved_draft_id},
+            )
+            db.commit()
+            db.refresh(package)
         return _serialize_package(db, package)
 
     @app.patch(f"{API_PREFIX}/packages/{{package_id}}/checklist")
