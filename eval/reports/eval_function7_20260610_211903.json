@@ -1,0 +1,62 @@
+{
+  "suite": "function7",
+  "passed": 11,
+  "total": 11,
+  "cases": [
+    {
+      "name": "migrations run repeatably",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "GET /healthz ok",
+      "passed": true,
+      "detail": "{\"status\": \"ok\", \"service\": \"crossbridge-dashboard\", \"upstreams\": {\"business\": {\"ok\": true}, \"documents\": {\"ok\": true}, \"timeline\": {\"ok\": true}}}"
+    },
+    {
+      "name": "policy bookmark list starts empty",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "POST /policy-bookmarks creates bookmark",
+      "passed": true,
+      "detail": "{\"id\": \"855b320a-bc67-40b5-bd9f-8f9482007a07\", \"sme_id\": \"demo_sme_001\", \"title\": \"HKMA SME Financing Guarantee Scheme\", \"source_url\": \"https://www.hkma.gov.hk/example\", \"source_title\": \"HKMA\", \"snippet\": \"Guarantee coverage reference\", \"document_type\": \"regulator_guidance\", \"trust_tier\": \"official\", \"origin_chat_id\": \"chat-1\", \"created_at\": \"2026-06-10T13:19:03.652539\"}"
+    },
+    {
+      "name": "overview aggregates F1/F2/F3/F7 data",
+      "passed": true,
+      "detail": "{\"saved_draft_count\": 1, \"selected_product_count\": 1, \"document_package_count\": 1, \"submission_ready_package_count\": 1, \"application_count\": 1, \"active_application_count\": 1, \"policy_bookmark_count\": 1}"
+    },
+    {
+      "name": "overview includes fixed disclaimer",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "markdown report includes key sections and disclaimer",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "JSON backup is valid and includes current export event",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "backup does not leak bank-private internal_note",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "DELETE /policy-bookmarks/{id} removes bookmark",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "overview degrades gracefully when one upstream fails",
+      "passed": true,
+      "detail": "[{\"service\": \"documents\", \"detail\": \"documents service unavailable\"}]"
+    }
+  ]
+}

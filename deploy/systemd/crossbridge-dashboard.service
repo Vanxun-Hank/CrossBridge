@@ -1,0 +1,22 @@
+[Unit]
+Description=CrossBridge AI - Function 7 financing dashboard API
+After=network-online.target crossbridge-business.service crossbridge-documents.service crossbridge-timeline.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/crossbridge
+EnvironmentFile=-/opt/crossbridge/.env
+Environment=CROSSBRIDGE_BUSINESS_API_URL=http://127.0.0.1:8081
+Environment=CROSSBRIDGE_DOCUMENTS_API_URL=http://127.0.0.1:8082
+Environment=CROSSBRIDGE_TIMELINE_API_URL=http://127.0.0.1:8083
+Environment=CROSSBRIDGE_DASHBOARD_DATABASE_URL=sqlite:////opt/crossbridge/data/crossbridge_dashboard.db
+ExecStart=/opt/crossbridge/venv/bin/uvicorn server.dashboard.app:app --host 127.0.0.1 --port 8084
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
