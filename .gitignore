@@ -63,6 +63,5 @@ eval/reports/function1_official_catalog_eval_*.md
 eval/reports/function2_eval_*.json
 eval/reports/function2_eval_*.md
 
-# 内部规划文档（含 pitch 策略 + 私人备忘，不公开）
-PROGRESS.md
-PROJECT_MEMORY.md
+# NOTE: PROGRESS.md / PROJECT_MEMORY.md are already tracked and this repo is PUBLIC —
+# they are intentionally committed. Do NOT put real secrets / private notes in them.
