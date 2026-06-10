@@ -49,6 +49,15 @@ How each function works, what it owns, and how they connect. For ports, env vars
 | F2 → F3 | F3 HTTP call to F2 `submission-readiness` | Only inter-service HTTP call. F3 `readiness_checker` injectable (stub in eval). |
 | F1 save → F2 | Frontend `PATCH /packages/{id}/saved-draft` after save-draft | Binds package to loan draft for resume. |
 
+**Cascade delete & protection** (frontend-orchestrated, no backend changes):
+
+| Action | Pre-submission (no F3 app) | Post-submission (F3 app exists) |
+|---|---|---|
+| Delete loan draft (A) | Cascade-deletes linked doc package (B), then deletes A | Blocked — button disabled + tooltip |
+| Delete doc package (B) | Soft-deletes B; A unaffected (user can re-fill B from A) | Blocked — button disabled + tooltip |
+
+All inter-service references are non-FK soft strings across separate SQLite databases. F2 delete is a soft delete (`status='deleted'`); `create_or_resume_package` only queries `status='active'`, so deleting B then resuming from A correctly creates a new package.
+
 ## Frontend (`chatraw-fork/backend/static/`)
 
 - **Stack**: Alpine.js (`x-data="app()"`), monochrome Grok-style, system fonts. Single-file: `app.js`, `index.html`, `styles.css`.
