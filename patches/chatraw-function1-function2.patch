@@ -302,7 +302,7 @@ index 79e7920..c7180b1 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..16fa6e5 100644
+index 17f8244..5c01528 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -313,7 +313,7 @@ index 17f8244..16fa6e5 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,253 @@ const i18n = {
+@@ -182,7 +183,256 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -330,6 +330,9 @@ index 17f8244..16fa6e5 100644
 +        cbDraftOpen: 'Open',
 +        cbDraftDelete: 'Delete',
 +        cbDraftConfirmDelete: 'Delete this saved draft?',
++        cbDraftConfirmDeleteWithDoc: 'Deleting this loan draft will also remove the linked document package. Continue?',
++        cbDraftDeleteBlockedByApp: 'This loan draft has a submitted application and cannot be deleted',
++        cbDocDeleteBlockedByApp: 'This document package has a submitted application and cannot be deleted',
 +        cbDraftSelectedProducts: 'Selected products',
 +        cbDraftNoSelection: 'No product selected',
 +        cbDraftSavedToast: 'Draft saved.',
@@ -568,7 +571,7 @@ index 17f8244..16fa6e5 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +524,7 @@ const i18n = {
+@@ -277,6 +527,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -576,7 +579,7 @@ index 17f8244..16fa6e5 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +564,252 @@ const i18n = {
+@@ -316,7 +567,255 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -593,6 +596,9 @@ index 17f8244..16fa6e5 100644
 +        cbDraftOpen: '打开',
 +        cbDraftDelete: '删除',
 +        cbDraftConfirmDelete: '确定删除这份已保存草稿吗？',
++        cbDraftConfirmDeleteWithDoc: '删除此贷款草稿将同时删除关联的材料包，是否确认？',
++        cbDraftDeleteBlockedByApp: '该贷款草稿已提交申请，无法删除',
++        cbDocDeleteBlockedByApp: '该材料包已提交申请，无法删除',
 +        cbDraftSelectedProducts: '已选产品',
 +        cbDraftNoSelection: '未选择产品',
 +        cbDraftSavedToast: '草稿已保存。',
@@ -830,7 +836,7 @@ index 17f8244..16fa6e5 100644
      }
  };
  
-@@ -346,24 +839,43 @@ marked.setOptions({
+@@ -346,24 +845,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -875,7 +881,7 @@ index 17f8244..16fa6e5 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +885,10 @@ function app() {
+@@ -373,6 +891,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -886,7 +892,7 @@ index 17f8244..16fa6e5 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +903,82 @@ function app() {
+@@ -387,7 +909,82 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -970,7 +976,7 @@ index 17f8244..16fa6e5 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1057,1836 @@ function app() {
+@@ -466,110 +1063,1861 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -1520,11 +1526,13 @@ index 17f8244..16fa6e5 100644
 +            else ids.push(productId);
 +        },
 +
-+        // Sidebar entry → open the saved-drafts list panel.
 +        async openLoanMatchingDrafts() {
 +            this.closeSidebarOnMobile();
 +            this.loanMatching.listOpen = true;
-+            await this.loadSavedDrafts();
++            await Promise.all([
++                this.loadSavedDrafts(),
++                this.loadDocumentPackages(),
++            ]);
 +        },
 +
 +        async loadSavedDrafts() {
@@ -1562,9 +1570,29 @@ index 17f8244..16fa6e5 100644
 +            this.loanMatching.selectedProductIds = [...(draft.selected_product_ids || [])];
 +        },
 +
++        draftHasApplication(draft) {
++            const pkg = (this.documentPreparation.packages || []).find(p => p.saved_draft_id === draft.id);
++            if (!pkg) return false;
++            return (this.documentTimeline.applications || []).some(a => a.origin_package_id === pkg.id);
++        },
++
++        packageHasApplication(pkg) {
++            return (this.documentTimeline.applications || []).some(a => a.origin_package_id === pkg.id);
++        },
++
 +        async deleteSavedDraft(draft) {
-+            if (!confirm(this.t('cbDraftConfirmDelete'))) return;
++            if (this.draftHasApplication(draft)) {
++                this.showToast(this.t('cbDraftDeleteBlockedByApp'), 'warning');
++                return;
++            }
++            const linkedPkg = (this.documentPreparation.packages || []).find(p => p.saved_draft_id === draft.id);
++            const msg = linkedPkg ? this.t('cbDraftConfirmDeleteWithDoc') : this.t('cbDraftConfirmDelete');
++            if (!confirm(msg)) return;
 +            try {
++                if (linkedPkg) {
++                    await this.cbFetchJson(`/api/crossbridge-documents/v1/packages/${linkedPkg.id}`, { method: 'DELETE' });
++                    this.documentPreparation.packages = this.documentPreparation.packages.filter(p => p.id !== linkedPkg.id);
++                }
 +                const res = await fetch(`/api/crossbridge/v1/loan-matching/saved-drafts/${draft.id}`, { method: 'DELETE' });
 +                if (!res.ok) throw new Error(this.t('cbClearFailed'));
 +                this.loanMatching.savedDrafts = this.loanMatching.savedDrafts.filter(d => d.id !== draft.id);
@@ -2233,11 +2261,10 @@ index 17f8244..16fa6e5 100644
 +        async loadDocumentPackages() {
 +            this.documentPreparation.packagesLoading = true;
 +            try {
-+                // Load loan drafts too so each document draft can show its loan-draft name
-+                // (join by saved_draft_id — F1/F2 are separate services, so join client-side).
 +                const [pkgData] = await Promise.all([
 +                    this.cbFetchJson('/api/crossbridge-documents/v1/packages?sme_id=demo_sme_001'),
 +                    this.loadSavedDrafts(),
++                    this.loadTimelineApplications(),
 +                ]);
 +                this.documentPreparation.packages = pkgData.packages || [];
 +            } catch (e) {
@@ -2289,6 +2316,10 @@ index 17f8244..16fa6e5 100644
 +        },
 +
 +        async deleteDocumentPackage(pkg) {
++            if (this.packageHasApplication(pkg)) {
++                this.showToast(this.t('cbDocDeleteBlockedByApp'), 'warning');
++                return;
++            }
 +            if (!confirm(this.t('cbDocDraftConfirmDelete'))) return;
 +            try {
 +                await this.cbFetchJson(`/api/crossbridge-documents/v1/packages/${pkg.id}`, { method: 'DELETE' });
@@ -2893,7 +2924,7 @@ index 17f8244..16fa6e5 100644
          },
          
          // Apply theme
-@@ -658,13 +2975,31 @@ function app() {
+@@ -658,13 +3006,31 @@ function app() {
              }
          },
          
@@ -2926,7 +2957,7 @@ index 17f8244..16fa6e5 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3015,10 @@ function app() {
+@@ -680,9 +3046,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -2938,7 +2969,7 @@ index 17f8244..16fa6e5 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +3082,16 @@ function app() {
+@@ -746,7 +3113,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -2956,7 +2987,7 @@ index 17f8244..16fa6e5 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3107,9 @@ function app() {
+@@ -762,7 +3138,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -2967,7 +2998,7 @@ index 17f8244..16fa6e5 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3136,8 @@ function app() {
+@@ -789,7 +3167,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -2977,7 +3008,7 @@ index 17f8244..16fa6e5 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3165,6 @@ function app() {
+@@ -817,7 +3196,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -2985,7 +3016,7 @@ index 17f8244..16fa6e5 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3175,7 @@ function app() {
+@@ -828,6 +3206,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -2993,7 +3024,7 @@ index 17f8244..16fa6e5 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3232,7 @@ function app() {
+@@ -884,7 +3263,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3002,7 +3033,7 @@ index 17f8244..16fa6e5 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3241,7 @@ function app() {
+@@ -893,7 +3272,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3011,7 +3042,7 @@ index 17f8244..16fa6e5 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3249,7 @@ function app() {
+@@ -901,7 +3280,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3020,7 +3051,7 @@ index 17f8244..16fa6e5 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3278,15 @@ function app() {
+@@ -930,12 +3309,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3040,7 +3071,7 @@ index 17f8244..16fa6e5 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3298,7 @@ function app() {
+@@ -947,7 +3329,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3049,7 +3080,7 @@ index 17f8244..16fa6e5 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +3916,77 @@ function app() {
+@@ -1565,12 +3947,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3129,7 +3160,7 @@ index 17f8244..16fa6e5 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +3995,21 @@ function app() {
+@@ -1579,6 +4026,21 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7199,7 +7230,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..10960f5 100644
+index 370c42e..536405d 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7210,8 +7241,8 @@ index 370c42e..10960f5 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev31" as="style">
-+    <link rel="preload" href="app.js?v=cbdev31" as="script">
++    <link rel="preload" href="styles.css?v=cbdev32" as="style">
++    <link rel="preload" href="app.js?v=cbdev32" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7230,7 +7261,7 @@ index 370c42e..10960f5 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev31">
++    <link rel="stylesheet" href="styles.css?v=cbdev32">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -8062,7 +8093,7 @@ index 370c42e..10960f5 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev31" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev32" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -8234,7 +8265,7 @@ index 370c42e..10960f5 100644
 +                                <i class="ri-file-list-3-line"></i>
 +                                <span x-text="t('cbPrepareDocuments')"></span>
 +                            </button>
-+                            <button class="loan-btn loan-btn-danger" @click="deleteSavedDraft(draft)" x-text="t('cbDraftDelete')"></button>
++                            <button class="loan-btn loan-btn-danger" @click="deleteSavedDraft(draft)" :disabled="draftHasApplication(draft)" :title="draftHasApplication(draft) ? t('cbDraftDeleteBlockedByApp') : ''" x-text="t('cbDraftDelete')"></button>
 +                        </div>
 +                    </article>
 +                </template>
@@ -8279,7 +8310,7 @@ index 370c42e..10960f5 100644
 +                        </div>
 +                        <div class="saved-draft-actions">
 +                            <button class="loan-btn loan-btn-primary" @click="openDocumentPackage(pkg)" x-text="t('cbDocDraftOpen')"></button>
-+                            <button class="loan-btn loan-btn-danger" @click="deleteDocumentPackage(pkg)" x-text="t('cbDocDraftDelete')"></button>
++                            <button class="loan-btn loan-btn-danger" @click="deleteDocumentPackage(pkg)" :disabled="packageHasApplication(pkg)" :title="packageHasApplication(pkg) ? t('cbDocDeleteBlockedByApp') : ''" x-text="t('cbDocDraftDelete')"></button>
 +                        </div>
 +                    </article>
 +                </template>
@@ -8295,7 +8326,7 @@ index 370c42e..10960f5 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev31"></script>
++    <script src="app.js?v=cbdev32"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
