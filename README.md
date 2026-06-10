@@ -49,6 +49,12 @@ Function 3 申请进度时间线服务（迁移开机自动跑；提交校验调
 # 隐藏银行后台单页：http://127.0.0.1:8083/crossbridge-admin/timeline
 ```
 
+Function 7 个人融资看板服务（聚合 Function 1/2/3，默认 `8081/8082/8083`；ChatRaw 通过同源代理访问）：
+
+```bash
+.venv/bin/uvicorn server.dashboard.app:app --host 127.0.0.1 --port 8084
+```
+
 官方 BOCHK 表单 PDF 不入库 git；部署主机显式接受 BOCHK 条款后抓取到本地缓存（缓存缺失时前端显示官方下载提示，绝不伪造）：
 
 ```bash
@@ -136,6 +142,7 @@ bash /opt/crossbridge-src/deploy/server-update.sh
 - `.venv/bin/python eval/run_function1_official_catalog_eval.py` — Function 1 BOCHK 官方公开来源目录 eval
 - `.venv/bin/python eval/run_function2_eval.py` — Function 2 独立自动化 eval（含 submission-readiness 用例）
 - `.venv/bin/python eval/run_function3_eval.py` — Function 3 申请进度时间线独立自动化 eval（迁移可重复、幂等、禁跳级、双语说明校验、内部备注隔离、SSE diff、审计、重置）
+- `.venv/bin/python eval/run_function7_eval.py` — Function 7 个人融资看板独立自动化 eval（聚合、政策收藏、报告/备份导出、上游降级）
 
 Function 1 官方目录抓取范围：
 

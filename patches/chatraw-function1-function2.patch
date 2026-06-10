@@ -1,5 +1,5 @@
 diff --git a/backend/main.py b/backend/main.py
-index 79e7920..c7180b1 100644
+index 79e7920..305c13f 100644
 --- a/backend/main.py
 +++ b/backend/main.py
 @@ -82,7 +82,7 @@ def setup_logging():
@@ -172,7 +172,7 @@ index 79e7920..c7180b1 100644
                  yield chunk + "\n"
          
          return StreamingResponse(
-@@ -1892,9 +1919,127 @@ async def chat(request: Request):
+@@ -1892,9 +1919,142 @@ async def chat(request: Request):
          )
      else:
          # Non-streaming response
@@ -298,11 +298,26 @@ index 79e7920..c7180b1 100644
 +        target_url, request, unavailable_msg="CrossBridge timeline service is unavailable"
 +    )
 +
++@app.api_route("/api/crossbridge-dashboard/{path:path}", methods=["GET", "POST", "DELETE"])
++async def proxy_crossbridge_dashboard_api(path: str, request: Request):
++    """Proxy only the fixed local CrossBridge financing-dashboard service (Function 7).
++
++    Keeps the browser on one origin while Function 7 aggregates F1/F2/F3 behind the
++    scenes. Fixed target is the dashboard FastAPI service on port 8084.
++    """
++    base_url = os.environ.get("CROSSBRIDGE_DASHBOARD_API_URL", "http://127.0.0.1:8084").rstrip("/")
++    target_url = f"{base_url}/crossbridge-dashboard/{path}"
++    if request.url.query:
++        target_url += f"?{request.url.query}"
++    return await _proxy_pass(
++        target_url, request, unavailable_msg="CrossBridge dashboard service is unavailable"
++    )
++
  @app.get("/api/documents")
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..e9ab6ae 100644
+index 17f8244..5d7ad92 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -313,7 +328,7 @@ index 17f8244..e9ab6ae 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,256 @@ const i18n = {
+@@ -182,7 +183,285 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -350,6 +365,35 @@ index 17f8244..e9ab6ae 100644
 +        cbDocDraftOpen: 'Open',
 +        cbDocDraftDelete: 'Delete',
 +        cbDocDraftConfirmDelete: 'Delete this document draft?',
++        cbDashboardNav: 'Financing Dashboard',
++        cbDashboardTitle: 'Personal SME Financing Dashboard',
++        cbDashboardSubtitle: 'A personal management center for saved assessments, document progress, policy bookmarks, and application status.',
++        cbDashboardEmpty: 'No dashboard data yet. Save a draft, prepare documents, or collect a policy document to begin.',
++        cbDashboardRefresh: 'Refresh',
++        cbDashboardExportReport: 'Export Markdown Report',
++        cbDashboardBackup: 'Export JSON Backup',
++        cbDashboardAddPolicy: 'Save Policy Document',
++        cbDashboardDeletePolicy: 'Remove',
++        cbDashboardSavedDrafts: 'AI pre-assessment reports',
++        cbDashboardDocuments: 'Document packages',
++        cbDashboardApplications: 'Application progress',
++        cbDashboardPolicies: 'Collected policy documents',
++        cbDashboardSummary: 'Overview',
++        cbDashboardRequestedAmount: 'Requested amount',
++        cbDashboardTurnover: 'Annual turnover',
++        cbDashboardReadinessReady: 'Ready to submit',
++        cbDashboardReadinessBlocked: 'Not ready',
++        cbDashboardCopyReport: 'Report copied to clipboard.',
++        cbDashboardBackupReady: 'JSON backup generated.',
++        cbDashboardLoadFailed: 'Unable to load the financing dashboard',
++        cbDashboardSaveFailed: 'Unable to save the policy document',
++        cbDashboardDeleteFailed: 'Unable to remove the policy document',
++        cbDashboardPolicyTitle: 'Policy title',
++        cbDashboardPolicyUrl: 'Policy URL',
++        cbDashboardPolicySource: 'Source label',
++        cbDashboardPolicySnippet: 'Short note',
++        cbDashboardDisclaimerTitle: 'Core Function Disclaimer',
++        cbDashboardAccessIssues: 'Access issues',
 +        cbDocPanelTitle: 'Document Preparation Workbench',
 +        cbDocScenario: 'Scenario',
 +        cbDocScenarioImport: 'Import Payment',
@@ -571,7 +615,7 @@ index 17f8244..e9ab6ae 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +527,7 @@ const i18n = {
+@@ -277,6 +556,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -579,7 +623,7 @@ index 17f8244..e9ab6ae 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +567,255 @@ const i18n = {
+@@ -316,7 +596,284 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -615,6 +659,35 @@ index 17f8244..e9ab6ae 100644
 +        cbDocDraftOpen: '打开',
 +        cbDocDraftDelete: '删除',
 +        cbDocDraftConfirmDelete: '确定删除这份材料草稿吗？',
++        cbDashboardNav: '融资看板',
++        cbDashboardTitle: 'Personal SME Financing Dashboard',
++        cbDashboardSubtitle: '集中管理 AI 预评估、材料准备进度、政策收藏和申请状态。',
++        cbDashboardEmpty: '还没有可展示的数据。先保存贷款草稿、准备材料，或收藏一份政策文件吧。',
++        cbDashboardRefresh: '刷新',
++        cbDashboardExportReport: '导出 Markdown 报告',
++        cbDashboardBackup: '导出 JSON 备份',
++        cbDashboardAddPolicy: '收藏政策文件',
++        cbDashboardDeletePolicy: '删除',
++        cbDashboardSavedDrafts: 'AI 预评估报告',
++        cbDashboardDocuments: '材料包',
++        cbDashboardApplications: '申请进度',
++        cbDashboardPolicies: '已收藏政策文件',
++        cbDashboardSummary: '概览',
++        cbDashboardRequestedAmount: '申请金额',
++        cbDashboardTurnover: '年营业额',
++        cbDashboardReadinessReady: '可提交',
++        cbDashboardReadinessBlocked: '未就绪',
++        cbDashboardCopyReport: '报告已复制到剪贴板。',
++        cbDashboardBackupReady: 'JSON 备份已生成。',
++        cbDashboardLoadFailed: '无法加载融资看板',
++        cbDashboardSaveFailed: '无法保存政策文件',
++        cbDashboardDeleteFailed: '无法删除政策文件',
++        cbDashboardPolicyTitle: '政策标题',
++        cbDashboardPolicyUrl: '政策链接',
++        cbDashboardPolicySource: '来源标签',
++        cbDashboardPolicySnippet: '备注',
++        cbDashboardDisclaimerTitle: '核心功能免责声明',
++        cbDashboardAccessIssues: '访问异常',
 +        cbDocPanelTitle: '材料准备',
 +        cbDocScenario: '场景',
 +        cbDocScenarioImport: '进口付款',
@@ -836,7 +909,7 @@ index 17f8244..e9ab6ae 100644
      }
  };
  
-@@ -346,24 +845,43 @@ marked.setOptions({
+@@ -346,24 +903,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -881,7 +954,7 @@ index 17f8244..e9ab6ae 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +891,10 @@ function app() {
+@@ -373,6 +949,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -892,7 +965,7 @@ index 17f8244..e9ab6ae 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +909,82 @@ function app() {
+@@ -387,7 +967,98 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -973,10 +1046,26 @@ index 17f8244..e9ab6ae 100644
 +            loadedOnce: false   // guards lazy load for chat cards restored on reload
 +        },
 +
++        dashboard: {
++            open: false,
++            loading: false,
++            error: '',
++            overview: null,
++            lastReport: '',
++            lastBackup: null,
++            savingPolicy: false,
++            policyForm: {
++                title: '',
++                source_url: '',
++                source_title: '',
++                snippet: ''
++            }
++        },
++
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1063,1871 @@ function app() {
+@@ -466,110 +1137,2011 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -1956,6 +2045,10 @@ index 17f8244..e9ab6ae 100644
 +            this.documentTimeline.panelOpen = false;
 +        },
 +
++        closeDashboard() {
++            this.dashboard.open = false;
++        },
++
 +        tlAppById(id) {
 +            return (this.documentTimeline.applications || []).find(a => a.id === id) || null;
 +        },
@@ -2136,6 +2229,142 @@ index 17f8244..e9ab6ae 100644
 +                this.startTimelineStream();
 +            } finally {
 +                this.documentTimeline.loading = false;
++            }
++        },
++
++        async loadDashboardOverview() {
++            this.dashboard.loading = true;
++            this.dashboard.error = '';
++            try {
++                const data = await this.cbFetchJson('/api/crossbridge-dashboard/v1/overview?sme_id=demo_sme_001');
++                this.dashboard.overview = data;
++                return data;
++            } catch (e) {
++                this.dashboard.error = e.message;
++                throw e;
++            } finally {
++                this.dashboard.loading = false;
++            }
++        },
++
++        async openDashboard() {
++            this.activeWorkspace = 'chat';
++            this.closeSidebarOnMobile();
++            this.dashboard.open = true;
++            try {
++                await this.loadDashboardOverview();
++            } catch (e) {
++                this.showToast(`${this.t('cbDashboardLoadFailed')}: ${e.message}`, 'error');
++            }
++        },
++
++        dashboardSummaryValue(key) {
++            return this.dashboard.overview?.summary?.[key] ?? 0;
++        },
++
++        dashboardReadinessLabel(pkg) {
++            return pkg?.submission_readiness?.ready
++                ? this.t('cbDashboardReadinessReady')
++                : this.t('cbDashboardReadinessBlocked');
++        },
++
++        async exportDashboardReport() {
++            try {
++                const data = await this.cbFetchJson('/api/crossbridge-dashboard/v1/reports/markdown', {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({ sme_id: 'demo_sme_001' })
++                });
++                this.dashboard.lastReport = data.content || '';
++                if (navigator.clipboard?.writeText && data.content) {
++                    await navigator.clipboard.writeText(data.content);
++                }
++                this.showToast(this.t('cbDashboardCopyReport'), 'success');
++                await this.loadDashboardOverview();
++            } catch (e) {
++                this.showToast(`${this.t('cbDashboardLoadFailed')}: ${e.message}`, 'error');
++            }
++        },
++
++        async exportDashboardMarkdown() {
++            return this.exportDashboardReport();
++        },
++
++        async backupDashboardData() {
++            try {
++                const data = await this.cbFetchJson('/api/crossbridge-dashboard/v1/backups/json?sme_id=demo_sme_001');
++                this.dashboard.lastBackup = data;
++                this.downloadJsonFile(
++                    `crossbridge-dashboard-${data.sme_id || 'demo_sme_001'}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
++                    data
++                );
++                this.showToast(this.t('cbDashboardBackupReady'), 'success');
++                await this.loadDashboardOverview();
++            } catch (e) {
++                this.showToast(`${this.t('cbDashboardLoadFailed')}: ${e.message}`, 'error');
++            }
++        },
++
++        async exportDashboardJsonBackup() {
++            return this.backupDashboardData();
++        },
++
++        downloadJsonFile(filename, data) {
++            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
++            const url = URL.createObjectURL(blob);
++            const link = document.createElement('a');
++            link.href = url;
++            link.download = filename;
++            document.body.appendChild(link);
++            link.click();
++            link.remove();
++            URL.revokeObjectURL(url);
++        },
++
++        resetDashboardPolicyForm() {
++            this.dashboard.policyForm = {
++                title: '',
++                source_url: '',
++                source_title: '',
++                snippet: ''
++            };
++        },
++
++        async saveDashboardPolicyBookmark() {
++            const form = this.dashboard.policyForm;
++            if (!form.title.trim() || !form.source_url.trim()) return;
++            this.dashboard.savingPolicy = true;
++            try {
++                await this.cbFetchJson('/api/crossbridge-dashboard/v1/policy-bookmarks', {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({
++                        sme_id: 'demo_sme_001',
++                        title: form.title.trim(),
++                        source_url: form.source_url.trim(),
++                        source_title: form.source_title.trim(),
++                        snippet: form.snippet.trim(),
++                        document_type: 'manual_bookmark',
++                        trust_tier: 'user_saved'
++                    })
++                });
++                this.resetDashboardPolicyForm();
++                await this.loadDashboardOverview();
++            } catch (e) {
++                this.showToast(`${this.t('cbDashboardSaveFailed')}: ${e.message}`, 'error');
++            } finally {
++                this.dashboard.savingPolicy = false;
++            }
++        },
++
++        async deleteDashboardPolicyBookmark(id) {
++            try {
++                await this.cbFetchJson(`/api/crossbridge-dashboard/v1/policy-bookmarks/${id}`, {
++                    method: 'DELETE'
++                });
++                await this.loadDashboardOverview();
++            } catch (e) {
++                this.showToast(`${this.t('cbDashboardDeleteFailed')}: ${e.message}`, 'error');
 +            }
 +        },
 +
@@ -2934,7 +3163,7 @@ index 17f8244..e9ab6ae 100644
          },
          
          // Apply theme
-@@ -658,13 +3016,31 @@ function app() {
+@@ -658,13 +3230,31 @@ function app() {
              }
          },
          
@@ -2967,7 +3196,7 @@ index 17f8244..e9ab6ae 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3056,10 @@ function app() {
+@@ -680,9 +3270,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -2979,7 +3208,7 @@ index 17f8244..e9ab6ae 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +3123,16 @@ function app() {
+@@ -746,7 +3337,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -2997,7 +3226,7 @@ index 17f8244..e9ab6ae 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3148,9 @@ function app() {
+@@ -762,7 +3362,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -3008,7 +3237,7 @@ index 17f8244..e9ab6ae 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3177,8 @@ function app() {
+@@ -789,7 +3391,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -3018,7 +3247,7 @@ index 17f8244..e9ab6ae 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3206,6 @@ function app() {
+@@ -817,7 +3420,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -3026,7 +3255,7 @@ index 17f8244..e9ab6ae 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3216,7 @@ function app() {
+@@ -828,6 +3430,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -3034,7 +3263,7 @@ index 17f8244..e9ab6ae 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3273,7 @@ function app() {
+@@ -884,7 +3487,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3043,7 +3272,7 @@ index 17f8244..e9ab6ae 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3282,7 @@ function app() {
+@@ -893,7 +3496,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3052,7 +3281,7 @@ index 17f8244..e9ab6ae 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3290,7 @@ function app() {
+@@ -901,7 +3504,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3061,7 +3290,7 @@ index 17f8244..e9ab6ae 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3319,15 @@ function app() {
+@@ -930,12 +3533,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3081,7 +3310,7 @@ index 17f8244..e9ab6ae 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3339,7 @@ function app() {
+@@ -947,7 +3553,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3090,7 +3319,7 @@ index 17f8244..e9ab6ae 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +3957,77 @@ function app() {
+@@ -1565,12 +4171,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3170,7 +3399,7 @@ index 17f8244..e9ab6ae 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +4036,21 @@ function app() {
+@@ -1579,6 +4250,21 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7240,7 +7469,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..ae32e79 100644
+index 370c42e..c704e4d 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7251,8 +7480,8 @@ index 370c42e..ae32e79 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev33" as="style">
-+    <link rel="preload" href="app.js?v=cbdev33" as="script">
++    <link rel="preload" href="styles.css?v=cbdev34" as="style">
++    <link rel="preload" href="app.js?v=cbdev34" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7271,7 +7500,7 @@ index 370c42e..ae32e79 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev33">
++    <link rel="stylesheet" href="styles.css?v=cbdev34">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -7282,7 +7511,7 @@ index 370c42e..ae32e79 100644
      <!-- Sidebar Overlay for Mobile -->
      <div class="sidebar-overlay" x-show="isMobileView && !sidebarCollapsed" @click="closeSidebar()" x-transition:enter="fade-enter" x-transition:leave="fade-leave"></div>
      
-@@ -165,6 +169,51 @@
+@@ -165,6 +169,65 @@
                  <i class="ri-arrow-right-s-line" x-show="sidebarCollapsed"></i>
              </button>
          </div>
@@ -7305,6 +7534,12 @@ index 370c42e..ae32e79 100644
 +                    @click="openApplicationTimeline()">
 +                <i class="ri-route-line"></i>
 +                <span x-text="t('cbTlNav')"></span>
++            </button>
++            <button class="crossbridge-business-link"
++                    :class="{ 'active': dashboard.open }"
++                    @click="openDashboard()">
++                <i class="ri-dashboard-3-line"></i>
++                <span x-text="t('cbDashboardNav')"></span>
 +            </button>
 +        </div>
 +
@@ -7331,10 +7566,18 @@ index 370c42e..ae32e79 100644
 +                :aria-label="t('cbTlNav')">
 +            <i class="ri-route-line"></i>
 +        </button>
++
++        <button class="btn-icon crossbridge-business-collapsed crossbridge-dashboard-collapsed"
++                x-show="sidebarCollapsed"
++                @click="openDashboard()"
++                :title="t('cbDashboardNav')"
++                :aria-label="t('cbDashboardNav')">
++            <i class="ri-dashboard-3-line"></i>
++        </button>
          
          <button class="btn-new-chat" @click="createNewChat()" x-show="!sidebarCollapsed">
              <i class="ri-add-line"></i>
-@@ -209,10 +258,24 @@
+@@ -209,10 +272,24 @@
          <button class="btn-icon sidebar-settings-collapsed" @click="openSettingsPanel()" x-show="sidebarCollapsed" :title="t('settings')">
              <i class="ri-settings-3-line"></i>
          </button>
@@ -7360,7 +7603,7 @@ index 370c42e..ae32e79 100644
          <!-- Mobile Header -->
          <div class="mobile-header" x-show="isMobileView">
              <button class="btn-icon" @click="openSidebar()">
-@@ -221,7 +284,7 @@
+@@ -221,7 +298,7 @@
              <span class="mobile-title">ChatRaw</span>
          </div>
  
@@ -7369,7 +7612,7 @@ index 370c42e..ae32e79 100644
              <!-- Welcome - Pre-rendered for LCP optimization -->
              <div class="welcome" x-show="messages.length === 0">
                  <div class="welcome-logo">
-@@ -229,25 +292,12 @@
+@@ -229,25 +306,12 @@
                  </div>
                  <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
                  <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
@@ -7398,7 +7641,7 @@ index 370c42e..ae32e79 100644
                  <template x-for="(msg, index) in messages" :key="index">
                      <div class="message" :class="msg.role">
                          <div class="message-avatar" :class="msg.role">
-@@ -260,7 +310,7 @@
+@@ -260,7 +324,7 @@
                          </div>
                          <div class="message-content">
                              <!-- Show typing indicator for empty assistant message while generating -->
@@ -7407,7 +7650,7 @@ index 370c42e..ae32e79 100644
                                  <span></span><span></span><span></span>
                              </div>
                              <!-- Thinking/Reasoning Block -->
-@@ -277,7 +327,215 @@
+@@ -277,7 +341,215 @@
                              
                              <!-- Show actual content -->
                              <div x-show="msg.content" x-html="renderMarkdown(msg.content)"></div>
@@ -7624,7 +7867,7 @@ index 370c42e..ae32e79 100644
                              <!-- Message Actions (assistant only) -->
                              <div class="message-actions" x-show="msg.role === 'assistant' && msg.content && !isGenerating">
                                  <button class="btn-copy"
-@@ -326,7 +584,56 @@
+@@ -326,7 +598,56 @@
  
              <!-- Input Area -->
              <div class="input-area">
@@ -7681,7 +7924,7 @@ index 370c42e..ae32e79 100644
                      <div class="uploaded-image-preview" x-show="uploadedImage">
                          <img :src="uploadedImage ? 'data:image/jpeg;base64,' + uploadedImageBase64 : ''" alt="Preview" width="60" height="60">
                          <button class="btn-delete-overlay" @click="removeUploadedImage()" aria-label="Remove image"><i class="ri-close-circle-fill"></i></button>
-@@ -377,26 +684,10 @@
+@@ -377,26 +698,10 @@
                          ></textarea>
                          
                          <div class="input-toolbar">
@@ -7712,7 +7955,7 @@ index 370c42e..ae32e79 100644
                              <!-- Plugin Toolbar Buttons Extension Area -->
                              <div class="plugin-toolbar-area" x-show="pluginToolbarButtons.length > 0" x-cloak>
                                  <div class="plugin-toolbar-divider"></div>
-@@ -448,8 +739,618 @@
+@@ -448,8 +753,791 @@
                  </div>
              </div>
          </div>
@@ -8103,7 +8346,7 @@ index 370c42e..ae32e79 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev33" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev34" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -8328,15 +8571,188 @@ index 370c42e..ae32e79 100644
 +        </div>
 +    </div>
 +
++    <!-- CrossBridge Function 7 — Personal SME Financing Dashboard -->
++    <div class="modal-overlay" x-show="dashboard.open" x-cloak
++         @click.self="dashboard.open = false"
++         @keydown.escape.window="dashboard.open && (dashboard.open = false)"
++         x-transition role="dialog" aria-modal="true" aria-labelledby="dashboard-title">
++        <div class="dashboard-modal">
++            <div class="dashboard-header">
++                <div>
++                    <h2 id="dashboard-title" x-text="t('cbDashboardTitle')"></h2>
++                    <p x-text="t('cbDashboardSubtitle')"></p>
++                </div>
++                <button class="btn-icon" @click="dashboard.open = false" aria-label="Close">
++                    <i class="ri-close-line"></i>
++                </button>
++            </div>
++
++            <div class="dashboard-toolbar">
++                <button class="loan-btn" @click="loadDashboardOverview()" :disabled="dashboard.loading">
++                    <i :class="dashboard.loading ? 'ri-loader-4-line spin' : 'ri-refresh-line'"></i>
++                    <span x-text="t('cbDashboardRefresh')"></span>
++                </button>
++                <button class="loan-btn loan-btn-primary" @click="exportDashboardMarkdown()">
++                    <i class="ri-markdown-line"></i>
++                    <span x-text="t('cbDashboardExportReport')"></span>
++                </button>
++                <button class="loan-btn" @click="exportDashboardJsonBackup()">
++                    <i class="ri-download-2-line"></i>
++                    <span x-text="t('cbDashboardBackup')"></span>
++                </button>
++            </div>
++
++            <div class="dashboard-body">
++                <div class="saved-drafts-loading" x-show="dashboard.loading">
++                    <div class="spinner"></div>
++                </div>
++                <div class="doc-prep-error" x-show="dashboard.error" x-text="dashboard.error"></div>
++
++                <template x-if="dashboard.overview">
++                    <div class="dashboard-content">
++                        <section class="dashboard-disclaimer">
++                            <strong x-text="t('cbDashboardDisclaimerTitle')"></strong>
++                            <p x-text="dashboard.overview.disclaimer"></p>
++                        </section>
++
++                        <section class="dashboard-section">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardSummary')"></h3>
++                                <span x-text="dashboard.overview.sme_id"></span>
++                            </div>
++                            <div class="dashboard-summary-grid">
++                                <article><span x-text="t('cbDashboardSavedDrafts')"></span><strong x-text="dashboardSummaryValue('saved_draft_count')"></strong></article>
++                                <article><span x-text="t('cbDraftSelectedProducts')"></span><strong x-text="dashboardSummaryValue('selected_product_count')"></strong></article>
++                                <article><span x-text="t('cbDashboardDocuments')"></span><strong x-text="dashboardSummaryValue('document_package_count')"></strong></article>
++                                <article><span x-text="t('cbDashboardApplications')"></span><strong x-text="dashboardSummaryValue('active_application_count')"></strong></article>
++                                <article><span x-text="t('cbDashboardPolicies')"></span><strong x-text="dashboardSummaryValue('policy_bookmark_count')"></strong></article>
++                            </div>
++                        </section>
++
++                        <section class="dashboard-section" x-show="dashboard.overview.access_issues?.length">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardAccessIssues')"></h3>
++                            </div>
++                            <div class="dashboard-issues">
++                                <template x-for="issue in dashboard.overview.access_issues" :key="issue.service + issue.detail">
++                                    <p><strong x-text="issue.service"></strong><span x-text="issue.detail"></span></p>
++                                </template>
++                            </div>
++                        </section>
++
++                        <section class="dashboard-section">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardSavedDrafts')"></h3>
++                            </div>
++                            <p class="saved-drafts-empty" x-show="!dashboard.overview.saved_drafts?.length" x-text="t('cbSavedDraftsEmpty')"></p>
++                            <div class="dashboard-card-list">
++                                <template x-for="draft in (dashboard.overview.saved_drafts || [])" :key="draft.id">
++                                    <article class="dashboard-item-card">
++                                        <h4 x-text="draft.name || draft.id"></h4>
++                                        <div class="saved-draft-meta">
++                                            <span x-show="draft.draft_profile?.requested_amount_hkd" x-text="t('cbDashboardRequestedAmount') + ': ' + loanFormatHkd(draft.draft_profile.requested_amount_hkd)"></span>
++                                            <span x-show="draft.draft_profile?.annual_turnover_hkd" x-text="t('cbDashboardTurnover') + ': ' + loanFormatHkd(draft.draft_profile.annual_turnover_hkd)"></span>
++                                            <span x-text="draft.updated_at || ''"></span>
++                                        </div>
++                                        <div class="saved-draft-products">
++                                            <template x-for="p in (draft.selected_products || [])" :key="p.product_id">
++                                                <span class="saved-draft-chip" x-text="lang === 'en' && p.product_name_en ? p.product_name_en : (p.product_name || p.product_id)"></span>
++                                            </template>
++                                        </div>
++                                    </article>
++                                </template>
++                            </div>
++                        </section>
++
++                        <section class="dashboard-section">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardDocuments')"></h3>
++                            </div>
++                            <p class="saved-drafts-empty" x-show="!dashboard.overview.document_packages?.length" x-text="t('cbDocDraftsEmpty')"></p>
++                            <div class="dashboard-card-list dashboard-card-list-compact">
++                                <template x-for="pkg in (dashboard.overview.document_packages || [])" :key="pkg.id">
++                                    <article class="dashboard-item-card">
++                                        <div class="dashboard-item-row">
++                                            <h4 x-text="lang === 'zh' ? (pkg.scenario_label_zh || pkg.scenario_code) : (pkg.scenario_label_en || pkg.scenario_code)"></h4>
++                                            <span class="dashboard-pill" :class="{ ready: pkg.submission_readiness?.ready }" x-text="dashboardReadinessLabel(pkg)"></span>
++                                        </div>
++                                        <div class="saved-draft-meta">
++                                            <span x-text="t('cbDocChecklistProgress') + ': ' + (pkg.checklist_done || 0) + '/' + (pkg.checklist_total || 0)"></span>
++                                            <span x-show="pkg.official_forms" x-text="'Forms: ' + (pkg.official_forms || []).length"></span>
++                                        </div>
++                                    </article>
++                                </template>
++                            </div>
++                        </section>
++
++                        <section class="dashboard-section">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardApplications')"></h3>
++                            </div>
++                            <p class="saved-drafts-empty" x-show="!dashboard.overview.applications?.length" x-text="t('cbTlNoApplications')"></p>
++                            <div class="dashboard-card-list dashboard-card-list-compact">
++                                <template x-for="app in (dashboard.overview.applications || [])" :key="app.id">
++                                    <article class="dashboard-item-card">
++                                        <div class="dashboard-item-row">
++                                            <h4 x-text="lang === 'zh' ? (app.product_label_zh || app.product_id || app.id) : (app.product_label_en || app.product_id || app.id)"></h4>
++                                            <span class="timeline-status" :class="`tl-${app.status}`" x-text="tlStatusLabel(app.status)"></span>
++                                        </div>
++                                        <div class="timeline-progress"><span class="timeline-progress-fill" :class="`tl-${app.status}`" :style="`width:${tlProgress(app).pct}%`"></span></div>
++                                        <div class="saved-draft-meta">
++                                            <span x-text="app.current_node_label_en || app.current_node_code || ''"></span>
++                                            <span x-text="app.updated_at || ''"></span>
++                                        </div>
++                                    </article>
++                                </template>
++                            </div>
++                        </section>
++
++                        <section class="dashboard-section">
++                            <div class="dashboard-section-head">
++                                <h3 x-text="t('cbDashboardPolicies')"></h3>
++                            </div>
++                            <form class="dashboard-policy-form" @submit.prevent="saveDashboardPolicyBookmark()">
++                                <input type="text" x-model="dashboard.policyForm.title" :placeholder="t('cbDashboardPolicyTitle')" required>
++                                <input type="url" x-model="dashboard.policyForm.source_url" :placeholder="t('cbDashboardPolicyUrl')" required>
++                                <input type="text" x-model="dashboard.policyForm.source_title" :placeholder="t('cbDashboardPolicySource')">
++                                <input type="text" x-model="dashboard.policyForm.snippet" :placeholder="t('cbDashboardPolicySnippet')">
++                                <button class="loan-btn loan-btn-primary" type="submit" :disabled="dashboard.savingPolicy">
++                                    <i :class="dashboard.savingPolicy ? 'ri-loader-4-line spin' : 'ri-bookmark-line'"></i>
++                                    <span x-text="t('cbDashboardAddPolicy')"></span>
++                                </button>
++                            </form>
++                            <p class="saved-drafts-empty" x-show="!dashboard.overview.policy_bookmarks?.length" x-text="t('cbDashboardEmpty')"></p>
++                            <div class="dashboard-card-list dashboard-card-list-compact">
++                                <template x-for="bookmark in (dashboard.overview.policy_bookmarks || [])" :key="bookmark.id">
++                                    <article class="dashboard-item-card dashboard-policy-card">
++                                        <div>
++                                            <h4><a :href="bookmark.source_url" target="_blank" rel="noopener" x-text="bookmark.title"></a></h4>
++                                            <p x-show="bookmark.snippet" x-text="bookmark.snippet"></p>
++                                            <div class="saved-draft-meta">
++                                                <span x-text="bookmark.source_title || bookmark.document_type || ''"></span>
++                                                <span x-text="bookmark.created_at || ''"></span>
++                                            </div>
++                                        </div>
++                                        <button class="loan-btn loan-btn-danger" @click="deleteDashboardPolicyBookmark(bookmark.id)" x-text="t('cbDashboardDeletePolicy')"></button>
++                                    </article>
++                                </template>
++                            </div>
++                        </section>
++                    </div>
++                </template>
++            </div>
++        </div>
++    </div>
++
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -949,6 +1850,6 @@
+@@ -949,6 +2037,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev33"></script>
++    <script src="app.js?v=cbdev34"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
@@ -8836,7 +9252,7 @@ index 0000000..e758f62
 +// Announce readiness so the parent knows it can send load-draft.
 +post("ready", { booted: true });
 diff --git a/backend/static/styles.css b/backend/static/styles.css
-index 4be8751..1ce1a77 100644
+index 4be8751..1e9f657 100644
 --- a/backend/static/styles.css
 +++ b/backend/static/styles.css
 @@ -189,8 +189,8 @@ select:focus:not(:focus-visible),
@@ -8890,7 +9306,7 @@ index 4be8751..1ce1a77 100644
  .input-container-inner {
      max-width: 800px;
      margin: 0 auto;
-@@ -3237,3 +3265,1472 @@ input[type=range]::-webkit-slider-thumb:hover {
+@@ -3237,3 +3265,1700 @@ input[type=range]::-webkit-slider-thumb:hover {
          border-color: var(--border-color);
      }
  }
@@ -10228,6 +10644,234 @@ index 4be8751..1ce1a77 100644
 +    flex-direction: column;
 +    gap: 8px;
 +    flex-shrink: 0;
++}
++
++/* ---- Function 7: personal SME financing dashboard ---- */
++.dashboard-modal {
++    display: flex;
++    flex-direction: column;
++    width: min(1080px, 94vw);
++    max-height: 88vh;
++    background: var(--bg-primary);
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-md, 12px);
++    overflow: hidden;
++}
++.dashboard-header,
++.dashboard-toolbar,
++.dashboard-section-head,
++.dashboard-item-row,
++.dashboard-policy-card {
++    display: flex;
++    align-items: flex-start;
++    justify-content: space-between;
++    gap: 12px;
++}
++.dashboard-header {
++    padding: 18px 20px;
++    border-bottom: 1px solid var(--border-color);
++}
++.dashboard-header h2 {
++    margin: 0;
++    font-size: 1.15rem;
++}
++.dashboard-header p {
++    margin: 4px 0 0;
++    font-size: 0.86rem;
++    color: var(--text-secondary);
++}
++.dashboard-toolbar {
++    align-items: center;
++    justify-content: flex-start;
++    flex-wrap: wrap;
++    padding: 14px 20px;
++    border-bottom: 1px solid var(--border-color);
++    background: var(--bg-secondary);
++}
++.dashboard-body {
++    overflow-y: auto;
++    padding: 18px 20px 22px;
++}
++.dashboard-content {
++    display: flex;
++    flex-direction: column;
++    gap: 16px;
++}
++.dashboard-disclaimer,
++.dashboard-section {
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    background: var(--bg-primary);
++}
++.dashboard-disclaimer {
++    padding: 12px 14px;
++    border-left: 3px solid var(--accent-color);
++}
++.dashboard-disclaimer strong {
++    display: block;
++    margin-bottom: 5px;
++    font-size: 0.88rem;
++    color: var(--text-primary);
++}
++.dashboard-disclaimer p {
++    margin: 0;
++    font-size: 0.82rem;
++    line-height: 1.5;
++    color: var(--text-secondary);
++}
++.dashboard-section {
++    padding: 14px;
++}
++.dashboard-section-head {
++    align-items: baseline;
++    margin-bottom: 12px;
++}
++.dashboard-section-head h3 {
++    margin: 0;
++    font-size: 0.98rem;
++}
++.dashboard-section-head span {
++    color: var(--text-muted);
++    font-size: 0.78rem;
++}
++.dashboard-summary-grid {
++    display: grid;
++    grid-template-columns: repeat(5, minmax(120px, 1fr));
++    gap: 10px;
++}
++.dashboard-summary-grid article {
++    min-width: 0;
++    padding: 12px;
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    background: var(--bg-secondary);
++}
++.dashboard-summary-grid span {
++    display: block;
++    min-height: 32px;
++    font-size: 0.78rem;
++    line-height: 1.35;
++    color: var(--text-secondary);
++}
++.dashboard-summary-grid strong {
++    display: block;
++    margin-top: 8px;
++    font-size: 1.35rem;
++    line-height: 1;
++    color: var(--text-primary);
++}
++.dashboard-issues {
++    display: grid;
++    gap: 8px;
++}
++.dashboard-issues p {
++    display: flex;
++    gap: 8px;
++    margin: 0;
++    padding: 9px 10px;
++    border-radius: var(--radius-sm);
++    background: var(--bg-secondary);
++    color: var(--text-secondary);
++    font-size: 0.84rem;
++}
++.dashboard-issues strong {
++    color: var(--text-primary);
++}
++.dashboard-card-list {
++    display: grid;
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++    gap: 10px;
++}
++.dashboard-card-list-compact {
++    grid-template-columns: 1fr;
++}
++.dashboard-item-card {
++    min-width: 0;
++    padding: 12px;
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    background: var(--bg-secondary);
++}
++.dashboard-item-card h4 {
++    margin: 0 0 8px;
++    font-size: 0.94rem;
++    line-height: 1.35;
++    color: var(--text-primary);
++}
++.dashboard-item-card a {
++    color: inherit;
++    text-decoration: none;
++}
++.dashboard-item-card a:hover {
++    text-decoration: underline;
++}
++.dashboard-item-card p {
++    margin: 0 0 8px;
++    color: var(--text-secondary);
++    font-size: 0.84rem;
++    line-height: 1.45;
++}
++.dashboard-pill {
++    flex-shrink: 0;
++    padding: 2px 8px;
++    border-radius: 999px;
++    background: var(--bg-hover);
++    color: var(--text-secondary);
++    font-size: 0.76rem;
++    white-space: nowrap;
++}
++.dashboard-pill.ready {
++    color: var(--on-accent);
++    background: var(--accent-color);
++}
++.dashboard-policy-form {
++    display: grid;
++    grid-template-columns: repeat(2, minmax(0, 1fr));
++    gap: 9px;
++    margin-bottom: 12px;
++}
++.dashboard-policy-form input {
++    width: 100%;
++    min-width: 0;
++    padding: 9px 10px;
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    color: var(--text-primary);
++    background: var(--bg-primary);
++}
++.dashboard-policy-form button {
++    justify-content: center;
++}
++.dashboard-policy-card {
++    align-items: center;
++}
++.dashboard-policy-card > div {
++    min-width: 0;
++}
++
++@media (max-width: 820px) {
++    .dashboard-modal {
++        width: 96vw;
++        max-height: 90vh;
++    }
++    .dashboard-header,
++    .dashboard-toolbar {
++        padding-left: 14px;
++        padding-right: 14px;
++    }
++    .dashboard-body {
++        padding: 14px;
++    }
++    .dashboard-summary-grid,
++    .dashboard-card-list,
++    .dashboard-policy-form {
++        grid-template-columns: 1fr;
++    }
++    .dashboard-policy-card,
++    .dashboard-item-row {
++        flex-direction: column;
++        align-items: flex-start;
++    }
 +}
 +
 +/* ===== Function 3 — application progress timeline =====
