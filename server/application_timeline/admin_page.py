@@ -104,12 +104,14 @@ const I18N = {
   zh: { title:'CrossBridge · 申请进度后台', tag:'银行端 · 内部', refresh:'刷新', langBtn:'EN',
         loadFailed:'加载失败', noApps:'暂无申请', current:'当前', selectPrompt:'请选择左侧的一条申请',
         application:'申请', reset:'重置(演示)', resetConfirm:'确定重置这条申请的进度到初始状态?(仅供演示)', resetFailed:'重置失败',
+        del:'删除(演示)', delConfirm:'确定永久删除这条申请及其全部节点?客户端将不再显示。(仅供演示)', delFailed:'删除失败',
         fieldState:'状态', fieldReminder:'提醒时间', fieldNoteZh:'客户可见说明(中文)', fieldNoteEn:'客户可见说明(English)',
         fieldInternal:'内部备注(客户永不可见)', save:'保存', saving:'保存中…', saved:'已保存', failed:'失败', currentTag:'当前节点',
         states:{ pending:'待处理', in_progress:'进行中', completed:'已完成', rejected:'已拒绝', supplement_required:'需补件' } },
   en: { title:'CrossBridge · Application Console', tag:'Bank · Internal', refresh:'Refresh', langBtn:'中文',
         loadFailed:'Failed to load', noApps:'No applications yet', current:'Current', selectPrompt:'Select an application on the left',
         application:'Application', reset:'Reset (demo)', resetConfirm:'Reset this application to its initial state? (demo only)', resetFailed:'Reset failed',
+        del:'Delete (demo)', delConfirm:'Permanently delete this application and all its nodes? It disappears from the customer app. (demo only)', delFailed:'Delete failed',
         fieldState:'Status', fieldReminder:'Reminder', fieldNoteZh:'Customer note (Chinese)', fieldNoteEn:'Customer note (English)',
         fieldInternal:'Internal note (never shown to the customer)', save:'Save', saving:'Saving…', saved:'Saved', failed:'Failed', currentTag:'Current node',
         states:{ pending:'Pending', in_progress:'In progress', completed:'Completed', rejected:'Rejected', supplement_required:'Supplement required' } }
@@ -229,7 +231,8 @@ function renderDetail() {
     h('h2', null, productLabel(a) || t('application')),
     badge(a.status),
     h('span', { class: 'sub' }, 'SME: ' + a.sme_id + ' · package: ' + a.origin_package_id),
-    h('button', { class: 'danger', style: 'margin-left:auto', onclick: () => resetApp(a.id) }, t('reset'))
+    h('button', { class: 'danger', style: 'margin-left:auto', onclick: () => resetApp(a.id) }, t('reset')),
+    h('button', { class: 'danger', onclick: () => deleteApp(a.id) }, t('del'))
   );
   detailEl.replaceChildren.apply(detailEl, [head].concat(a.nodes.map(n => renderNode(a, n))));
 }
@@ -263,6 +266,16 @@ async function resetApp(appId) {
     if (!res.ok) throw new Error('reset failed');
     await load();
   } catch (e) { alert(t('resetFailed') + ': ' + e.message); }
+}
+
+async function deleteApp(appId) {
+  if (!confirm(t('delConfirm'))) return;
+  try {
+    const res = await fetch(API + '/applications/' + appId, { method: 'DELETE' });
+    if (!res.ok) throw new Error('delete failed');
+    if (selectedId === appId) selectedId = null;
+    await load();
+  } catch (e) { alert(t('delFailed') + ': ' + e.message); }
 }
 
 document.getElementById('refresh').addEventListener('click', load);

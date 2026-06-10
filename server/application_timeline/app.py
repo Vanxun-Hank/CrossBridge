@@ -506,6 +506,29 @@ def create_app(
         db.refresh(application)
         return _serialize_application(db, application, include_internal=True)
 
+    @app.delete(f"{ADMIN_PREFIX}/applications/{{application_id}}")
+    def admin_delete_application(
+        application_id: str, db: Session = Depends(get_db)
+    ) -> dict[str, Any]:
+        application = _get_application_or_404(db, application_id)
+        db.query(TimelineNode).filter(
+            TimelineNode.application_id == application_id
+        ).delete()
+        # Audit rows are kept (application_id is nullable there) — the deletion
+        # itself becomes part of the audit trail.
+        _audit(
+            db,
+            sme_id=application.sme_id,
+            application_id=application.id,
+            event_type="timeline_application_deleted",
+            payload={"origin_package_id": application.origin_package_id},
+        )
+        db.delete(application)
+        db.commit()
+        # The origin_package_id UNIQUE slot is now free: resubmitting the same
+        # F2 package creates a fresh application instead of resuming this one.
+        return {"deleted": True, "application_id": application_id}
+
     # ---- hidden admin single-page UI -------------------------------------
 
     @app.get(ADMIN_PAGE_PATH, response_class=HTMLResponse)

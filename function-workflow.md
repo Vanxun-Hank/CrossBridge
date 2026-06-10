@@ -28,7 +28,7 @@ How each function works, what it owns, and how they connect. For ports, env vars
 **Flow**: F2 footer "Submit Application" → flush drafts → check F2 submission-readiness → ready → `POST /applications` (idempotent per `origin_package_id`) → initialize 6 fixed nodes → right panel switches to timeline + chat card inserted + SSE opens.
 
 - **6 fixed nodes** (sort order): `submitted` → `material_review` → `credit_assessment` → `approval_result` → `signing` → `disbursement`. Initial state: `submitted=completed`, `material_review=in_progress`, rest `pending`.
-- **Bank operator console** (`/crossbridge-admin/timeline`, hidden, nginx-protected): advance current node (no skipping), `rejected`/`supplement_required` require bilingual customer notes, completing a node auto-advances the next. `internal_note` never serialized to SME.
+- **Bank operator console** (`/crossbridge-admin/timeline`, hidden, nginx-protected): advance current node (no skipping), `rejected`/`supplement_required` require bilingual customer notes, completing a node auto-advances the next. `internal_note` never serialized to SME. Demo-only **reset** and **delete** per application: delete removes the application + its nodes (audit `timeline_application_deleted` kept), frees the `origin_package_id` UNIQUE slot for resubmission, and — since app and console read the same table — it disappears from the SME app on its next list reload (SSE pushes updates only, not deletions).
 - **SSE**: DB polling ~2s; pushes `{application_id, updated_at}`; frontend re-fetches detail on each event (prevents `internal_note` leak). Streams through ChatRaw unbuffered proxy (`X-Accel-Buffering: no`).
 - **Data boundary**: owns `data/crossbridge_application_timeline.db` (SQLite + Alembic). Tables: `timeline_applications` (`origin_package_id` UNIQUE), `timeline_nodes`, `timeline_audit_events`. Snapshots product label/scenario at submit time (decoupled from F2 catalog).
 
@@ -57,6 +57,8 @@ How each function works, what it owns, and how they connect. For ports, env vars
 | Delete doc package (B) | Soft-deletes B; A unaffected (user can re-fill B from A) | Blocked — button disabled + tooltip |
 
 All inter-service references are non-FK soft strings across separate SQLite databases. F2 delete is a soft delete (`status='deleted'`); `create_or_resume_package` only queries `status='active'`, so deleting B then resuming from A correctly creates a new package.
+
+The A→B link used by the protection/cascade (`linkedPackageForDraft` in `app.js`) prefers `package.saved_draft_id`; for legacy packages created before link-on-save (`saved_draft_id` NULL) it falls back to `package.origin_matching_session_id === draft.origin_session_id`, so old drafts are protected/cascaded too instead of failing open.
 
 ## Frontend (`chatraw-fork/backend/static/`)
 

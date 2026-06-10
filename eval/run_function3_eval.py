@@ -23,7 +23,7 @@ from fastapi.testclient import TestClient
 
 from server.application_timeline.app import compute_sse_events, create_app
 from server.application_timeline.db import build_engine, build_session_factory, run_migrations
-from server.application_timeline.models import TimelineAuditEvent
+from server.application_timeline.models import TimelineAuditEvent, TimelineNode
 
 REPORTS_DIR = ROOT / "eval" / "reports"
 
@@ -286,21 +286,54 @@ def run_checks() -> Checks:
                 ),
             )
 
+            # --- admin delete: row gone, list shrinks, package resubmittable
+            dele = client.delete(f"{ADMIN}/applications/{full_id}")
+            after_list = client.get(f"{ADMIN}/applications").json()["applications"]
+            result.check(
+                "admin delete removes the application from detail and list",
+                dele.status_code == 200
+                and dele.json().get("deleted") is True
+                and client.get(f"{API}/applications/{full_id}").status_code == 404
+                and all(a["id"] != full_id for a in after_list),
+            )
+            result.check(
+                "admin delete on unknown id returns 404",
+                client.delete(f"{ADMIN}/applications/{full_id}").status_code == 404,
+            )
+            recreated = _create(client, "PKG-FULL")
+            result.check(
+                "deleting frees the origin_package_id for a fresh submission",
+                recreated.status_code == 201
+                and recreated.json()["resumed"] is False
+                and recreated.json()["id"] != full_id,
+            )
+
         # --- audit trail --------------------------------------------------
         session = build_session_factory(build_engine(database_url))()
         try:
             audit_types = {e.event_type for e in session.query(TimelineAuditEvent).all()}
+            orphan_nodes = (
+                session.query(TimelineNode)
+                .filter(TimelineNode.application_id == full_id)
+                .count()
+            )
         finally:
             session.close()
         result.check(
-            "audit events recorded for create, node update and reset",
+            "audit events recorded for create, node update, reset and delete",
             {
                 "timeline_application_created",
                 "timeline_node_updated",
                 "timeline_application_reset",
+                "timeline_application_deleted",
             }
             <= audit_types,
             json.dumps(sorted(audit_types)),
+        )
+        result.check(
+            "admin delete leaves no orphan timeline_nodes rows",
+            orphan_nodes == 0,
+            f"orphan_nodes={orphan_nodes}",
         )
 
     return result

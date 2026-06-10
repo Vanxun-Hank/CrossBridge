@@ -302,7 +302,7 @@ index 79e7920..c7180b1 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..5c01528 100644
+index 17f8244..e9ab6ae 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -976,7 +976,7 @@ index 17f8244..5c01528 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1063,1861 @@ function app() {
+@@ -466,110 +1063,1871 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -1570,8 +1570,18 @@ index 17f8244..5c01528 100644
 +            this.loanMatching.selectedProductIds = [...(draft.selected_product_ids || [])];
 +        },
 +
++        // A→B link: prefer the explicit saved_draft_id binding; fall back to the
++        // origin matching-session for legacy packages created before link-on-save
++        // (those have saved_draft_id NULL, which used to fail the protection open).
++        linkedPackageForDraft(draft) {
++            const pkgs = this.documentPreparation.packages || [];
++            return pkgs.find(p => p.saved_draft_id === draft.id)
++                || pkgs.find(p => !p.saved_draft_id && p.origin_matching_session_id
++                    && p.origin_matching_session_id === draft.origin_session_id);
++        },
++
 +        draftHasApplication(draft) {
-+            const pkg = (this.documentPreparation.packages || []).find(p => p.saved_draft_id === draft.id);
++            const pkg = this.linkedPackageForDraft(draft);
 +            if (!pkg) return false;
 +            return (this.documentTimeline.applications || []).some(a => a.origin_package_id === pkg.id);
 +        },
@@ -1585,7 +1595,7 @@ index 17f8244..5c01528 100644
 +                this.showToast(this.t('cbDraftDeleteBlockedByApp'), 'warning');
 +                return;
 +            }
-+            const linkedPkg = (this.documentPreparation.packages || []).find(p => p.saved_draft_id === draft.id);
++            const linkedPkg = this.linkedPackageForDraft(draft);
 +            const msg = linkedPkg ? this.t('cbDraftConfirmDeleteWithDoc') : this.t('cbDraftConfirmDelete');
 +            if (!confirm(msg)) return;
 +            try {
@@ -2924,7 +2934,7 @@ index 17f8244..5c01528 100644
          },
          
          // Apply theme
-@@ -658,13 +3006,31 @@ function app() {
+@@ -658,13 +3016,31 @@ function app() {
              }
          },
          
@@ -2957,7 +2967,7 @@ index 17f8244..5c01528 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3046,10 @@ function app() {
+@@ -680,9 +3056,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -2969,7 +2979,7 @@ index 17f8244..5c01528 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +3113,16 @@ function app() {
+@@ -746,7 +3123,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -2987,7 +2997,7 @@ index 17f8244..5c01528 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3138,9 @@ function app() {
+@@ -762,7 +3148,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -2998,7 +3008,7 @@ index 17f8244..5c01528 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3167,8 @@ function app() {
+@@ -789,7 +3177,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -3008,7 +3018,7 @@ index 17f8244..5c01528 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3196,6 @@ function app() {
+@@ -817,7 +3206,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -3016,7 +3026,7 @@ index 17f8244..5c01528 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3206,7 @@ function app() {
+@@ -828,6 +3216,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -3024,7 +3034,7 @@ index 17f8244..5c01528 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3263,7 @@ function app() {
+@@ -884,7 +3273,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3033,7 +3043,7 @@ index 17f8244..5c01528 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3272,7 @@ function app() {
+@@ -893,7 +3282,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3042,7 +3052,7 @@ index 17f8244..5c01528 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3280,7 @@ function app() {
+@@ -901,7 +3290,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3051,7 +3061,7 @@ index 17f8244..5c01528 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3309,15 @@ function app() {
+@@ -930,12 +3319,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3071,7 +3081,7 @@ index 17f8244..5c01528 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3329,7 @@ function app() {
+@@ -947,7 +3339,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3080,7 +3090,7 @@ index 17f8244..5c01528 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +3947,77 @@ function app() {
+@@ -1565,12 +3957,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3160,7 +3170,7 @@ index 17f8244..5c01528 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +4026,21 @@ function app() {
+@@ -1579,6 +4036,21 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7230,7 +7240,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..536405d 100644
+index 370c42e..ae32e79 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7241,8 +7251,8 @@ index 370c42e..536405d 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev32" as="style">
-+    <link rel="preload" href="app.js?v=cbdev32" as="script">
++    <link rel="preload" href="styles.css?v=cbdev33" as="style">
++    <link rel="preload" href="app.js?v=cbdev33" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7261,7 +7271,7 @@ index 370c42e..536405d 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev32">
++    <link rel="stylesheet" href="styles.css?v=cbdev33">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -8093,7 +8103,7 @@ index 370c42e..536405d 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev32" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev33" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -8326,7 +8336,7 @@ index 370c42e..536405d 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev32"></script>
++    <script src="app.js?v=cbdev33"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
