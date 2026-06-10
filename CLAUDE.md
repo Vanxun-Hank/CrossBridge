@@ -6,9 +6,10 @@ CrossBridge AI is an AI assistant for cross-border SME finance and individual lo
 
 Core context:
 - `README.md`: product overview, demo, and pitch background.
-- `service_architecture.md`: authoritative architecture overview, including service topology and pointers to service-specific docs.
-- `verification.md`: local venv usage, service startup commands, Alembic migration notes, eval runners, and recommended verification paths.
-- `deployment.md`: production deployment notes, systemd units, rsync rules, host-side verification, and safety constraints. Read only for deployment or production-debugging tasks.
+- `service_architecture.md`: authoritative architecture overview, service topology, proxy layer, DB isolation.
+- `function-workflow.md`: per-function workflow, data boundaries, cross-function handoffs, frontend conventions.
+- `verification.md`: local venv usage, service startup commands, Alembic migration notes, eval runners.
+- `deployment.md`: production deployment, systemd units, server-update script, safety constraints. Read only for deploy tasks.
 
 Progressive disclosure:
 Read only task-relevant docs before working. Do not load unrelated docs by default.
@@ -16,26 +17,28 @@ Read only task-relevant docs before working. Do not load unrelated docs by defau
 Important:
 - The project is not a monolith; it is split into independent services.
 - Keep changes scoped to the requested service/function.
+- When changing a service, sync the corresponding section in `function-workflow.md` or `service_architecture.md`.
 - Do not deploy or touch production unless explicitly asked.
 - Use deterministic tools for formatting, migrations, tests, and verification.
+
 ## Response style
 
 End every reply with `喵～` (on its own, after the final line).
 
 ## Frontend convention: cache-buster
 
-Frontend static changes:
 If editing `chatraw-fork/backend/static/{app.js,index.html,styles.css}` or the PDF viewer static assets, bump the `?v=cbdevNN` cache-buster in `index.html`. Static-only changes do not require restarting ChatRaw.
 
 ## Deployment (production host)
 
-Live demo runs on a Tencent Lighthouse VM at `43.156.240.20` (`ssh ubuntu@43.156.240.20`, passwordless, passwordless sudo). Deploy root `/opt/crossbridge` is **NOT a git repo** — updates are pushed by **rsync from this local repo**, never `git pull`. **Never use `rsync --delete`** (the host holds runtime SQLite DBs and state under `data/`). Secrets live in `/opt/crossbridge/.env` (`DASHSCOPE_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`), never committed.
+Live demo on Tencent Lighthouse VM `43.156.240.20` (`ssh ubuntu@43.156.240.20`, passwordless sudo). Deploy root `/opt/crossbridge` is **NOT a git repo**. Primary update: `bash /opt/crossbridge-src/deploy/server-update.sh` (git pull main into source clone + sync + rebuild patched frontend + restart + health-check). One-button deploy console at `/deploy/` (:8090). Fallback: rsync from local repo. **Never use `rsync --delete`** (runtime SQLite DBs and state under `data/`). Secrets in `/opt/crossbridge/.env`, never committed.
 
 systemd units (`deploy/systemd/`, restart with `sudo systemctl restart <unit>`):
 - `crossbridge-fastapi` → RAG :8080
-- `crossbridge-business` → Function 1 :8081 (restart = re-run migrations + re-seed catalog)
-- `crossbridge-documents` → Function 2 :8082 (restart = re-run migrations)
-- `crossbridge-timeline` → Function 3 :8083 (restart = re-run migrations; hidden bank-operator console at `/crossbridge-admin/timeline`)
-- `crossbridge-chatraw` → UI :51111 (restart only for `main.py`/Python changes, not static)
+- `crossbridge-business` → F1 :8081 (restart = re-run migrations + re-seed catalog)
+- `crossbridge-documents` → F2 :8082 (restart = re-run migrations)
+- `crossbridge-timeline` → F3 :8083 (restart = re-run migrations)
+- `crossbridge-chatraw` → UI :51111 (restart only for Python changes, not static)
+- `crossbridge-deploy` → deploy console :8090
 
-nginx on :80 fronts :51111 with HTTP Basic Auth + an IP allowlist, so the public URL cannot be browser-tested from an unlisted IP — verify against the host's own localhost over SSH (`curl 127.0.0.1:8081/...`, `127.0.0.1:51111/api/...`). `qpdf` and `node` are not installed on the host. Typical update: rsync the changed `server/...`, `chatraw-fork/backend/...`, and any edited `data/...` or `migrations/...`, then restart the affected unit.
+nginx :80 fronts :51111 with HTTP Basic Auth + IP allowlist. Verify via SSH: `curl 127.0.0.1:{8081,8082,8083}/healthz`, `127.0.0.1:51111/api/...`.

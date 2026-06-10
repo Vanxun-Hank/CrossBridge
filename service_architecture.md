@@ -42,6 +42,7 @@ flowchart LR
 | **Function 2 材料准备** | `server.document_preparation.app:app` | 8082 | 场景清单 + 内嵌 PDF.js 填写真实 BOCHK 官方 PDF 表单。**独立** SQLite + Alembic。 | `crossbridge-documents` |
 | **Function 3 申请进度** | `server.application_timeline.app:app` | 8083 | F2 就绪后「提交申请」→ 6 个固定节点的进度时间线；银行端隐藏后台推进节点，SME 端 SSE 实时看进度。**独立** SQLite + Alembic。 | `crossbridge-timeline` |
 | **ChatRaw UI** | `chatraw-fork/backend/main.py` | 51111 | 静态前端 + 反向代理。serve `chatraw-fork/backend/static/`。 | `crossbridge-chatraw` |
+| **Deploy Console** | `server/deploy_console/app.py` | 8090 | 一键部署控制台（`/deploy/`）：拉 main + 同步 + 重启 + 健康检查。 | `crossbridge-deploy` |
 
 - 监听全部为 `127.0.0.1`（仅 :51111 对内，由 nginx :80 暴露）。F3 的隐藏后台（`/crossbridge-admin/timeline` + `/crossbridge-timeline-admin/v1`）由 nginx 直连 :8083、绕过 ChatRaw，仅靠 nginx 的 BasicAuth + IP 白名单保护（demo 版无 RBAC）。
 - ChatRaw 是 `massif-01/ChatRaw`（MIT）的**独立 clone**，通过 `patches/chatraw-function1-function2.patch` 定制，**不嵌入本仓库**。
@@ -169,4 +170,4 @@ F2 工作台点 **"提交申请"** → 前端先 flush 草稿 → 调 F2 `GET /p
 - **数据库分离**：不同 schema、不同迁移历史、不同生命周期（聊天记录 vs 业务草稿 vs 文档包 vs 申请时间线 vs 向量库），互不污染；rsync 部署时 `data/` 下的运行时 DB 不能被 `--delete`。
 - **代理层做唯一门面**：前端只认 `/api/*`，跨服务编排集中在 `main.py` 代理 + `app.js` 状态机，单个后端可独立替换（如把 RAG 指到别的 OpenAI 兼容端点）。
 
-> 部署细节（rsync 到 `/opt/crossbridge`、systemd 重启、nginx 鉴权）见 `CLAUDE.md`；F1/F2 用户流程见 `docs/function1-function2-workflow.md`。
+> 部署细节（server-update.sh、systemd 重启、nginx 鉴权）见 `deployment.md`；各功能 workflow 见 `function-workflow.md`。
