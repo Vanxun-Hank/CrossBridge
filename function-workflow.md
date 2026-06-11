@@ -36,7 +36,9 @@ How each function works, what it owns, and how they connect. For ports, env vars
 
 **Flow**: chat input (Policy mode) → `POST /api/chat` → RAG pipeline: classify → multi-query → BM25(jieba) + Dense(Qwen embeddings) → RRF → cross-encoder rerank (DashScope gte-rerank-v2) → citation gating (`trust_tier × document_type`) → LLM answer.
 
-- Wrapped as OpenAI-compatible `/v1/chat/completions`. Depends on Qwen/DashScope (`QWEN_BASE_URL`, `DASHSCOPE_API_KEY`).
+- Wrapped as OpenAI-compatible `/v1/chat/completions` (used by ChatRaw). Depends on Qwen/DashScope (`QWEN_BASE_URL`, `DASHSCOPE_API_KEY`).
+- **Engine auto-selection** (`server/api.py:_load_rag_engine`): prefers the full Qwen + Chroma + BM25 + rerank pipeline (`files/rag_engine.py`); if it can't load (missing key / deps / Chroma) it falls back to a **dependency-free local engine** (`server/function5_local.py`: BM25 + RRF + citation gating over `chunks.jsonl`) so Function 5 still runs on a fresh machine with no API key. `/healthz` reports `fallback_active` / `fallback_reason`; a runtime failure of the full engine (e.g. DashScope quota) also falls back per request.
+- **Built-in demo page** (no ChatRaw needed): `GET /` serves `server/static/function5.html`, which calls `POST /function5/ask` — a structured endpoint returning `{answer, citations[], response_language, engine, trace}`. It is separate from `/v1/chat/completions` and calls `rag.ask()` exactly like the eval does, so `eval/run_eval.py` / `run_ragas.py` stay unaffected. The answer follows the spec shape: 权威回答 / 针对性合规风险提示 / 操作建议 / 官方来源 / 免责声明.
 - Data: `data/chroma` (vector store), `data/processed/chunks.jsonl`. No SQL database.
 
 ---

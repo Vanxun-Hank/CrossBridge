@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrossBridge AI · Function 5 跨境合规政策问答</title>
+<style>
+  :root{
+    --bg:#0e0f11; --panel:#16181c; --panel2:#1d2025; --line:#2a2e35;
+    --fg:#e7e9ec; --muted:#9aa1ab; --accent:#e7e9ec; --tag:#262a31; --err:#3a1f22;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"PingFang SC","Microsoft YaHei",sans-serif}
+  a{color:#cfd3da}
+  header{padding:22px 20px 12px;border-bottom:1px solid var(--line)}
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px}
+  h1{font-size:20px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px}
+  .badge{margin-top:10px;font-size:12px;color:var(--muted);display:inline-block;
+    border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--panel)}
+  .badge b{color:var(--fg);font-weight:600}
+  main{padding:18px 0 40px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .chip{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--fg);
+    border-radius:8px;padding:7px 11px;font-size:13px;line-height:1.3}
+  .chip:hover{background:var(--panel2)}
+  .composer{display:flex;gap:8px;margin:8px 0 4px}
+  textarea{flex:1;resize:vertical;min-height:62px;background:var(--panel);color:var(--fg);
+    border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit}
+  select{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:0 10px}
+  button{cursor:pointer;border:1px solid var(--line);background:var(--fg);color:#111;
+    border-radius:10px;padding:0 18px;font:inherit;font-weight:600}
+  button:disabled{opacity:.55;cursor:default}
+  .row{display:flex;gap:8px;align-items:stretch;margin-bottom:6px}
+  .meta-line{color:var(--muted);font-size:12px;margin:14px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+  .card.answer h2{font-size:15px;margin:14px 0 6px;color:#fff}
+  .card.answer h3{font-size:14px;margin:12px 0 5px}
+  .card.answer p{margin:6px 0}
+  .card.answer ul,.card.answer ol{margin:6px 0;padding-left:22px}
+  .card.answer li{margin:3px 0}
+  .card.answer hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+  .card h3{margin:0 0 8px;font-size:14px}
+  ol.cites{margin:0;padding-left:20px}
+  ol.cites li{margin:7px 0}
+  .tag{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);
+    background:var(--tag);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+  .muted{color:var(--muted)} .small{font-size:12px}
+  details.card summary{cursor:pointer;color:var(--muted)}
+  details.card pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--muted);margin:10px 0 0}
+  .err{border-color:#5a2a30;background:var(--err)}
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:0 4px;font-size:13px}
+  footer{border-top:1px solid var(--line);color:var(--muted);font-size:12px;padding:14px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>CrossBridge AI · Function 5</h1>
+    <div class="sub">跨境合规政策问答 · Real-Time Cross-Border Policy &amp; Compliance Q&amp;A —— 每条答案附官方来源</div>
+    <div class="badge" id="badge">引擎状态加载中…</div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <select id="lang" title="回答语言">
+        <option value="auto">语言：自动</option>
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+        <option value="bilingual">中英对照</option>
+      </select>
+    </div>
+    <div class="composer">
+      <textarea id="input" placeholder="输入你的跨境融资 / 外汇 / 关税 / 出口退税 / 合规问题…（Enter 提问，Shift+Enter 换行）"></textarea>
+      <button id="ask">提问 Ask</button>
+    </div>
+    <div id="result"></div>
+  </div>
+</main>
+<footer>
+  <div class="wrap">
+    CrossBridge AI 仅提供初步智能参考与操作指引，不取代银行正式审查或专业金融/法律判断；最终贷款审批结果与合规标准以承办银行官方规定及国家金融监管规则为准。
+  </div>
+</footer>
+
+<script>
+const el = {
+  badge: document.getElementById('badge'),
+  chips: document.getElementById('chips'),
+  lang:  document.getElementById('lang'),
+  input: document.getElementById('input'),
+  ask:   document.getElementById('ask'),
+  result:document.getElementById('result'),
+};
+
+const SAMPLES = [
+  "香港银行接收跨境付款时反洗钱审核的核心要求是什么？",
+  "深圳公司向越南供应商付货款，银行会查哪些贸易背景材料？",
+  "香港中小企业有哪些政府担保的贸易融资计划？申请要什么文件？",
+  "What AML/CDD steps does a Hong Kong bank apply to cross-border payments?",
+  "新加坡企业所得税和跨境股息预扣税大概是怎样的？",
+];
+
+const TIER = {regulator:'监管', central_bank:'央行', government:'政府', official_dev:'官方机构', bank:'银行', industry:'业界', non_official:'第三方'};
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function renderInline(s){
+  s = escapeHtml(s);
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+function renderMarkdown(md){
+  const lines = String(md||'').replace(/\r/g,'').split('\n');
+  let html = '', list = null;
+  const closeList = () => { if(list){ html += '</'+list+'>'; list = null; } };
+  for(const raw of lines){
+    const line = raw.replace(/\s+$/,'');
+    if(!line.trim()){ closeList(); continue; }
+    if(/^---+$/.test(line.trim())){ closeList(); html += '<hr>'; continue; }
+    let m;
+    if((m = line.match(/^(#{1,4})\s+(.*)$/))){ closeList(); const lvl = Math.min(m[1].length+1,4); html += '<h'+lvl+'>'+renderInline(m[2])+'</h'+lvl+'>'; continue; }
+    if((m = line.match(/^\s*[-*]\s+(.*)$/))){ if(list!=='ul'){ closeList(); html += '<ul>'; list='ul'; } html += '<li>'+renderInline(m[1])+'</li>'; continue; }
+    if((m = line.match(/^\s*\d+\.\s+(.*)$/))){ if(list!=='ol'){ closeList(); html += '<ol>'; list='ol'; } html += '<li>'+renderInline(m[1])+'</li>'; continue; }
+    closeList(); html += '<p>'+renderInline(line)+'</p>';
+  }
+  closeList();
+  return html;
+}
+function renderCitations(arr){
+  if(!arr || !arr.length) return '<p class="muted small">本次回答未产生可引用的官方来源（可能已退化为仅上下文）。</p>';
+  return '<ol class="cites">' + arr.map(c=>{
+    const title = escapeHtml(c.title || c.source || '未命名来源');
+    const url = c.url || '';
+    const head = url ? '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener">'+title+'</a>' : '<strong>'+title+'</strong>';
+    const tier = c.trust_tier ? '<span class="tag">'+escapeHtml(TIER[c.trust_tier]||c.trust_tier)+'</span>' : '';
+    const parts = [];
+    if(c.source) parts.push(escapeHtml(c.source));
+    if(c.date && c.date !== '-') parts.push('生效 '+escapeHtml(c.date));
+    if(c.score!=null && c.score!=='') parts.push('相关度 '+escapeHtml(String(c.score)));
+    const meta = parts.length ? '<div class="muted small">'+parts.join(' · ')+'</div>' : '';
+    return '<li>'+head+' '+tier+meta+'</li>';
+  }).join('') + '</ol>';
+}
+function engineText(e){
+  if(!e) return '';
+  const mode = e.mode === 'full_pipeline' ? '完整 Qwen 流水线' : '离线本地引擎（无需 API key）';
+  return '引擎 <b>'+escapeHtml(e.backend||'?')+'</b> · '+mode+' · 知识库 '+(e.n_chunks||0)+' chunks';
+}
+
+async function loadHealth(){
+  try{
+    const r = await fetch('/healthz'); const h = await r.json();
+    const mode = h.fallback_active ? '离线本地引擎（无需 API key）' : '完整 Qwen 流水线';
+    el.badge.innerHTML = engineText({backend:h.rag_backend, n_chunks:h.n_chunks, mode: h.fallback_active?'local':'full_pipeline'});
+  }catch(e){ el.badge.textContent = '无法连接后端 /healthz'; }
+}
+function renderChips(){
+  el.chips.innerHTML = SAMPLES.map((q,i)=>'<span class="chip" data-i="'+i+'">'+escapeHtml(q)+'</span>').join('');
+  el.chips.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>ask(SAMPLES[+c.dataset.i])));
+}
+function render(d){
+  const trace = d.trace || {};
+  const traceHtml = Object.keys(trace).length
+    ? '<details class="card"><summary>🔬 看 RAG 怎么找到答案 / pipeline trace</summary><pre>'+escapeHtml(JSON.stringify(trace,null,2))+'</pre></details>'
+    : '';
+  el.result.innerHTML =
+    '<div class="meta-line">'+engineText(d.engine)+' · 用时 '+(d.elapsed_seconds||0)+'s · 回答语言 '+escapeHtml(d.response_language||'')+'</div>'+
+    '<div class="card answer">'+renderMarkdown(d.answer)+'</div>'+
+    '<div class="card"><h3>信息来源 / Official Sources</h3>'+renderCitations(d.citations)+'</div>'+
+    traceHtml;
+}
+async function ask(q){
+  const query = (q != null ? q : el.input.value).trim();
+  if(!query) return;
+  el.input.value = query;
+  el.ask.disabled = true; el.ask.textContent = '检索中…';
+  el.result.innerHTML = '<div class="card"><p class="muted">正在检索官方来源并生成答案…</p></div>';
+  try{
+    const res = await fetch('/function5/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query, language: el.lang.value, top_k: 3}),
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error((data.error && data.error.message) || ('HTTP '+res.status));
+    render(data);
+  }catch(err){
+    el.result.innerHTML = '<div class="card err">出错：'+escapeHtml(err.message)+'</div>';
+  }finally{
+    el.ask.disabled = false; el.ask.textContent = '提问 Ask';
+  }
+}
+
+el.ask.addEventListener('click', ()=>ask());
+el.input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); ask(); } });
+renderChips(); loadHealth();
+</script>
+</body>
+</html>
