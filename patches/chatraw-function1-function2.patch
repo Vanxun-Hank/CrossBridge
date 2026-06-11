@@ -317,7 +317,7 @@ index 79e7920..305c13f 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..5d7ad92 100644
+index 17f8244..14ee05f 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -328,7 +328,7 @@ index 17f8244..5d7ad92 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,285 @@ const i18n = {
+@@ -182,7 +183,286 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -498,7 +498,7 @@ index 17f8244..5d7ad92 100644
 +        cbAnswerHint: 'Type your answer in the box below (e.g. "about 7 million HKD").',
 +        cbNeedsManual: "I'm not sure I understood. Tap an option below, or fill the draft card directly — that's faster.",
 +        cbNoProgress: "I couldn't extract any details from that. Try rephrasing, or tap an option.",
-+        cbReviewDraft: 'Please double-check your SME profile draft, then run matching.',
++        cbReviewDraft: 'Please double-check your profile draft, then run matching.',
 +        cbProgressRequired: 'required',
 +        cbNoMatch: 'No catalogue product fully matches this scenario, purpose and amount yet. Try adjusting the financing purpose or amount in the draft below, then run matching again.',
 +        cbCtaTitle: 'Looking for a financing plan?',
@@ -511,7 +511,7 @@ index 17f8244..5d7ad92 100644
 +        cbDemoIdentity: 'Demo identity: CrossBridge Demo Trading Ltd.',
 +        cbDemoNotice: 'demo_sme_001 · Use synthetic information only. Do not enter real business information.',
 +        cbCreatingDraft: 'Creating temporary draft...',
-+        cbDraftTitle: 'SME Profile Draft',
++        cbDraftTitle: 'Profile Draft',
 +        cbDraftDescription: 'Not saved to long-term memory. You can correct AI-prefilled information at any time.',
 +        cbDraft: 'Draft',
 +        cbProfileProgress: 'Profile progress',
@@ -555,7 +555,7 @@ index 17f8244..5d7ad92 100644
 +        cbDemoTag: 'DEMO ONLY · Not an official bank product',
 +        cbDemoCardDisclaimer: 'DEMO ONLY · Not an official bank product · Actual eligibility is subject to bank approval',
 +        cbOfficialTag: 'BOCHK public-source candidates',
-+        cbOfficialCardDisclaimer: 'BOCHK official public-source candidate · Not a bank approval decision · Terms require relationship-manager confirmation',
++        cbOfficialCardDisclaimer: 'BOCHK official public-source candidate · Not a bank approval decision',
 +        cbProductDescription: 'Product summary',
 +        cbLoanLimit: 'Limit range',
 +        cbInterestRate: 'Interest rate',
@@ -573,6 +573,7 @@ index 17f8244..5d7ad92 100644
 +        cbRuleReasons: 'Rule-based reasons',
 +        cbRmConfirm: 'Relationship-manager confirmation required:',
 +        cbSaving: 'Saving...',
++        cbSaveDraftAndPackage: 'Save profile draft and document package',
 +        cbSaveProfile: 'Confirm and Save SME Profile',
 +        cbClearProfile: 'Clear Saved Profile',
 +        cbSaveOnlyConfirm: 'The draft is written to the long-term SME profile only after confirmation.',
@@ -615,7 +616,7 @@ index 17f8244..5d7ad92 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +556,7 @@ const i18n = {
+@@ -277,6 +557,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -623,7 +624,7 @@ index 17f8244..5d7ad92 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +596,284 @@ const i18n = {
+@@ -316,7 +597,285 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -792,7 +793,7 @@ index 17f8244..5d7ad92 100644
 +        cbAnswerHint: '在下方输入框直接回答即可（例如「大约七百万港币」）。',
 +        cbNeedsManual: '我不太确定怎么理解。直接点下面的选项，或在草稿卡里填写会更快。',
 +        cbNoProgress: '我没从这句话里提取到资料，换个说法或点下面的选项试试。',
-+        cbReviewDraft: '请核对企业画像草稿，确认后即可筛选候选方案。',
++        cbReviewDraft: '请核对画像草稿，确认后即可筛选候选方案。',
 +        cbProgressRequired: '必填',
 +        cbNoMatch: '当前产品目录里暂时没有完全匹配该场景、用途和金额的方案。可在下面草稿里调整「融资用途」或金额，再重新匹配。',
 +        cbCtaTitle: '需要筛选融资方案？',
@@ -805,7 +806,7 @@ index 17f8244..5d7ad92 100644
 +        cbDemoIdentity: '演示身份：CrossBridge Demo Trading Ltd.',
 +        cbDemoNotice: 'demo_sme_001 · 仅使用虚构资料，请勿输入真实商业信息。',
 +        cbCreatingDraft: '正在建立临时草稿...',
-+        cbDraftTitle: '企业画像草稿',
++        cbDraftTitle: '画像草稿',
 +        cbDraftDescription: '尚未写入长期记忆。你可以随时修正 AI 预填资料。',
 +        cbDraft: '草稿',
 +        cbProfileProgress: '资料进度',
@@ -849,7 +850,7 @@ index 17f8244..5d7ad92 100644
 +        cbDemoTag: 'DEMO ONLY · 非银行正式产品',
 +        cbDemoCardDisclaimer: 'DEMO ONLY · 非银行正式产品 · 实际资格需由银行审批',
 +        cbOfficialTag: 'BOCHK 官方公开来源候选',
-+        cbOfficialCardDisclaimer: 'BOCHK 官方公开页面候选 · 不代表银行审批 · 实际条款需客户经理确认',
++        cbOfficialCardDisclaimer: 'BOCHK 官方公开页面候选 · 不代表银行审批',
 +        cbProductDescription: '产品简介',
 +        cbLoanLimit: '额度范围',
 +        cbInterestRate: '利率',
@@ -867,6 +868,7 @@ index 17f8244..5d7ad92 100644
 +        cbRuleReasons: '规则匹配理由',
 +        cbRmConfirm: '需客户经理确认：',
 +        cbSaving: '保存中...',
++        cbSaveDraftAndPackage: '保存企业画像草稿与材料包',
 +        cbSaveProfile: '确认并保存企业画像',
 +        cbClearProfile: '清除已保存画像',
 +        cbSaveOnlyConfirm: '只有点击确认后，草稿才会写入长期企业画像。',
@@ -909,7 +911,7 @@ index 17f8244..5d7ad92 100644
      }
  };
  
-@@ -346,24 +903,43 @@ marked.setOptions({
+@@ -346,24 +905,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -954,7 +956,7 @@ index 17f8244..5d7ad92 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +949,10 @@ function app() {
+@@ -373,6 +951,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -965,7 +967,7 @@ index 17f8244..5d7ad92 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +967,98 @@ function app() {
+@@ -387,7 +969,97 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -994,7 +996,6 @@ index 17f8244..5d7ad92 100644
 +                financing_purpose: '',
 +                requested_amount_hkd: '',
 +                order_scale_hkd: '',
-+                target_market: '',
 +                business_age_years: ''
 +            }
 +        },
@@ -1065,7 +1066,7 @@ index 17f8244..5d7ad92 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1137,2011 @@ function app() {
+@@ -466,110 +1138,2011 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -3163,7 +3164,7 @@ index 17f8244..5d7ad92 100644
          },
          
          // Apply theme
-@@ -658,13 +3230,31 @@ function app() {
+@@ -658,13 +3231,31 @@ function app() {
              }
          },
          
@@ -3196,7 +3197,7 @@ index 17f8244..5d7ad92 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3270,10 @@ function app() {
+@@ -680,9 +3271,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -3208,7 +3209,7 @@ index 17f8244..5d7ad92 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +3337,16 @@ function app() {
+@@ -746,7 +3338,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -3226,7 +3227,7 @@ index 17f8244..5d7ad92 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3362,9 @@ function app() {
+@@ -762,7 +3363,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -3237,7 +3238,7 @@ index 17f8244..5d7ad92 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3391,8 @@ function app() {
+@@ -789,7 +3392,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -3247,7 +3248,7 @@ index 17f8244..5d7ad92 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3420,6 @@ function app() {
+@@ -817,7 +3421,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -3255,7 +3256,7 @@ index 17f8244..5d7ad92 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3430,7 @@ function app() {
+@@ -828,6 +3431,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -3263,7 +3264,7 @@ index 17f8244..5d7ad92 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3487,7 @@ function app() {
+@@ -884,7 +3488,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3272,7 +3273,7 @@ index 17f8244..5d7ad92 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3496,7 @@ function app() {
+@@ -893,7 +3497,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3281,7 +3282,7 @@ index 17f8244..5d7ad92 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3504,7 @@ function app() {
+@@ -901,7 +3505,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3290,7 +3291,7 @@ index 17f8244..5d7ad92 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3533,15 @@ function app() {
+@@ -930,12 +3534,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3310,7 +3311,7 @@ index 17f8244..5d7ad92 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3553,7 @@ function app() {
+@@ -947,7 +3554,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3319,7 +3320,7 @@ index 17f8244..5d7ad92 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +4171,77 @@ function app() {
+@@ -1565,12 +4172,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3399,7 +3400,7 @@ index 17f8244..5d7ad92 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +4250,21 @@ function app() {
+@@ -1579,6 +4251,21 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7469,7 +7470,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..c704e4d 100644
+index 370c42e..23c2626 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7480,8 +7481,8 @@ index 370c42e..c704e4d 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev34" as="style">
-+    <link rel="preload" href="app.js?v=cbdev34" as="script">
++    <link rel="preload" href="styles.css?v=cbdev35" as="style">
++    <link rel="preload" href="app.js?v=cbdev35" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7500,7 +7501,7 @@ index 370c42e..c704e4d 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev34">
++    <link rel="stylesheet" href="styles.css?v=cbdev35">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -7650,7 +7651,7 @@ index 370c42e..c704e4d 100644
                                  <span></span><span></span><span></span>
                              </div>
                              <!-- Thinking/Reasoning Block -->
-@@ -277,7 +341,215 @@
+@@ -277,7 +341,176 @@
                              
                              <!-- Show actual content -->
                              <div x-show="msg.content" x-html="renderMarkdown(msg.content)"></div>
@@ -7719,9 +7720,9 @@ index 370c42e..c704e4d 100644
 +                                    <div class="loan-progress">
 +                                        <div class="loan-progress-label">
 +                                            <span x-text="t('cbProfileProgress')"></span>
-+                                            <strong x-text="loanCompletedCount() + ' / 7'"></strong>
++                                            <strong x-text="loanCompletedCount() + ' / 6'"></strong>
 +                                        </div>
-+                                        <div class="loan-progress-track"><span :style="'width:' + (loanCompletedCount() / 7 * 100) + '%'"></span></div>
++                                        <div class="loan-progress-track"><span :style="'width:' + (loanCompletedCount() / 6 * 100) + '%'"></span></div>
 +                                    </div>
 +                                    <div class="loan-form-grid">
 +                                        <label>
@@ -7758,10 +7759,6 @@ index 370c42e..c704e4d 100644
 +                                            <input type="number" min="1" x-model="loanMatching.form.order_scale_hkd" :placeholder="t('cbOptionalLater')">
 +                                        </label>
 +                                        <label>
-+                                            <span x-text="t('cbTargetMarket')"></span>
-+                                            <input type="text" x-model="loanMatching.form.target_market" :placeholder="t('cbExampleMarket')">
-+                                        </label>
-+                                        <label>
 +                                            <span x-text="t('cbBusinessAge')"></span>
 +                                            <input type="number" min="1" x-model="loanMatching.form.business_age_years" :placeholder="t('cbOptionalLater')">
 +                                        </label>
@@ -7794,41 +7791,6 @@ index 370c42e..c704e4d 100644
 +                                                <span class="loan-demo-tag" x-text="loanCardDisclaimer(result.product)"></span>
 +                                                <h3 x-text="loanLocalizedProduct(result.product, 'product_name')"></h3>
 +                                                <p class="loan-product-description" x-text="loanLocalizedProduct(result.product, 'product_description')"></p>
-+                                                <dl>
-+                                                    <div><dt x-text="t('cbLoanLimit')"></dt><dd x-text="loanLocalizedProduct(result.product, 'loan_limit_text')"></dd></div>
-+                                                    <div><dt x-text="t('cbInterestRate')"></dt><dd x-text="loanLocalizedProduct(result.product, 'interest_rate_text')"></dd></div>
-+                                                    <div><dt x-text="t('cbTenor')"></dt><dd x-text="loanLocalizedProduct(result.product, 'tenor_text')"></dd></div>
-+                                                    <div><dt x-text="t('cbRepayment')"></dt><dd x-text="loanLocalizedProduct(result.product, 'repayment_method_text')"></dd></div>
-+                                                    <div x-show="loanLocalizedProduct(result.product, 'fee_text')"><dt x-text="t('cbFee')"></dt><dd x-text="loanLocalizedProduct(result.product, 'fee_text')"></dd></div>
-+                                                </dl>
-+                                                <strong x-show="loanLocalizedProduct(result.product, 'public_guidance')?.length" x-text="t('cbPublicGuidance')"></strong>
-+                                                <ul x-show="loanLocalizedProduct(result.product, 'public_guidance')?.length">
-+                                                    <template x-for="guidance in (loanLocalizedProduct(result.product, 'public_guidance') || [])" :key="guidance">
-+                                                        <li x-text="guidance"></li>
-+                                                    </template>
-+                                                </ul>
-+                                                <strong x-show="loanLocalizedProduct(result.product, 'required_documents')?.length" x-text="t('cbRequiredDocuments')"></strong>
-+                                                <ul x-show="loanLocalizedProduct(result.product, 'required_documents')?.length">
-+                                                    <template x-for="documentHint in (loanLocalizedProduct(result.product, 'required_documents') || [])" :key="documentHint">
-+                                                        <li x-text="documentHint"></li>
-+                                                    </template>
-+                                                </ul>
-+                                                <strong x-text="t('cbThresholds')"></strong>
-+                                                <ul>
-+                                                    <template x-for="threshold in (loanLocalizedProduct(result.product, 'application_thresholds') || [])" :key="threshold">
-+                                                        <li x-text="threshold"></li>
-+                                                    </template>
-+                                                </ul>
-+                                                <strong x-text="t('cbRuleReasons')"></strong>
-+                                                <ul>
-+                                                    <template x-for="reason in result.reasons" :key="reason">
-+                                                        <li x-text="loanReasonLabel(reason)"></li>
-+                                                    </template>
-+                                                </ul>
-+                                                <p class="loan-rm-note" x-show="result.product.needs_rm_confirmation.length">
-+                                                    <span x-text="t('cbRmConfirm')"></span>
-+                                                    <span x-text="result.product.needs_rm_confirmation.map(field => loanFieldLabel(field)).join(lang === 'zh' ? '、' : ', ')"></span>
-+                                                </p>
 +                                                <div class="loan-source-meta" x-show="!result.product.demo_only">
 +                                                    <template x-for="sourceRef in (result.product.source_refs?.length ? result.product.source_refs : [{ source_url: result.product.source_url, source_title: result.product.source_title }])" :key="sourceRef.source_url">
 +                                                        <a :href="sourceRef.source_url" target="_blank" rel="noopener">
@@ -7867,7 +7829,7 @@ index 370c42e..c704e4d 100644
                              <!-- Message Actions (assistant only) -->
                              <div class="message-actions" x-show="msg.role === 'assistant' && msg.content && !isGenerating">
                                  <button class="btn-copy"
-@@ -326,7 +598,56 @@
+@@ -326,7 +559,56 @@
  
              <!-- Input Area -->
              <div class="input-area">
@@ -7924,7 +7886,7 @@ index 370c42e..c704e4d 100644
                      <div class="uploaded-image-preview" x-show="uploadedImage">
                          <img :src="uploadedImage ? 'data:image/jpeg;base64,' + uploadedImageBase64 : ''" alt="Preview" width="60" height="60">
                          <button class="btn-delete-overlay" @click="removeUploadedImage()" aria-label="Remove image"><i class="ri-close-circle-fill"></i></button>
-@@ -377,26 +698,10 @@
+@@ -377,26 +659,10 @@
                          ></textarea>
                          
                          <div class="input-toolbar">
@@ -7955,7 +7917,7 @@ index 370c42e..c704e4d 100644
                              <!-- Plugin Toolbar Buttons Extension Area -->
                              <div class="plugin-toolbar-area" x-show="pluginToolbarButtons.length > 0" x-cloak>
                                  <div class="plugin-toolbar-divider"></div>
-@@ -448,8 +753,791 @@
+@@ -448,8 +714,756 @@
                  </div>
              </div>
          </div>
@@ -7993,10 +7955,10 @@ index 370c42e..c704e4d 100644
 +                    <div class="loan-progress">
 +                        <div class="loan-progress-label">
 +                            <span x-text="t('cbProfileProgress')"></span>
-+                            <strong x-text="loanCompletedCount() + ' / 7'"></strong>
++                            <strong x-text="loanCompletedCount() + ' / 6'"></strong>
 +                        </div>
 +                        <div class="loan-progress-track">
-+                            <span :style="'width:' + (loanCompletedCount() / 7 * 100) + '%'"></span>
++                            <span :style="'width:' + (loanCompletedCount() / 6 * 100) + '%'"></span>
 +                        </div>
 +                    </div>
 +
@@ -8033,10 +7995,6 @@ index 370c42e..c704e4d 100644
 +                        <label>
 +                            <span x-text="t('cbOrderScale')"></span>
 +                            <input type="number" min="1" x-model="loanMatching.form.order_scale_hkd" :placeholder="t('cbOptionalLater')">
-+                        </label>
-+                        <label>
-+                            <span x-text="t('cbTargetMarket')"></span>
-+                            <input type="text" x-model="loanMatching.form.target_market" :placeholder="t('cbExampleMarket')">
 +                        </label>
 +                        <label>
 +                            <span x-text="t('cbBusinessAge')"></span>
@@ -8114,41 +8072,6 @@ index 370c42e..c704e4d 100644
 +                            <span class="loan-demo-tag" x-text="loanCardDisclaimer(result.product)"></span>
 +                            <h3 x-text="loanLocalizedProduct(result.product, 'product_name')"></h3>
 +                            <p class="loan-product-description" x-text="loanLocalizedProduct(result.product, 'product_description')"></p>
-+                            <dl>
-+                                <div><dt x-text="t('cbLoanLimit')"></dt><dd x-text="loanLocalizedProduct(result.product, 'loan_limit_text')"></dd></div>
-+                                <div><dt x-text="t('cbInterestRate')"></dt><dd x-text="loanLocalizedProduct(result.product, 'interest_rate_text')"></dd></div>
-+                                <div><dt x-text="t('cbTenor')"></dt><dd x-text="loanLocalizedProduct(result.product, 'tenor_text')"></dd></div>
-+                                <div><dt x-text="t('cbRepayment')"></dt><dd x-text="loanLocalizedProduct(result.product, 'repayment_method_text')"></dd></div>
-+                                <div x-show="loanLocalizedProduct(result.product, 'fee_text')"><dt x-text="t('cbFee')"></dt><dd x-text="loanLocalizedProduct(result.product, 'fee_text')"></dd></div>
-+                            </dl>
-+                            <strong x-show="loanLocalizedProduct(result.product, 'public_guidance')?.length" x-text="t('cbPublicGuidance')"></strong>
-+                            <ul x-show="loanLocalizedProduct(result.product, 'public_guidance')?.length">
-+                                <template x-for="guidance in (loanLocalizedProduct(result.product, 'public_guidance') || [])" :key="guidance">
-+                                    <li x-text="guidance"></li>
-+                                </template>
-+                            </ul>
-+                            <strong x-show="loanLocalizedProduct(result.product, 'required_documents')?.length" x-text="t('cbRequiredDocuments')"></strong>
-+                            <ul x-show="loanLocalizedProduct(result.product, 'required_documents')?.length">
-+                                <template x-for="documentHint in (loanLocalizedProduct(result.product, 'required_documents') || [])" :key="documentHint">
-+                                    <li x-text="documentHint"></li>
-+                                </template>
-+                            </ul>
-+                            <strong x-text="t('cbThresholds')"></strong>
-+                            <ul>
-+                                <template x-for="threshold in (loanLocalizedProduct(result.product, 'application_thresholds') || [])" :key="threshold">
-+                                    <li x-text="threshold"></li>
-+                                </template>
-+                            </ul>
-+                            <strong x-text="t('cbRuleReasons')"></strong>
-+                            <ul>
-+                                <template x-for="reason in result.reasons" :key="reason">
-+                                    <li x-text="loanReasonLabel(reason)"></li>
-+                                </template>
-+                            </ul>
-+                            <p class="loan-rm-note" x-show="result.product.needs_rm_confirmation.length">
-+                                <span x-text="t('cbRmConfirm')"></span>
-+                                <span x-text="result.product.needs_rm_confirmation.map(field => loanFieldLabel(field)).join(lang === 'zh' ? '、' : ', ')"></span>
-+                            </p>
 +                            <div class="loan-source-meta" x-show="!result.product.demo_only">
 +                                <template x-for="sourceRef in (result.product.source_refs?.length ? result.product.source_refs : [{ source_url: result.product.source_url, source_title: result.product.source_title }])" :key="sourceRef.source_url">
 +                                    <a :href="sourceRef.source_url" target="_blank" rel="noopener">
@@ -8346,7 +8269,7 @@ index 370c42e..c704e4d 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev34" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev35" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -8381,6 +8304,10 @@ index 370c42e..c704e4d 100644
 +        </div>
 +
 +        <footer class="doc-prep-actions">
++            <button class="loan-btn" @click="saveLoanProfile()"
++                    :disabled="!loanMatching.session || !documentPreparation.package || loanMatching.saveLoading">
++                <span x-text="loanMatching.saveLoading ? t('cbSaving') : t('cbSaveDraftAndPackage')"></span>
++            </button>
 +            <button class="loan-btn" @click="resetDocPackage()" :disabled="!documentPreparation.package" x-text="t('cbDocReset')"></button>
 +            <button class="loan-btn" @click="exportOfficialForm()" :disabled="!documentPreparation.viewerReady" x-text="t('cbDocExportForm')"></button>
 +            <button class="loan-btn" @click="printOfficialForm()" :disabled="!documentPreparation.viewerReady">
@@ -8747,12 +8674,12 @@ index 370c42e..c704e4d 100644
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -949,6 +2037,6 @@
+@@ -949,6 +1963,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev34"></script>
++    <script src="app.js?v=cbdev35"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css

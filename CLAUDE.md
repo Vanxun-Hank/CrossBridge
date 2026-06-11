@@ -38,6 +38,7 @@ systemd units (`deploy/systemd/`, restart with `sudo systemctl restart <unit>`):
 - `crossbridge-business` → F1 :8081 (restart = re-run migrations + re-seed catalog)
 - `crossbridge-documents` → F2 :8082 (restart = re-run migrations)
 - `crossbridge-timeline` → F3 :8083 (restart = re-run migrations)
+- `crossbridge-dashboard` → F7 :8084 (read-only aggregator over F1/F2/F3; restart = re-run migrations)
 - `crossbridge-chatraw` → UI :51111 (restart only for Python changes, not static)
 - `crossbridge-deploy` → deploy console :8090
 

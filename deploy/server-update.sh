@@ -50,7 +50,7 @@ sudo cp "$SRC"/deploy/systemd/*.service /etc/systemd/system/
 sudo systemctl daemon-reload
 # NOTE: crossbridge-deploy is intentionally NOT restarted here — it is the service
 # running this very script; restarting it would kill the in-progress deploy.
-sudo systemctl restart crossbridge-fastapi crossbridge-business crossbridge-documents crossbridge-timeline crossbridge-chatraw
+sudo systemctl restart crossbridge-fastapi crossbridge-business crossbridge-documents crossbridge-timeline crossbridge-dashboard crossbridge-chatraw
 
 log "6/6  health check (polls up to ~90s — RAG boots slowly: jieba + embeddings + Chroma)"
 # Poll each service until 200 or timeout, so a slow-booting RAG isn't a false warning.
@@ -69,6 +69,7 @@ check ":8080" "127.0.0.1:8080/healthz" || ok=0
 check ":8081" "127.0.0.1:8081/healthz" || ok=0
 check ":8082" "127.0.0.1:8082/healthz" || ok=0
 check ":8083" "127.0.0.1:8083/healthz" || ok=0
+check ":8084" "127.0.0.1:8084/healthz" || ok=0
 check ":51111" "127.0.0.1:51111/" || ok=0
 curl -s -o /dev/null -w '    admin    %{http_code}\n' "127.0.0.1:8083/crossbridge-admin/timeline" || true
 date -u +'    deployed at %Y-%m-%dT%H:%M:%SZ' | tee "$RUNTIME/.last-deploy"

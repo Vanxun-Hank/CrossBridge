@@ -7,6 +7,7 @@ systemd units (`deploy/systemd/`, restart with `sudo systemctl restart <unit>`):
 - `crossbridge-business` → Function 1 :8081 (restart = re-run migrations + re-seed catalog)
 - `crossbridge-documents` → Function 2 :8082 (restart = re-run migrations)
 - `crossbridge-timeline` → Function 3 :8083 (restart = re-run migrations)
+- `crossbridge-dashboard` → Function 7 :8084 (read-only aggregator over F1/F2/F3; restart = re-run migrations). First deploy: `server-update.sh` copies + restarts it; on a host that never ran it before, also `sudo systemctl enable --now crossbridge-dashboard` once for boot persistence.
 - `crossbridge-chatraw` → UI :51111 (restart only for `main.py`/Python changes, not static)
 - `crossbridge-deploy` → deploy console :8090 (one-button deploy; see below)
 
