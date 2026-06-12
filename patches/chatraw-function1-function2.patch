@@ -481,7 +481,7 @@ index 79e7920..7c7221e 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..2d8fe05 100644
+index 17f8244..25e369f 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -60,6 +60,7 @@ const i18n = {
@@ -3573,6 +3573,15 @@ index 17f8244..2d8fe05 100644
          },
          
          // Handle file upload (documents) with progress
+@@ -1187,7 +3859,7 @@ function app() {
+                 // Empty favicon when no logo is set
+                 favicon.href = 'data:,';
+             }
+-            document.title = this.settings.ui_settings.logo_text || 'ChatRaw';
++            document.title = this.settings.ui_settings.logo_text || 'CrossBridge AI';
+         },
+         
+         // Handle avatar upload
 @@ -1565,12 +4237,77 @@ function app() {
              return marked.parse(content);
          },
@@ -7834,9 +7843,23 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..b1f3ef6 100644
+index 370c42e..e24c786 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
+@@ -3,11 +3,11 @@
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+-    <meta name="description" content="ChatRaw - A minimalist, fast, and powerful AI chat interface with multi-model support, plugin marketplace, and advanced features like RAG and thinking mode.">
++    <meta name="description" content="CrossBridge AI - 跨境普惠金融决策助手，每条答案附权威来源 / Cross-Border SME finance decision assistant with authoritative sources.">
+     <meta name="apple-mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+     <meta name="mobile-web-app-capable" content="yes">
+-    <title>ChatRaw</title>
++    <title>CrossBridge AI</title>
+     <link rel="icon" id="favicon" href="data:,">
+     
+     <!-- Performance: DNS Prefetch & Preconnect for CDN -->
 @@ -16,10 +16,10 @@
      
      <!-- Performance: Preload Critical Resources -->
@@ -7845,8 +7868,8 @@ index 370c42e..b1f3ef6 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev37" as="style">
-+    <link rel="preload" href="app.js?v=cbdev37" as="script">
++    <link rel="preload" href="styles.css?v=cbdev38" as="style">
++    <link rel="preload" href="app.js?v=cbdev38" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7865,7 +7888,7 @@ index 370c42e..b1f3ef6 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev37">
++    <link rel="stylesheet" href="styles.css?v=cbdev38">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -7942,7 +7965,7 @@ index 370c42e..b1f3ef6 100644
          
          <button class="btn-new-chat" @click="createNewChat()" x-show="!sidebarCollapsed">
              <i class="ri-add-line"></i>
-@@ -209,10 +272,24 @@
+@@ -209,45 +272,46 @@
          <button class="btn-icon sidebar-settings-collapsed" @click="openSettingsPanel()" x-show="sidebarCollapsed" :title="t('settings')">
              <i class="ri-settings-3-line"></i>
          </button>
@@ -7968,8 +7991,10 @@ index 370c42e..b1f3ef6 100644
          <!-- Mobile Header -->
          <div class="mobile-header" x-show="isMobileView">
              <button class="btn-icon" @click="openSidebar()">
-@@ -221,33 +298,20 @@
-             <span class="mobile-title">ChatRaw</span>
+                 <i class="ri-menu-line"></i>
+             </button>
+-            <span class="mobile-title">ChatRaw</span>
++            <span class="mobile-title" x-text="settings.ui_settings.logo_text || 'CrossBridge AI'">CrossBridge AI</span>
          </div>
  
 -        <div class="chat-container">
@@ -7979,7 +8004,7 @@ index 370c42e..b1f3ef6 100644
                  <div class="welcome-logo">
                      <img x-show="settings.ui_settings.logo_data" :src="settings.ui_settings.logo_data" alt="Logo" class="welcome-logo-img" width="80" height="80">
                  </div>
-                 <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
+-                <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
 -                <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
 -                
 -                <div class="welcome-features">
@@ -7996,6 +8021,7 @@ index 370c42e..b1f3ef6 100644
 -                        <span x-text="t('multiModel')">Multi-Model</span>
 -                    </div>
 -                </div>
++                <h1 x-text="settings.ui_settings.logo_text || 'CrossBridge AI'">CrossBridge AI</h1>
 +                <p class="welcome-subtitle" x-text="t('crossbridgeSubtitle')">Your minimalist AI assistant</p>
 +                <!-- CrossBridge: removed ChatRaw 默认 3 张 feature 卡片 (Fast Response / Plugin Market / Multi-Model)，
 +                     pitch demo 不需要展示 ChatRaw 自己的功能营销 -->
@@ -8646,7 +8672,7 @@ index 370c42e..b1f3ef6 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev37" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev38" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -9068,7 +9094,7 @@ index 370c42e..b1f3ef6 100644
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev37"></script>
++    <script src="app.js?v=cbdev38"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
