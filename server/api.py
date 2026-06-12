@@ -28,18 +28,18 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
 
 # 让 server/ 能 import files/rag_engine
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "files"))
 
-from rag_engine import CrossBridgeRAG  # noqa: E402
 from language_utils import (  # noqa: E402
     detect_explicit_language_request,
     detect_response_language,
     normalize_answer_language,
 )
+from server.function5_local import LocalComplianceRAG  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -56,13 +56,45 @@ log = logging.getLogger("crossbridge.api")
 CHUNKS_PATH = PROJECT_ROOT / "data" / "processed" / "chunks.jsonl"
 CHROMA_DIR = PROJECT_ROOT / "data" / "chroma"
 
-log.info("Loading CrossBridge RAG engine from %s ...", CHUNKS_PATH)
-rag = CrossBridgeRAG(
-    chunks_path=str(CHUNKS_PATH),
-    persist_directory=str(CHROMA_DIR),
-)
+RAG_FALLBACK_REASON: str | None = None
+_LOCAL_FALLBACK_RAG: LocalComplianceRAG | None = None
+
+
+def _load_local_fallback(reason: str) -> LocalComplianceRAG:
+    """Load the local runnable Function 5 engine."""
+    global _LOCAL_FALLBACK_RAG
+    if _LOCAL_FALLBACK_RAG is None:
+        log.warning("Loading local Function 5 fallback. reason=%s", reason)
+        _LOCAL_FALLBACK_RAG = LocalComplianceRAG(CHUNKS_PATH)
+    return _LOCAL_FALLBACK_RAG
+
+
+def _load_rag_engine():
+    """
+    Prefer the full Qwen + Chroma + BM25 + rerank pipeline. If the environment
+    is not ready, fall back to the local BM25/RRF/citation-gating engine so
+    Function 5 still runs on port 8080 for demo and development.
+    """
+    global RAG_FALLBACK_REASON
+    log.info("Loading CrossBridge RAG engine from %s ...", CHUNKS_PATH)
+    try:
+        from rag_engine import CrossBridgeRAG  # noqa: WPS433
+
+        engine = CrossBridgeRAG(
+            chunks_path=str(CHUNKS_PATH),
+            persist_directory=str(CHROMA_DIR),
+        )
+        RAG_FALLBACK_REASON = None
+        return engine
+    except Exception as exc:  # noqa: BLE001
+        RAG_FALLBACK_REASON = f"{type(exc).__name__}: {exc}"
+        log.exception("Full RAG engine failed to load; using local fallback")
+        return _load_local_fallback(RAG_FALLBACK_REASON)
+
+
+rag = _load_rag_engine()
 log.info(
-    "✅ RAG engine ready. backend=%s, %d chunks loaded",
+    "RAG engine ready. backend=%s, %d chunks loaded",
     rag.index.backend,
     len(rag.docs),
 )
@@ -226,6 +258,8 @@ def healthz() -> dict:
         "rag_backend": rag.index.backend,
         "n_chunks": len(rag.docs),
         "model_id": MODEL_ID,
+        "fallback_active": RAG_FALLBACK_REASON is not None,
+        "fallback_reason": RAG_FALLBACK_REASON,
     }
 
 
@@ -310,17 +344,45 @@ async def chat_completions(req: Request) -> JSONResponse:
     try:
         result = rag.ask(query, top_k=3, debug=False, response_language=response_language)
     except Exception as e:  # noqa: BLE001
-        # 真正调 RAG 失败（如 DashScope 配额耗尽、网络断）→ 返回友好错误
-        log.exception("RAG ask() failed")
-        return JSONResponse(
-            status_code=502,
-            content={
-                "error": {
-                    "message": f"RAG backend failed: {type(e).__name__}: {e}",
-                    "type": "backend_error",
+        if RAG_FALLBACK_REASON is None:
+            # Full RAG loaded, but a live dependency failed during this request
+            # (for example DashScope quota/network). Preserve the demo by
+            # falling back to the local Function 5 engine for this turn.
+            log.exception("Full RAG ask() failed; retrying with local fallback")
+            try:
+                fallback = _load_local_fallback(f"runtime {type(e).__name__}: {e}")
+                result = fallback.ask(
+                    query,
+                    top_k=3,
+                    debug=False,
+                    response_language=response_language,
+                )
+            except Exception as fallback_error:  # noqa: BLE001
+                log.exception("Local fallback RAG ask() failed")
+                return JSONResponse(
+                    status_code=502,
+                    content={
+                        "error": {
+                            "message": (
+                                f"RAG backend failed: {type(e).__name__}: {e}; "
+                                f"fallback failed: {type(fallback_error).__name__}: {fallback_error}"
+                            ),
+                            "type": "backend_error",
+                        }
+                    },
+                )
+        else:
+            # Fallback was already active and still failed.
+            log.exception("RAG ask() failed")
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "error": {
+                        "message": f"RAG backend failed: {type(e).__name__}: {e}",
+                        "type": "backend_error",
+                    }
                 }
-            },
-        )
+            )
 
     elapsed = time.time() - t0
     raw_answer = (result.get("answer") or "").strip()
@@ -359,11 +421,112 @@ async def chat_completions(req: Request) -> JSONResponse:
     })
 
 
+# ---------------------------------------------------------------------------
+# Function 5 自带 demo —— 结构化政策合规问答 endpoint + 单页前端
+#
+# 设计原则：纯加法。
+#   - 不改 /v1/chat/completions（ChatRaw 仍用它，OpenAI 兼容）。
+#   - 不改 rag.ask() 的调用方式，所以 eval/run_eval.py、run_ragas.py（直接 import
+#     CrossBridgeRAG 调 .ask()）完全不受影响。
+#   - 引擎是哪条由 server 自动决定：有 DASHSCOPE_API_KEY + 依赖齐全 → 完整 Qwen 流水线；
+#     否则 → 本地兜底引擎（server/function5_local.py）。两条都喂同一个 demo 页。
+# ---------------------------------------------------------------------------
+F5_DEMO_PAGE = Path(__file__).resolve().parent / "static" / "function5.html"
+
+
+def _engine_info() -> dict:
+    """当前实际在跑的引擎信息（给 demo 页的徽标用）。"""
+    return {
+        "backend": rag.index.backend,
+        "n_chunks": len(rag.docs),
+        "fallback_active": RAG_FALLBACK_REASON is not None,
+        "fallback_reason": RAG_FALLBACK_REASON,
+        "mode": "local_fallback" if RAG_FALLBACK_REASON is not None else "full_pipeline",
+    }
+
+
+def _resolve_demo_language(query: str, requested: str | None) -> str:
+    """显式选择优先；否则按问题文本检测；都没有则回退默认。"""
+    if requested in {"zh", "en", "bilingual"}:
+        return requested
+    return (
+        detect_explicit_language_request(query)
+        or detect_response_language(query)
+        or normalize_answer_language(None)
+    )
+
+
+@app.post("/function5/ask")
+async def function5_ask(req: Request) -> JSONResponse:
+    """
+    结构化政策合规问答（Function 5 自带 demo 页调用）。
+
+    与 /v1/chat/completions 区别：这里返回结构化 JSON
+    （answer + citations[] + retrieval trace + engine 信息），方便前端分区展示
+    “权威答案 / 合规风险提示 / 操作建议 / 官方来源”。
+
+    请求体: {"query": "...", "language": "auto|zh|en|bilingual", "top_k": 3}
+    """
+    try:
+        body = await req.json()
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": {
+            "message": f"Invalid JSON body: {e}", "type": "invalid_request_error"}})
+
+    query = (body.get("query") or body.get("question") or "").strip()
+    if not query:
+        return JSONResponse(status_code=400, content={"error": {
+            "message": "field 'query' is required and must be non-empty",
+            "type": "invalid_request_error"}})
+
+    language = _resolve_demo_language(query, body.get("language"))
+    try:
+        top_k = max(1, min(8, int(body.get("top_k") or 3)))
+    except (TypeError, ValueError):
+        top_k = 3
+
+    log.info("Function5 ask: query=%r (len=%d), language=%s", query[:80], len(query), language)
+    t0 = time.time()
+    try:
+        result = rag.ask(query, top_k=top_k, debug=True, response_language=language)
+    except Exception as e:  # noqa: BLE001
+        # 与 /v1/chat/completions 一致：完整引擎运行时挂掉 → 本轮用本地兜底救场
+        if RAG_FALLBACK_REASON is None:
+            log.exception("Full RAG ask() failed in /function5/ask; retrying with local fallback")
+            try:
+                fallback = _load_local_fallback(f"runtime {type(e).__name__}: {e}")
+                result = fallback.ask(query, top_k=top_k, debug=True, response_language=language)
+            except Exception as fallback_error:  # noqa: BLE001
+                log.exception("Local fallback ask() also failed")
+                return JSONResponse(status_code=502, content={"error": {
+                    "message": (f"RAG backend failed: {type(e).__name__}: {e}; "
+                                f"fallback failed: {type(fallback_error).__name__}: {fallback_error}"),
+                    "type": "backend_error"}})
+        else:
+            log.exception("RAG ask() failed")
+            return JSONResponse(status_code=502, content={"error": {
+                "message": f"RAG backend failed: {type(e).__name__}: {e}", "type": "backend_error"}})
+
+    return JSONResponse(content={
+        "answer": (result.get("answer") or "").strip(),
+        "citations": result.get("citations") or [],
+        "response_language": result.get("response_language", language),
+        "elapsed_seconds": round(time.time() - t0, 2),
+        "engine": _engine_info(),
+        "trace": result.get("retrieval_trace") or {},
+    })
+
+
 @app.get("/")
-def root() -> PlainTextResponse:
+def root() -> Any:
+    """根路径直接 serve Function 5 demo 页；缺失时退回纯文本端点说明。"""
+    if F5_DEMO_PAGE.exists():
+        return FileResponse(str(F5_DEMO_PAGE), media_type="text/html")
     return PlainTextResponse(
-        "CrossBridge AI — OpenAI-compatible RAG server\n"
-        "POST /v1/chat/completions  — chat with RAG\n"
+        "CrossBridge AI — Function 5 RAG server\n"
+        "GET  /                     — Function 5 demo page (missing)\n"
+        "POST /function5/ask        — structured policy & compliance Q&A\n"
+        "POST /v1/chat/completions  — OpenAI-compatible chat (ChatRaw)\n"
         "GET  /v1/models            — list models\n"
         "GET  /healthz              — health check\n"
     )

@@ -81,6 +81,7 @@ flowchart LR
 | `/api/crossbridge-documents/{path}` | `proxy_crossbridge_documents_api` | `CROSSBRIDGE_DOCUMENTS_API_URL`（默认 `http://127.0.0.1:8082`）→ `:8082/crossbridge-documents/{path}` |
 | `/api/crossbridge-timeline/{path}` | `proxy_crossbridge_timeline_api` | `CROSSBRIDGE_TIMELINE_API_URL`（默认 `http://127.0.0.1:8083`）→ `:8083/crossbridge-timeline/{path}`（普通读写，缓冲） |
 | `/api/crossbridge-timeline/v1/events` | `proxy_crossbridge_timeline_events` | **流式**转发 F3 SSE（`async for chunk … yield`），响应头 `X-Accel-Buffering: no` 让 nginx 也不缓冲。**必须注册在上面的 catch-all 之前**，否则被吞掉缓冲。 |
+| `/api/crossbridge-policy/{path}` | `proxy_crossbridge_policy_api` | `CROSSBRIDGE_POLICY_API_URL`（默认 `http://127.0.0.1:8080`）→ `:8080/{path}`（F5「合规问答」面板用 `/function5/ask`） |
 | `/api/chats`、`/api/models`、`/api/settings`、`/api/plugins`… | chatraw 自身 | chatraw.db |
 
 **两条健壮性约定（曾反复踩坑）**：
@@ -97,6 +98,7 @@ flowchart LR
 - 前端「Policy Q&A」模式下发消息 → `POST /api/chat` → 代理到 RAG `:8080/v1`。
 - RAG（`files/rag_engine.py`）是一条 LangGraph 链：classify → multi-query → BM25(`bm25_index.py`,jieba)+Dense(Qwen embeddings) → RRF → cross-encoder rerank(`reranker.py`, DashScope gte-rerank-v2, 带降级) → metadata score → **citation gating（`trust_tier × document_type`）** → prompt → LLM。
 - 对外只依赖 Qwen/DashScope（`QWEN_BASE_URL`/`DASHSCOPE_API_KEY`）。
+- 前端另有**专属「合规问答」面板**（ChatRaw 侧栏 `合规问答`）：打开 modal → `POST /api/crossbridge-policy/function5/ask` → 代理到 `:8080/function5/ask` → 渲染「权威答案 + 官方来源卡（带 `trust_tier` 标签）+ 引擎徽标 + 免责」。与「Policy Q&A」聊天模式并存，二者共用同一 RAG 引擎。面板定制保存在 `patches/chatraw-function1-function2.patch`（`chatraw-fork/` 不入库）。
 
 ### Function 1 贷款匹配
 - **意图路由**：前端每条 policy 消息会顺带 `POST /api/crossbridge/v1/loan-matching/route-intent`。`route_intent()`（**纯正则**，无 LLM）判 action / informational / ambiguous，决定是否弹「Start Loan Matching」CTA，并附 `extract_prefill()` 抽到的画像。
