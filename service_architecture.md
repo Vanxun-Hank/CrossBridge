@@ -61,7 +61,7 @@ flowchart LR
 | Function 3 | SQLite | `data/crossbridge_application_timeline.db` | `CROSSBRIDGE_TIMELINE_DATABASE_URL` | `server/application_timeline/alembic.ini` → `migrations/` |
 | RAG | Chroma 向量库 + chunks | `data/chroma`、`data/processed/chunks.jsonl` | — | 无 SQL DB |
 
-- **chatraw.db** 存：chats、messages、settings、注册的 models、plugins、context compaction。
+- **chatraw.db** 存：chats、messages、settings、注册的 models、plugins、context compaction。`messages.metadata`（可空 JSON 字符串，`Database.init_db` 内幂等 `ALTER TABLE` 迁移）持久化跨 function 的 UI 卡片（F1/F2/F3 transcript cards），使其在切换 chat session 后仍可重建；空 content + 有 metadata 的「纯卡片」行不进模型 history（`_is_card_only`）。
 - **crossbridge_app.db**（F1）表：`sme_profiles`、`matching_sessions`、`loan_products`、`match_results`、`saved_drafts`、`audit_events`。
 - **crossbridge_document_preparation.db**（F2）核心表：`document_packages`（含 `selected_product_id`、`origin_matching_session_id`）。
 - **crossbridge_application_timeline.db**（F3）表：`timeline_applications`（`origin_package_id` **唯一** → 一个 F2 package 幂等一条申请）、`timeline_nodes`（6 个固定节点 + `internal_note` **永不序列化给 SME**）、`timeline_audit_events`。

@@ -1,5 +1,5 @@
 diff --git a/backend/main.py b/backend/main.py
-index 79e7920..cbbe257 100644
+index 79e7920..7c7221e 100644
 --- a/backend/main.py
 +++ b/backend/main.py
 @@ -82,7 +82,7 @@ def setup_logging():
@@ -11,7 +11,57 @@ index 79e7920..cbbe257 100644
  from fastapi.staticfiles import StaticFiles
  from fastapi.middleware.cors import CORSMiddleware
  from starlette.middleware.base import BaseHTTPMiddleware
-@@ -401,7 +401,14 @@ class Database:
+@@ -207,6 +207,12 @@ class Message(BaseModel):
+     role: str
+     content: str
+     created_at: str
++    metadata: Optional[str] = None  # JSON string for ephemeral UI cards; None for normal messages
++
++
++def _is_card_only(message: "Message") -> bool:
++    """Ephemeral UI card with no textual content — persisted for the UI but never sent to the model."""
++    return bool(message.metadata) and not (message.content or "").strip()
+ 
+ # ============ Database ============
+ 
+@@ -261,7 +267,8 @@ class Database:
+                 chat_id TEXT NOT NULL,
+                 role TEXT NOT NULL,
+                 content TEXT NOT NULL,
+-                created_at TEXT
++                created_at TEXT,
++                metadata TEXT
+             );
+ 
+             CREATE TABLE IF NOT EXISTS chat_compactions (
+@@ -302,9 +309,25 @@ class Database:
+         
+         # Migrate old JSON embeddings to binary format
+         self._migrate_embeddings(conn)
+-        
++
++        # Add messages.metadata column for persisted UI cards (idempotent)
++        self._migrate_message_metadata(conn)
++
+         # Initialize defaults
+         self._init_defaults(conn)
++
++    def _migrate_message_metadata(self, conn):
++        """Add nullable messages.metadata column if missing (safe for existing DBs)."""
++        cursor = conn.cursor()
++        try:
++            cursor.execute("PRAGMA table_info(messages)")
++            cols = {row["name"] for row in cursor.fetchall()}
++            if "metadata" not in cols:
++                cursor.execute("ALTER TABLE messages ADD COLUMN metadata TEXT")
++                conn.commit()
++                logger.info("Added messages.metadata column")
++        except Exception:
++            logger.exception("Failed to migrate messages.metadata column")
+     
+     def _migrate_embeddings(self, conn):
+         """Migrate old JSON embeddings to binary BLOB format"""
+@@ -401,7 +424,14 @@ class Database:
      
      def get_model_by_type(self, model_type: str) -> Optional[ModelConfig]:
          cursor = self.get_conn().cursor()
@@ -27,7 +77,78 @@ index 79e7920..cbbe257 100644
          row = cursor.fetchone()
          
          if row:
-@@ -1077,7 +1084,7 @@ class LLMService:
+@@ -495,29 +525,42 @@ class Database:
+     # Messages
+     def get_messages(self, chat_id: str) -> List[Message]:
+         cursor = self.get_conn().cursor()
+-        cursor.execute("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at ASC", (chat_id,))
++        cursor.execute("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at ASC, rowid ASC", (chat_id,))
+         rows = cursor.fetchall()
+-        
++
+         return [Message(
+             id=row["id"],
+             chat_id=row["chat_id"],
+             role=row["role"],
+             content=row["content"],
+-            created_at=row["created_at"]
++            created_at=row["created_at"],
++            metadata=(row["metadata"] if "metadata" in row.keys() else None)
+         ) for row in rows]
+-    
+-    def add_message(self, chat_id: str, role: str, content: str) -> Message:
++
++    def add_message(self, chat_id: str, role: str, content: str, metadata: Optional[str] = None) -> Message:
+         msg_id = str(uuid.uuid4())
+         now = datetime.now().isoformat()
+-        
++
+         conn = self.get_conn()
+         cursor = conn.cursor()
+-        cursor.execute("INSERT INTO messages (id, chat_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)",
+-                      (msg_id, chat_id, role, content, now))
++        cursor.execute("INSERT INTO messages (id, chat_id, role, content, created_at, metadata) VALUES (?, ?, ?, ?, ?, ?)",
++                      (msg_id, chat_id, role, content, now, metadata))
+         cursor.execute("UPDATE chats SET updated_at = ? WHERE id = ?", (now, chat_id))
+         conn.commit()
+-        
+-        return Message(id=msg_id, chat_id=chat_id, role=role, content=content, created_at=now)
++
++        return Message(id=msg_id, chat_id=chat_id, role=role, content=content, created_at=now, metadata=metadata)
++
++    def update_message_metadata(self, message_id: str, metadata: Optional[str]) -> None:
++        conn = self.get_conn()
++        cursor = conn.cursor()
++        cursor.execute("UPDATE messages SET metadata = ? WHERE id = ?", (metadata, message_id))
++        conn.commit()
++
++    def delete_message(self, message_id: str) -> None:
++        conn = self.get_conn()
++        cursor = conn.cursor()
++        cursor.execute("DELETE FROM messages WHERE id = ?", (message_id,))
++        conn.commit()
+ 
+     # Context compaction
+     def get_chat_compaction(self, chat_id: str) -> Optional[dict]:
+@@ -768,7 +811,7 @@ class LLMService:
+         use_compaction: bool = True,
+         system_prompt: str = "",
+     ) -> List[dict]:
+-        history = self.db.get_messages(chat_id)
++        history = [m for m in self.db.get_messages(chat_id) if not _is_card_only(m)]
+         messages = []
+         system_prompt = system_prompt.strip()
+         if not use_compaction:
+@@ -944,7 +987,7 @@ class LLMService:
+ 
+     async def compact_chat_history(self, chat_id: str) -> dict:
+         async with get_chat_lock(chat_id):
+-            history = self.db.get_messages(chat_id)
++            history = [m for m in self.db.get_messages(chat_id) if not _is_card_only(m)]
+             if len(history) <= CONTEXT_COMPRESSOR_KEEP_MESSAGES:
+                 return {"success": True, "compressed": False, "reason": "not_enough_history"}
+ 
+@@ -1077,7 +1120,7 @@ class LLMService:
  
          return result
      
@@ -36,7 +157,7 @@ index 79e7920..cbbe257 100644
          """Stream chat responses with optional thinking/reasoning support"""
          config = self.db.get_model_by_type("chat")
          if not config or not config.api_url or not config.model_id:
-@@ -1119,6 +1126,8 @@ class LLMService:
+@@ -1119,6 +1162,8 @@ class LLMService:
          headers = {"Content-Type": "application/json"}
          if config.api_key:
              headers["Authorization"] = f"Bearer {config.api_key}"
@@ -45,7 +166,7 @@ index 79e7920..cbbe257 100644
          
          payload = {
              "model": config.model_id,
-@@ -1150,41 +1159,54 @@ class LLMService:
+@@ -1150,41 +1195,54 @@ class LLMService:
                          yield json.dumps({"error": f"API error ({resp.status}): {error_text}"})
                          return
                      
@@ -135,7 +256,7 @@ index 79e7920..cbbe257 100644
              
              # Save response (include thinking in saved message if present)
              if full_response:
-@@ -1210,7 +1232,7 @@ class LLMService:
+@@ -1210,7 +1268,7 @@ class LLMService:
          except Exception as e:
              yield json.dumps({"error": str(e)})
      
@@ -144,7 +265,7 @@ index 79e7920..cbbe257 100644
          """Non-streaming chat, returns dict with content, thinking, and references"""
          config = self.db.get_model_by_type("chat")
          if not config or not config.api_url or not config.model_id:
-@@ -1250,6 +1272,8 @@ class LLMService:
+@@ -1250,6 +1308,8 @@ class LLMService:
          headers = {"Content-Type": "application/json"}
          if config.api_key:
              headers["Authorization"] = f"Bearer {config.api_key}"
@@ -153,7 +274,50 @@ index 79e7920..cbbe257 100644
          
          payload = {
              "model": config.model_id,
-@@ -1845,6 +1869,9 @@ async def chat(request: Request):
+@@ -1813,6 +1873,42 @@ async def get_messages(chat_id: str):
+     messages = db.get_messages(chat_id)
+     return [m.model_dump() for m in messages]
+ 
++@app.post("/api/chats/{chat_id}/messages")
++async def create_card_message(chat_id: str, request: Request):
++    """Persist a UI-card message (e.g. loan draft / candidate plans / CTA).
++
++    Card messages carry their render data in `metadata` (a JSON object) and usually
++    have empty content; they are returned by GET for rehydration but excluded from the
++    model history (see `_is_card_only`)."""
++    try:
++        body = await request.json()
++    except Exception:
++        body = {}
++    role = body.get("role", "assistant") or "assistant"
++    content = body.get("content", "") or ""
++    metadata = body.get("metadata")
++    metadata_str = json.dumps(metadata, ensure_ascii=False) if metadata is not None else None
++    msg = db.add_message(chat_id, role, content, metadata_str)
++    return msg.model_dump()
++
++@app.patch("/api/chats/{chat_id}/messages/{message_id}")
++async def update_card_message(chat_id: str, message_id: str, request: Request):
++    """Update a card message's metadata in place (e.g. doc-overview scenario changed)."""
++    try:
++        body = await request.json()
++    except Exception:
++        body = {}
++    metadata = body.get("metadata")
++    metadata_str = json.dumps(metadata, ensure_ascii=False) if metadata is not None else None
++    db.update_message_metadata(message_id, metadata_str)
++    return {"success": True}
++
++@app.delete("/api/chats/{chat_id}/messages/{message_id}")
++async def delete_card_message(chat_id: str, message_id: str):
++    """Delete a single message (e.g. a dismissed CTA, so dismissal survives reload)."""
++    db.delete_message(message_id)
++    return {"success": True}
++
+ @app.post("/api/chats/{chat_id}/compact")
+ async def compact_chat_context(chat_id: str):
+     compressor_config = get_context_compressor_config()
+@@ -1845,6 +1941,9 @@ async def chat(request: Request):
      image_base64 = body.get("image_base64", "") or ""
      web_content = body.get("web_content", "") or ""
      web_url = body.get("web_url", "") or ""
@@ -163,7 +327,7 @@ index 79e7920..cbbe257 100644
      
      if not message:
          return JSONResponse({"error": "Message is required"}, status_code=400)
-@@ -1878,7 +1905,7 @@ async def chat(request: Request):
+@@ -1878,7 +1977,7 @@ async def chat(request: Request):
              yield json.dumps({"chat_id": chat_id}) + "\n"
              
              # Stream content
@@ -172,7 +336,7 @@ index 79e7920..cbbe257 100644
                  yield chunk + "\n"
          
          return StreamingResponse(
-@@ -1892,9 +1919,157 @@ async def chat(request: Request):
+@@ -1892,9 +1991,142 @@ async def chat(request: Request):
          )
      else:
          # Non-streaming response
@@ -313,26 +477,11 @@ index 79e7920..cbbe257 100644
 +        target_url, request, unavailable_msg="CrossBridge dashboard service is unavailable"
 +    )
 +
-+@app.api_route("/api/crossbridge-policy/{path:path}", methods=["GET", "POST"])
-+async def proxy_crossbridge_policy_api(path: str, request: Request):
-+    """Proxy only the fixed local CrossBridge RAG policy/compliance Q&A service (Function 5).
-+
-+    Parallel to the F1/F2/F3/F7 proxies; callers cannot choose a target. Fixed target is the
-+    RAG FastAPI service on port 8080 (structured /function5/ask + OpenAI-compatible /v1).
-+    """
-+    base_url = os.environ.get("CROSSBRIDGE_POLICY_API_URL", "http://127.0.0.1:8080").rstrip("/")
-+    target_url = f"{base_url}/{path}"
-+    if request.url.query:
-+        target_url += f"?{request.url.query}"
-+    return await _proxy_pass(
-+        target_url, request, unavailable_msg="CrossBridge policy Q&A service is unavailable"
-+    )
-+
  @app.get("/api/documents")
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..70085f2 100644
+index 17f8244..979eed0 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
 @@ -143,6 +143,7 @@ const i18n = {
@@ -343,7 +492,7 @@ index 17f8244..70085f2 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,300 @@ const i18n = {
+@@ -182,7 +183,286 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -627,25 +776,11 @@ index 17f8244..70085f2 100644
 +        cbSaveFailed: 'Unable to save SME profile',
 +        cbConfirmClearProfile: 'Clear the long-term SME profile for demo_sme_001?',
 +        cbProfileCleared: 'Long-term SME profile cleared',
-+        cbClearFailed: 'Unable to clear SME profile',
-+        cbPolicyNav: 'Policy Q&A',
-+        cbPolicyTitle: 'Policy & Compliance Q&A',
-+        cbPolicySubtitle: 'Function 5 · Grounded answers with official sources',
-+        cbPolicyPlaceholder: 'Ask a cross-border policy or compliance question...',
-+        cbPolicyAsk: 'Ask',
-+        cbPolicyThinking: 'Retrieving authoritative sources...',
-+        cbPolicyAnswer: 'Answer',
-+        cbPolicySources: 'Official sources',
-+        cbPolicyNoSources: 'No citable official source matched. Try a more specific question.',
-+        cbPolicyEmpty: 'Ask a compliance question to get a grounded answer with official citations.',
-+        cbPolicyError: 'Policy Q&A request failed',
-+        cbPolicyEngineFull: 'Full RAG',
-+        cbPolicyEngineFallback: 'Local fallback',
-+        cbPolicyDisclaimer: 'Preliminary AI reference only — confirm with your bank relationship manager before acting.'
++        cbClearFailed: 'Unable to clear SME profile'
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +571,7 @@ const i18n = {
+@@ -277,6 +557,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -653,7 +788,7 @@ index 17f8244..70085f2 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +611,299 @@ const i18n = {
+@@ -316,7 +597,285 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -936,25 +1071,11 @@ index 17f8244..70085f2 100644
 +        cbSaveFailed: '保存失败',
 +        cbConfirmClearProfile: '确认清除 demo_sme_001 的长期企业画像吗？',
 +        cbProfileCleared: '长期企业画像已清除',
-+        cbClearFailed: '清除失败',
-+        cbPolicyNav: '合规问答',
-+        cbPolicyTitle: '合规政策问答',
-+        cbPolicySubtitle: 'Function 5 · 每条答案附官方来源',
-+        cbPolicyPlaceholder: '输入跨境政策或合规问题…',
-+        cbPolicyAsk: '提问',
-+        cbPolicyThinking: '正在检索权威来源…',
-+        cbPolicyAnswer: '权威答案',
-+        cbPolicySources: '官方来源',
-+        cbPolicyNoSources: '没有匹配到可引用的官方来源,试试更具体的问题。',
-+        cbPolicyEmpty: '提一个合规问题,获取附官方引用的有依据答案。',
-+        cbPolicyError: '合规问答请求失败',
-+        cbPolicyEngineFull: '完整 RAG',
-+        cbPolicyEngineFallback: '本地兜底',
-+        cbPolicyDisclaimer: '仅为初步 AI 参考,最终操作前请向银行客户经理确认。'
++        cbClearFailed: '清除失败'
      }
  };
  
-@@ -346,25 +933,45 @@ marked.setOptions({
+@@ -346,24 +905,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -997,11 +1118,9 @@ index 17f8244..70085f2 100644
 +            startWidth: 0
 +        },
          showSettings: false,
-+        policyQa: { open: false, query: '', loading: false, result: null, error: '' },
          settingsTab: 'models',
          showSystemPrompt: false,
-         currentChatId: null,
-@@ -373,6 +980,10 @@ function app() {
+@@ -373,6 +951,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -1012,7 +1131,7 @@ index 17f8244..70085f2 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +998,97 @@ function app() {
+@@ -387,7 +969,97 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -1111,7 +1230,7 @@ index 17f8244..70085f2 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1167,2044 @@ function app() {
+@@ -466,110 +1138,2074 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -1329,39 +1448,6 @@ index 17f8244..70085f2 100644
 +            this.closeSidebarOnMobile();
 +        },
 +
-+        openPolicyQa() {
-+            this.policyQa.open = true;
-+            this.policyQa.error = '';
-+            this.closeSidebarOnMobile();
-+            this.$nextTick(() => { this.$refs.policyQaInput && this.$refs.policyQaInput.focus(); });
-+        },
-+
-+        closePolicyQa() {
-+            this.policyQa.open = false;
-+        },
-+
-+        async submitPolicyQa() {
-+            const query = (this.policyQa.query || '').trim();
-+            if (!query || this.policyQa.loading) return;
-+            this.policyQa.loading = true;
-+            this.policyQa.error = '';
-+            this.policyQa.result = null;
-+            try {
-+                const res = await fetch('/api/crossbridge-policy/function5/ask', {
-+                    method: 'POST',
-+                    headers: { 'Content-Type': 'application/json' },
-+                    body: JSON.stringify({ query, language: this.lang === 'zh' ? 'zh' : 'auto' })
-+                });
-+                const data = await res.json().catch(() => ({}));
-+                if (!res.ok) throw new Error((data.error && (data.error.message || data.error)) || ('HTTP ' + res.status));
-+                this.policyQa.result = data;
-+            } catch (e) {
-+                this.policyQa.error = this.t('cbPolicyError') + ': ' + e.message;
-+            } finally {
-+                this.policyQa.loading = false;
-+            }
-+        },
-+
 +        async fetchLoanMatchingIntent(message) {
 +            try {
 +                const res = await fetch('/api/crossbridge/v1/loan-matching/route-intent', {
@@ -1379,18 +1465,20 @@ index 17f8244..70085f2 100644
 +        async appendLoanMatchingCtaIfNeeded(intentPromise) {
 +            const result = await intentPromise;
 +            if (!result?.show_cta) return;
-+            this.messages.push({
-+                role: 'assistant',
-+                content: '',
-+                loanMatchingCta: {
-+                    prefill: result.prefill || {}
-+                }
++            const prefill = result.prefill || {};
++            await this.pushCardMessage({
++                local: { loanMatchingCta: { prefill } },
++                metadata: { kind: 'loanMatchingCta', prefill }
 +            });
-+            this.$nextTick(() => this.scrollToBottom());
 +        },
 +
-+        dismissCtaCard(msg) {
++        async dismissCtaCard(msg) {
 +            msg.loanMatchingCta = null;
++            if (msg.id && this.currentChatId) {
++                try {
++                    await this.cbFetchJson(`/api/chats/${this.currentChatId}/messages/${msg.id}`, { method: 'DELETE' });
++                } catch (_) { /* dismissal is best-effort */ }
++            }
 +        },
 +
 +        async openLoanMatching(prefill = {}) {
@@ -1453,6 +1541,36 @@ index 17f8244..70085f2 100644
 +                'financing_purpose',
 +                'requested_amount_hkd'
 +            ].every(key => this.loanMatching.form[key] !== '' && this.loanMatching.form[key] !== null);
++        },
++
++        // "Match candidates" readiness: live form when a session exists, else the restored snapshot.
++        loanDraftMatchReady(msg) {
++            if (this.loanMatching.session) return this.loanRequiredFieldsComplete();
++            const p = msg?.loanDraft?.profile || {};
++            return ['business_scenario', 'annual_turnover_hkd', 'financing_purpose', 'requested_amount_hkd']
++                .every(key => p[key] !== '' && p[key] !== null && p[key] !== undefined);
++        },
++
++        // Localize a stored profile value for the restored-draft summary (reuses the select-option keys).
++        loanProfileValueLabel(field, value) {
++            if (value === '' || value === null || value === undefined) return '';
++            const maps = {
++                business_scenario: {
++                    overseas_procurement: 'cbScenarioProcurement',
++                    cross_border_ecommerce: 'cbScenarioEcommerce',
++                    export_trade: 'cbScenarioExport',
++                    overseas_investment: 'cbScenarioInvestment'
++                },
++                financing_purpose: {
++                    procurement_payment: 'cbPurposeSupplier',
++                    stocking: 'cbPurposeStocking',
++                    order_fulfillment: 'cbPurposeOrder',
++                    working_capital: 'cbPurposeWorkingCapital',
++                    investment: 'cbPurposeInvestment'
++                }
++            };
++            const key = maps[field]?.[value];
++            return key ? this.t(key) : value;
 +        },
 +
 +        loanFieldLabel(field) {
@@ -1602,7 +1720,10 @@ index 17f8244..70085f2 100644
 +        },
 +
 +        async saveLoanProfile() {
-+            if (!this.loanMatching.session || !confirm(this.t('cbConfirmSaveProfile'))) return;
++            // Restored candidate-plans card has no live session → resume it before saving.
++            if (!this.loanMatching.session
++                && !await this.ensureLoanSession({}, this._restoredResultsSessionId())) return;
++            if (!confirm(this.t('cbConfirmSaveProfile'))) return;
 +            this.loanMatching.saveLoading = true;
 +            const sessionId = this.loanMatching.session.id;
 +            try {
@@ -1833,11 +1954,16 @@ index 17f8244..70085f2 100644
 +            const s = this.loanMatching.session;
 +            if (!s) return;
 +            if (s.match_results && s.match_results.length) {
-+                this.messages.push({ role: 'assistant', loanResults: s.match_results });
-+                this.$nextTick(() => this.scrollToBottom());
++                this.pushCardMessage({
++                    local: { loanResults: s.match_results, loanResultsSessionId: s.id },
++                    metadata: { kind: 'loanResults', matchResults: s.match_results, sessionId: s.id }
++                });
 +            } else if ((s.missing_required_fields || []).length === 0) {
-+                this.messages.push({ role: 'assistant', loanDraft: true });
-+                this.$nextTick(() => this.scrollToBottom());
++                const profile = this._loanDraftSnapshot();
++                this.pushCardMessage({
++                    local: { loanDraft: { profile, sessionId: s.id, restored: false } },
++                    metadata: { kind: 'loanDraft', profile, sessionId: s.id }
++                });
 +            }
 +            // else: still collecting → the anchored panel shows the current question.
 +        },
@@ -1949,19 +2075,32 @@ index 17f8244..70085f2 100644
 +        },
 +
 +        // "匹配候选方案" on the inline draft card → run match, append product cards.
-+        async runLoanMatchInline() {
++        async runLoanMatchInline(msg = null) {
++            // Restored draft card has no live session → resume it (GET by id, else recreate from snapshot).
++            const profile = msg?.loanDraft?.profile || this._restoredDraftProfile();
++            const sessionId = msg?.loanDraft?.sessionId || this._restoredDraftSessionId();
++            if (!this.loanMatching.session
++                && !await this.ensureLoanSession(profile, sessionId)) return;
 +            if (!await this.saveLoanDraft(true) || !this.loanMatching.session?.ready_to_match) return;
 +            this.loanMatching.matchLoading = true;
 +            try {
-+                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${this.loanMatching.session.id}/match`, { method: 'POST' });
++                const s = this.loanMatching.session;
++                const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${s.id}/match`, { method: 'POST' });
 +                this.syncLoanMatchingSession(data);
 +                if (data.match_results && data.match_results.length) {
-+                    this.messages.push({ role: 'assistant', loanResults: data.match_results });
++                    this.pushCardMessage({
++                        local: { loanResults: data.match_results, loanResultsSessionId: s.id },
++                        metadata: { kind: 'loanResults', matchResults: data.match_results, sessionId: s.id }
++                    });
 +                } else {
 +                    // No product covers this exact scenario+purpose+amount — explain and
 +                    // re-offer the editable draft so the user can adjust (e.g. financing purpose).
 +                    this.messages.push({ role: 'assistant', content: this.t('cbNoMatch') });
-+                    this.messages.push({ role: 'assistant', loanDraft: true });
++                    const snapshot = this._loanDraftSnapshot();
++                    this.pushCardMessage({
++                        local: { loanDraft: { profile: snapshot, sessionId: s.id, restored: false } },
++                        metadata: { kind: 'loanDraft', profile: snapshot, sessionId: s.id }
++                    });
 +                }
 +                this.$nextTick(() => this.scrollToBottom());
 +            } catch (e) {
@@ -2457,8 +2596,10 @@ index 17f8244..70085f2 100644
 +
 +        pushTimelineCard(id) {
 +            if (this.messages.some(m => m.timelineApplicationId === id)) return;
-+            this.messages.push({ role: 'assistant', content: '', timelineApplicationId: id });
-+            this.$nextTick(() => this.scrollToBottom?.());
++            this.pushCardMessage({
++                local: { timelineApplicationId: id },
++                metadata: { kind: 'timeline', applicationId: id }
++            });
 +        },
 +
 +        // Lazily hydrate cards (e.g. restored chat) + open the live stream once.
@@ -2658,11 +2799,7 @@ index 17f8244..70085f2 100644
 +            this.resetActiveOfficialForm();
 +            this.runDocValidation();
 +            this.updateLatestDocOverview();
-         },
--        
--        // Translation helper
--        t(key) {
--            return i18n[this.lang][key] || key;
++        },
 +
 +        async openDocumentPreparation(productId = '', matchingSessionId = null) {
 +            if (this.docPreparationAlreadyOpened(productId)) return;
@@ -2685,22 +2822,16 @@ index 17f8244..70085f2 100644
 +                ? this.docRecommendedScenarioForProduct(productId)
 +                : '';
 +            this.documentPreparation.validation = [];
-+            this.messages.push({
-+                role: 'assistant',
-+                content: '',
-+                docOverview: {
-+                    productId: this.documentPreparation.pendingProductId,
-+                    scenarioCode: '',
-+                    recommendedScenario: this.documentPreparation.recommendedScenario
-+                }
++            const docOverview = {
++                productId: this.documentPreparation.pendingProductId,
++                scenarioCode: '',
++                recommendedScenario: this.documentPreparation.recommendedScenario
++            };
++            await this.pushCardMessage({
++                local: { docOverview },
++                metadata: { kind: 'docOverview', ...docOverview }
 +            });
-+            this.$nextTick(() => this.scrollToBottom());
-         },
--        
--        // Set language
--        setLanguage(newLang) {
--            this.lang = newLang;
--            localStorage.setItem('justchat_lang', newLang);
++        },
 +
 +        async resumeDocumentPreparation(overview) {
 +            this.activeWorkspace = 'chat';
@@ -2713,16 +2844,7 @@ index 17f8244..70085f2 100644
 +            if (overview?.scenarioCode) {
 +                await this.selectDocScenario(overview.scenarioCode, { silent: true });
 +            }
-         },
--        
--        // Get model type display name
--        getModelTypeName(type) {
--            const names = {
--                chat: this.t('chat'),
--                embedding: this.t('embedding'),
--                rerank: this.t('reranker')
--            };
--            return names[type] || type;
++        },
 +
 +        updateLatestDocOverview() {
 +            const message = [...this.messages].reverse().find(item => item.docOverview);
@@ -2730,20 +2852,16 @@ index 17f8244..70085f2 100644
 +            message.docOverview.productId = this.docSelectedProductValue();
 +            message.docOverview.scenarioCode = this.documentPreparation.scenario;
 +            message.docOverview.recommendedScenario = this.documentPreparation.recommendedScenario;
-         },
--        
--        // Initialize
--        async init() {
--            this.initResponsiveLayout();
--            await this.loadSettings();
--            await this.loadModels();
--            await this.loadChats();
--            await this.loadDocuments();
--            await this.loadInstalledPlugins();
--            this.applyTheme();
--            // Note: favicon is updated by loadLogo() which is called from loadSettings()
--            // Initialize plugin system
--            this.initPluginSystem();
++            // Re-persist so a restored card shows the chosen scenario/product, not the original.
++            if (message.id && this.currentChatId) {
++                const metadata = { kind: 'docOverview', ...message.docOverview };
++                this.cbFetchJson(`/api/chats/${this.currentChatId}/messages/${message.id}`, {
++                    method: 'PATCH',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({ metadata })
++                }).catch(() => { /* best-effort */ });
++            }
++        },
 +
 +        async selectDocScenario(scenarioCode, options = {}) {
 +            if (!scenarioCode || !await this.ensureDocumentCatalog()) return;
@@ -2785,14 +2903,7 @@ index 17f8244..70085f2 100644
 +            } finally {
 +                this.documentPreparation.loading = false;
 +            }
-         },
--        
--        // Responsive layout sync (mobile drawer + desktop collapse)
--        initResponsiveLayout() {
--            this.syncSidebarForViewport(true);
--            const onViewportChange = () => {
--                if (this._resizeRaf) {
--                    cancelAnimationFrame(this._resizeRaf);
++        },
 +
 +        async selectDocProduct(productId) {
 +            const selectedProductId = productId || null;
@@ -2802,9 +2913,7 @@ index 17f8244..70085f2 100644
 +                    && !overlay.scenarios.includes(this.documentPreparation.scenario))) {
 +                    this.showToast(this.t('cbDocIncompatibleCleared'), 'error');
 +                    return;
-                 }
--                this._resizeRaf = requestAnimationFrame(() => {
--                    this.syncSidebarForViewport(false);
++                }
 +            }
 +            this.documentPreparation.pendingProductId = selectedProductId || '';
 +            if (!this.documentPreparation.scenario || !this.documentPreparation.package) {
@@ -2832,7 +2941,11 @@ index 17f8244..70085f2 100644
 +            } finally {
 +                this.documentPreparation.loading = false;
 +            }
-+        },
+         },
+-        
+-        // Translation helper
+-        t(key) {
+-            return i18n[this.lang][key] || key;
 +
 +        async toggleChecklistItem(itemCode, checked) {
 +            const packageId = this.documentPreparation.package?.id;
@@ -2842,7 +2955,7 @@ index 17f8244..70085f2 100644
 +                    method: 'PATCH',
 +                    headers: { 'Content-Type': 'application/json' },
 +                    body: JSON.stringify({ item_code: itemCode, checked })
-                 });
++                });
 +                const data = await res.json();
 +                if (!res.ok) throw new Error(data.detail || this.t('cbDocSaveFailed'));
 +                this.documentPreparation.package = data;
@@ -2850,14 +2963,28 @@ index 17f8244..70085f2 100644
 +            } catch (e) {
 +                this.showToast(`${this.t('cbDocSaveFailed')}: ${e.message}`, 'error');
 +            }
-+        },
+         },
+-        
+-        // Set language
+-        setLanguage(newLang) {
+-            this.lang = newLang;
+-            localStorage.setItem('justchat_lang', newLang);
 +
 +        // ---- Official BOCHK form workbench -------------------------------
 +
 +        docFormName(form) {
 +            if (!form) return '';
 +            return (this.lang === 'zh' ? form.name_zh : form.name_en) || form.name_en || form.name_zh || form.form_id;
-+        },
+         },
+-        
+-        // Get model type display name
+-        getModelTypeName(type) {
+-            const names = {
+-                chat: this.t('chat'),
+-                embedding: this.t('embedding'),
+-                rerank: this.t('reranker')
+-            };
+-            return names[type] || type;
 +
 +        // Bind the same-origin viewer <-> workbench bridge exactly once.
 +        ensureOfficialViewerBridge() {
@@ -2889,7 +3016,20 @@ index 17f8244..70085f2 100644
 +                    this.showToast(`${this.t('cbDocFormError')}: ${msg.message || ''}`, 'error');
 +                }
 +            });
-+        },
+         },
+-        
+-        // Initialize
+-        async init() {
+-            this.initResponsiveLayout();
+-            await this.loadSettings();
+-            await this.loadModels();
+-            await this.loadChats();
+-            await this.loadDocuments();
+-            await this.loadInstalledPlugins();
+-            this.applyTheme();
+-            // Note: favicon is updated by loadLogo() which is called from loadSettings()
+-            // Initialize plugin system
+-            this.initPluginSystem();
 +
 +        postToViewer(type, payload = {}) {
 +            const frame = this.$refs.officialViewer;
@@ -2904,7 +3044,14 @@ index 17f8244..70085f2 100644
 +                message = { source: 'crossbridge-doc-prep', type };
 +            }
 +            frame.contentWindow.postMessage(message, window.location.origin);
-+        },
+         },
+-        
+-        // Responsive layout sync (mobile drawer + desktop collapse)
+-        initResponsiveLayout() {
+-            this.syncSidebarForViewport(true);
+-            const onViewportChange = () => {
+-                if (this._resizeRaf) {
+-                    cancelAnimationFrame(this._resizeRaf);
 +
 +        // Push the queued official-form load to the viewer iframe. Safe to call repeatedly:
 +        // invoked on form select, on the viewer's 'ready' ping, and on the iframe @load event,
@@ -2925,7 +3072,10 @@ index 17f8244..70085f2 100644
 +            if (discardDraft) {
 +                for (const timer of Object.values(this.documentPreparation.draftSaveTimers)) {
 +                    clearTimeout(timer);
-+                }
+                 }
+-                this._resizeRaf = requestAnimationFrame(() => {
+-                    this.syncSidebarForViewport(false);
+-                });
 +                this.documentPreparation.draftSaveTimers = {};
 +                for (const queue of Object.values(this.documentPreparation.draftSaveQueues)) {
 +                    queue.pendingValues = null;
@@ -3169,11 +3319,11 @@ index 17f8244..70085f2 100644
 +                    && get('invoice_currency') && get('payment_currency')
 +                    && normalized(get('invoice_currency')) !== normalized(get('payment_currency')))) {
 +                warnings.push({ code: 'invoice_payment' });
-             }
++            }
 +            if (pkg.scenario_code === 'import_payment' && bindings.charge_bearer
 +                && (!get('charge_bearer') || get('charge_bearer') === 'PENDING_CONFIRMATION')) {
 +                warnings.push({ code: 'charge_bearer' });
-+            }
+             }
 +            const overlayItems = pkg.product_overlay?.checklist_items || [];
 +            if (overlayItems.some(item => !item.checked)) warnings.push({ code: 'published_documents' });
 +            this.documentPreparation.validation = warnings;
@@ -3242,7 +3392,7 @@ index 17f8244..70085f2 100644
          },
          
          // Apply theme
-@@ -658,13 +3293,31 @@ function app() {
+@@ -658,13 +3294,31 @@ function app() {
              }
          },
          
@@ -3275,7 +3425,7 @@ index 17f8244..70085f2 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3333,10 @@ function app() {
+@@ -680,9 +3334,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -3287,7 +3437,16 @@ index 17f8244..70085f2 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -746,7 +3400,16 @@ function app() {
+@@ -693,7 +3348,7 @@ function app() {
+             try {
+                 const res = await fetch(`/api/chats/${chatId}/messages`);
+                 if (res.ok) {
+-                    this.messages = await res.json() || [];
++                    this.messages = this.hydrateCardMetadata(await res.json() || []);
+                     this.$nextTick(() => this.scrollToBottom());
+                 }
+             } catch (e) {
+@@ -746,7 +3401,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -3305,7 +3464,7 @@ index 17f8244..70085f2 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3425,9 @@ function app() {
+@@ -762,7 +3426,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -3316,7 +3475,7 @@ index 17f8244..70085f2 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3454,8 @@ function app() {
+@@ -789,7 +3455,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -3326,7 +3485,7 @@ index 17f8244..70085f2 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3483,6 @@ function app() {
+@@ -817,7 +3484,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -3334,7 +3493,7 @@ index 17f8244..70085f2 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3493,7 @@ function app() {
+@@ -828,6 +3494,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -3342,7 +3501,7 @@ index 17f8244..70085f2 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3550,7 @@ function app() {
+@@ -884,7 +3551,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3351,7 +3510,7 @@ index 17f8244..70085f2 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3559,7 @@ function app() {
+@@ -893,7 +3560,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3360,7 +3519,7 @@ index 17f8244..70085f2 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3567,7 @@ function app() {
+@@ -901,7 +3568,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3369,7 +3528,7 @@ index 17f8244..70085f2 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3596,15 @@ function app() {
+@@ -930,12 +3597,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3389,7 +3548,7 @@ index 17f8244..70085f2 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3616,7 @@ function app() {
+@@ -947,7 +3617,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3398,7 +3557,7 @@ index 17f8244..70085f2 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +4234,77 @@ function app() {
+@@ -1565,12 +4235,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3478,7 +3637,7 @@ index 17f8244..70085f2 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +4313,21 @@ function app() {
+@@ -1579,6 +4314,132 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -3495,6 +3654,117 @@ index 17f8244..70085f2 100644
 +                throw new Error(`HTTP ${res.status} · ${endpoint}${reason}`);
 +            }
 +            return data || {};
++        },
++
++        // ---- Cross-function CTA cards: persist + rehydrate across chat-session switches ----
++        // Card-only assistant messages (loan draft, candidate plans, CTA, doc overview, timeline)
++        // used to live ONLY in memory and vanished on chat switch. We now push them locally AND
++        // persist {role, content:'', metadata} so loadMessages() can rehydrate them. The backend
++        // excludes these empty-content card rows from the model history.
++        async pushCardMessage(card) {
++            const msg = { role: 'assistant', content: '', ...card.local };
++            this.messages.push(msg);
++            this.$nextTick(() => this.scrollToBottom?.());
++            if (!this.currentChatId) return msg;  // no chat yet → in-memory only
++            try {
++                const saved = await this.cbFetchJson(`/api/chats/${this.currentChatId}/messages`, {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({ role: 'assistant', content: '', metadata: card.metadata })
++                });
++                msg.id = saved.id;  // remember server id for later update/delete
++            } catch (e) {
++                console.warn('Failed to persist card message:', e);  // card still renders this session
++            }
++            return msg;
++        },
++
++        // Snapshot the 6 draft fields so a restored draft card can show its values before the
++        // live F1 session is resumed.
++        _loanDraftSnapshot() {
++            const p = this.loanMatching.session?.draft_profile || {};
++            return {
++                business_scenario:    p.business_scenario ?? '',
++                annual_turnover_hkd:  p.annual_turnover_hkd ?? '',
++                financing_purpose:    p.financing_purpose ?? '',
++                requested_amount_hkd: p.requested_amount_hkd ?? '',
++                order_scale_hkd:      p.order_scale_hkd ?? '',
++                business_age_years:   p.business_age_years ?? ''
++            };
++        },
++
++        // Lazily restore a live F1 session before an action that needs one (re-match / save).
++        // Primary path = GET the original session by id (no data loss); fallback = create a fresh
++        // session seeded with the snapshot profile if the original was discarded. Never flips
++        // loanMatching.active, so it cannot leak loan-matching mode into the current chat.
++        async ensureLoanSession(prefillProfile = {}, sessionId = null) {
++            if (this.loanMatching.session) return true;
++            if (sessionId) {
++                try {
++                    const data = await this.cbFetchJson(`/api/crossbridge/v1/loan-matching/sessions/${sessionId}`);
++                    if (data && data.status && data.status !== 'discarded') {
++                        this.syncLoanMatchingSession(data);
++                        return true;
++                    }
++                } catch (e) { /* session gone → fall through to recreate */ }
++            }
++            try {
++                const cleanPrefill = {};
++                for (const [k, v] of Object.entries(prefillProfile || {})) {
++                    if (v !== '' && v !== null && v !== undefined) cleanPrefill[k] = v;
++                }
++                const data = await this.cbFetchJson('/api/crossbridge/v1/loan-matching/sessions', {
++                    method: 'POST',
++                    headers: { 'Content-Type': 'application/json' },
++                    body: JSON.stringify({ sme_id: 'demo_sme_001', prefill: cleanPrefill, ui_language: this.lang })
++                });
++                this.syncLoanMatchingSession(data);
++                return true;
++            } catch (e) {
++                this.showToast(`${this.t('cbCreateDraftFailed')}: ${e.message}`, 'error');
++                return false;
++            }
++        },
++
++        // Restored-draft helpers: the editable draft card stores its snapshot + origin session id.
++        _restoredDraftMessage() {
++            return [...this.messages].reverse().find(m => m.loanDraft && typeof m.loanDraft === 'object');
++        },
++        _restoredDraftProfile() {
++            return this._restoredDraftMessage()?.loanDraft?.profile || {};
++        },
++        _restoredDraftSessionId() {
++            return this._restoredDraftMessage()?.loanDraft?.sessionId || null;
++        },
++        _restoredResultsSessionId() {
++            return [...this.messages].reverse().find(m => m.loanResults)?.loanResultsSessionId || null;
++        },
++
++        // Map persisted message.metadata back onto the live props the template reads.
++        hydrateCardMetadata(rows) {
++            return (rows || []).map(row => {
++                if (!row || !row.metadata) return row;
++                let meta;
++                try { meta = JSON.parse(row.metadata); } catch (_) { return row; }
++                switch (meta.kind) {
++                    case 'loanMatchingCta':
++                        row.loanMatchingCta = { prefill: meta.prefill || {} }; break;
++                    case 'loanResults':
++                        row.loanResults = meta.matchResults || [];
++                        row.loanResultsSessionId = meta.sessionId || null; break;
++                    case 'loanDraft':
++                        row.loanDraft = { profile: meta.profile || {}, sessionId: meta.sessionId || null, restored: true }; break;
++                    case 'docOverview':
++                        row.docOverview = {
++                            productId: meta.productId || '',
++                            scenarioCode: meta.scenarioCode || '',
++                            recommendedScenario: meta.recommendedScenario || ''
++                        }; break;
++                    case 'timeline':
++                        row.timelineApplicationId = meta.applicationId; break;
++                }
++                return row;
++            });
 +        },
 +
          // Show toast
@@ -7548,7 +7818,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..4206f60 100644
+index 370c42e..6f07982 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7590,11 +7860,10 @@ index 370c42e..4206f60 100644
      <!-- Sidebar Overlay for Mobile -->
      <div class="sidebar-overlay" x-show="isMobileView && !sidebarCollapsed" @click="closeSidebar()" x-transition:enter="fade-enter" x-transition:leave="fade-leave"></div>
      
-@@ -165,7 +169,80 @@
+@@ -165,6 +169,65 @@
                  <i class="ri-arrow-right-s-line" x-show="sidebarCollapsed"></i>
              </button>
          </div>
--        
 +
 +        <div class="crossbridge-business-nav" x-show="!sidebarCollapsed">
 +            <button class="crossbridge-business-link"
@@ -7620,12 +7889,6 @@ index 370c42e..4206f60 100644
 +                    @click="openDashboard()">
 +                <i class="ri-dashboard-3-line"></i>
 +                <span x-text="t('cbDashboardNav')"></span>
-+            </button>
-+            <button class="crossbridge-business-link"
-+                    :class="{ 'active': policyQa.open }"
-+                    @click="openPolicyQa()">
-+                <i class="ri-shield-check-line"></i>
-+                <span x-text="t('cbPolicyNav')"></span>
 +            </button>
 +        </div>
 +
@@ -7660,19 +7923,10 @@ index 370c42e..4206f60 100644
 +                :aria-label="t('cbDashboardNav')">
 +            <i class="ri-dashboard-3-line"></i>
 +        </button>
-+
-+        <button class="btn-icon crossbridge-business-collapsed crossbridge-policy-collapsed"
-+                x-show="sidebarCollapsed"
-+                @click="openPolicyQa()"
-+                :title="t('cbPolicyNav')"
-+                :aria-label="t('cbPolicyNav')">
-+            <i class="ri-shield-check-line"></i>
-+        </button>
-+
+         
          <button class="btn-new-chat" @click="createNewChat()" x-show="!sidebarCollapsed">
              <i class="ri-add-line"></i>
-             <span x-text="t('newChat')"></span>
-@@ -209,10 +286,24 @@
+@@ -209,10 +272,24 @@
          <button class="btn-icon sidebar-settings-collapsed" @click="openSettingsPanel()" x-show="sidebarCollapsed" :title="t('settings')">
              <i class="ri-settings-3-line"></i>
          </button>
@@ -7698,7 +7952,7 @@ index 370c42e..4206f60 100644
          <!-- Mobile Header -->
          <div class="mobile-header" x-show="isMobileView">
              <button class="btn-icon" @click="openSidebar()">
-@@ -221,7 +312,7 @@
+@@ -221,7 +298,7 @@
              <span class="mobile-title">ChatRaw</span>
          </div>
  
@@ -7707,7 +7961,7 @@ index 370c42e..4206f60 100644
              <!-- Welcome - Pre-rendered for LCP optimization -->
              <div class="welcome" x-show="messages.length === 0">
                  <div class="welcome-logo">
-@@ -229,25 +320,12 @@
+@@ -229,25 +306,12 @@
                  </div>
                  <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
                  <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
@@ -7736,7 +7990,7 @@ index 370c42e..4206f60 100644
                  <template x-for="(msg, index) in messages" :key="index">
                      <div class="message" :class="msg.role">
                          <div class="message-avatar" :class="msg.role">
-@@ -260,7 +338,7 @@
+@@ -260,7 +324,7 @@
                          </div>
                          <div class="message-content">
                              <!-- Show typing indicator for empty assistant message while generating -->
@@ -7745,7 +7999,7 @@ index 370c42e..4206f60 100644
                                  <span></span><span></span><span></span>
                              </div>
                              <!-- Thinking/Reasoning Block -->
-@@ -277,7 +355,176 @@
+@@ -277,7 +341,188 @@
                              
                              <!-- Show actual content -->
                              <div x-show="msg.content" x-html="renderMarkdown(msg.content)"></div>
@@ -7811,14 +8065,26 @@ index 370c42e..4206f60 100644
 +                                        </div>
 +                                        <span class="loan-status-tag" x-text="t('cbDraft')"></span>
 +                                    </div>
-+                                    <div class="loan-progress">
++                                    <!-- Restored draft: show the saved snapshot until the live F1 session is resumed on click -->
++                                    <template x-if="msg.loanDraft.restored && !loanMatching.session">
++                                        <div class="loan-draft-restored">
++                                            <template x-for="field in ['business_scenario','annual_turnover_hkd','financing_purpose','requested_amount_hkd','order_scale_hkd','business_age_years']" :key="field">
++                                                <div class="loan-draft-restored-row"
++                                                     x-show="msg.loanDraft.profile[field] !== '' && msg.loanDraft.profile[field] !== null && msg.loanDraft.profile[field] !== undefined">
++                                                    <span class="loan-draft-restored-label" x-text="loanFieldLabel(field)"></span>
++                                                    <span class="loan-draft-restored-value" x-text="loanProfileValueLabel(field, msg.loanDraft.profile[field])"></span>
++                                                </div>
++                                            </template>
++                                        </div>
++                                    </template>
++                                    <div class="loan-progress" x-show="!(msg.loanDraft.restored && !loanMatching.session)">
 +                                        <div class="loan-progress-label">
 +                                            <span x-text="t('cbProfileProgress')"></span>
 +                                            <strong x-text="loanCompletedCount() + ' / 6'"></strong>
 +                                        </div>
 +                                        <div class="loan-progress-track"><span :style="'width:' + (loanCompletedCount() / 6 * 100) + '%'"></span></div>
 +                                    </div>
-+                                    <div class="loan-form-grid">
++                                    <div class="loan-form-grid" x-show="!(msg.loanDraft.restored && !loanMatching.session)">
 +                                        <label>
 +                                            <span x-text="t('cbScenario') + ' *'"></span>
 +                                            <select x-model="loanMatching.form.business_scenario">
@@ -7859,13 +8125,13 @@ index 370c42e..4206f60 100644
 +                                    </div>
 +                                    <div class="loan-form-actions">
 +                                        <button class="loan-btn loan-btn-primary"
-+                                                @click="runLoanMatchInline()"
-+                                                :disabled="!loanRequiredFieldsComplete() || loanMatching.matchLoading">
++                                                @click="runLoanMatchInline(msg)"
++                                                :disabled="!loanDraftMatchReady(msg) || loanMatching.matchLoading">
 +                                            <span x-text="loanMatching.matchLoading ? t('cbMatching') : t('cbMatchCandidates')"></span>
 +                                        </button>
 +                                        <button class="loan-btn loan-btn-danger" @click="cancelLoanMatchingInline()" x-text="t('cbCancelMatch')"></button>
 +                                    </div>
-+                                    <small class="loan-draft-note" x-show="!loanRequiredFieldsComplete()" x-text="t('cbMissingBlock')"></small>
++                                    <small class="loan-draft-note" x-show="!(msg.loanDraft.restored && !loanMatching.session) && !loanRequiredFieldsComplete()" x-text="t('cbMissingBlock')"></small>
 +                                </div>
 +                            </template>
 +
@@ -7923,7 +8189,7 @@ index 370c42e..4206f60 100644
                              <!-- Message Actions (assistant only) -->
                              <div class="message-actions" x-show="msg.role === 'assistant' && msg.content && !isGenerating">
                                  <button class="btn-copy"
-@@ -326,7 +573,56 @@
+@@ -326,7 +571,56 @@
  
              <!-- Input Area -->
              <div class="input-area">
@@ -7980,7 +8246,7 @@ index 370c42e..4206f60 100644
                      <div class="uploaded-image-preview" x-show="uploadedImage">
                          <img :src="uploadedImage ? 'data:image/jpeg;base64,' + uploadedImageBase64 : ''" alt="Preview" width="60" height="60">
                          <button class="btn-delete-overlay" @click="removeUploadedImage()" aria-label="Remove image"><i class="ri-close-circle-fill"></i></button>
-@@ -377,26 +673,10 @@
+@@ -377,26 +671,10 @@
                          ></textarea>
                          
                          <div class="input-toolbar">
@@ -8011,7 +8277,7 @@ index 370c42e..4206f60 100644
                              <!-- Plugin Toolbar Buttons Extension Area -->
                              <div class="plugin-toolbar-area" x-show="pluginToolbarButtons.length > 0" x-cloak>
                                  <div class="plugin-toolbar-divider"></div>
-@@ -448,8 +728,756 @@
+@@ -448,8 +726,756 @@
                  </div>
              </div>
          </div>
@@ -8768,71 +9034,7 @@ index 370c42e..4206f60 100644
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -842,6 +1870,63 @@
-         </div>
-     </div>
-     
-+    <!-- Function 5: Policy & Compliance Q&A Modal -->
-+    <div class="modal-overlay" x-show="policyQa.open" x-cloak @click.self="closePolicyQa()" @keydown.escape.window="policyQa.open && closePolicyQa()" x-transition role="dialog" aria-modal="true" aria-labelledby="policy-qa-title">
-+        <div class="policy-qa-modal">
-+            <div class="policy-qa-header">
-+                <div class="policy-qa-heading">
-+                    <h3 id="policy-qa-title" x-text="t('cbPolicyTitle')"></h3>
-+                    <p class="policy-qa-subtitle" x-text="t('cbPolicySubtitle')"></p>
-+                </div>
-+                <button class="btn-icon" @click="closePolicyQa()" :aria-label="t('cancel')"><i class="ri-close-line"></i></button>
-+            </div>
-+
-+            <div class="policy-qa-input-row">
-+                <textarea class="policy-qa-input" x-ref="policyQaInput" rows="2"
-+                          x-model="policyQa.query"
-+                          :placeholder="t('cbPolicyPlaceholder')"
-+                          @keydown.enter.prevent="submitPolicyQa()"></textarea>
-+                <button class="policy-qa-ask-btn" @click="submitPolicyQa()" :disabled="policyQa.loading || !policyQa.query.trim()">
-+                    <span x-show="!policyQa.loading" x-text="t('cbPolicyAsk')"></span>
-+                    <span x-show="policyQa.loading" x-text="t('cbPolicyThinking')"></span>
-+                </button>
-+            </div>
-+
-+            <div class="policy-qa-body">
-+                <div class="policy-qa-empty" x-show="!policyQa.result && !policyQa.loading && !policyQa.error" x-text="t('cbPolicyEmpty')"></div>
-+                <div class="policy-qa-error" x-show="policyQa.error" x-text="policyQa.error"></div>
-+                <div class="policy-qa-empty" x-show="policyQa.loading" x-text="t('cbPolicyThinking')"></div>
-+
-+                <template x-if="policyQa.result && !policyQa.loading">
-+                    <div class="policy-qa-result">
-+                        <div class="policy-qa-meta">
-+                            <span class="policy-qa-engine"
-+                                  :class="policyQa.result.engine && policyQa.result.engine.fallback_active ? 'is-fallback' : 'is-full'"
-+                                  x-text="(policyQa.result.engine && policyQa.result.engine.fallback_active) ? t('cbPolicyEngineFallback') : t('cbPolicyEngineFull')"></span>
-+                            <span class="policy-qa-elapsed" x-show="policyQa.result.elapsed_seconds" x-text="(policyQa.result.elapsed_seconds || 0) + 's'"></span>
-+                        </div>
-+
-+                        <h4 class="policy-qa-section-title" x-text="t('cbPolicyAnswer')"></h4>
-+                        <div class="policy-qa-answer" x-html="renderMarkdown(policyQa.result.answer || '')"></div>
-+
-+                        <h4 class="policy-qa-section-title" x-text="t('cbPolicySources')"></h4>
-+                        <div class="policy-qa-no-sources" x-show="!(policyQa.result.citations && policyQa.result.citations.length)" x-text="t('cbPolicyNoSources')"></div>
-+                        <ol class="policy-qa-sources" x-show="policyQa.result.citations && policyQa.result.citations.length">
-+                            <template x-for="(c, i) in policyQa.result.citations" :key="i">
-+                                <li class="policy-qa-source">
-+                                    <a :href="c.url || c.source_url || '#'" target="_blank" rel="noopener" x-text="c.title || c.source || ('Source ' + (i + 1))"></a>
-+                                    <span class="policy-qa-tier" x-show="c.trust_tier" x-text="c.trust_tier"></span>
-+                                </li>
-+                            </template>
-+                        </ol>
-+
-+                        <p class="policy-qa-disclaimer" x-text="t('cbPolicyDisclaimer')"></p>
-+                    </div>
-+                </template>
-+            </div>
-+        </div>
-+    </div>
-+
-     <!-- Plugin Settings Modal -->
-     <div class="modal-overlay" x-show="showPluginSettings" x-cloak @click.self="showPluginSettings = false" x-transition>
-         <div class="plugin-settings-modal" :class="{ 'custom-settings-modal': currentPluginSettings?.customSettings }">
-@@ -949,6 +2034,6 @@
+@@ -949,6 +1975,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
@@ -9337,7 +9539,7 @@ index 0000000..e758f62
 +// Announce readiness so the parent knows it can send load-draft.
 +post("ready", { booted: true });
 diff --git a/backend/static/styles.css b/backend/static/styles.css
-index 4be8751..5684459 100644
+index 4be8751..552b7be 100644
 --- a/backend/static/styles.css
 +++ b/backend/static/styles.css
 @@ -189,8 +189,8 @@ select:focus:not(:focus-visible),
@@ -9391,7 +9593,7 @@ index 4be8751..5684459 100644
  .input-container-inner {
      max-width: 800px;
      margin: 0 auto;
-@@ -3237,3 +3265,1774 @@ input[type=range]::-webkit-slider-thumb:hover {
+@@ -3237,3 +3265,1719 @@ input[type=range]::-webkit-slider-thumb:hover {
          border-color: var(--border-color);
      }
  }
@@ -9949,6 +10151,25 @@ index 4be8751..5684459 100644
 +    color: var(--text-muted);
 +    font-size: var(--text-xs);
 +}
++/* Restored draft snapshot (shown until the live F1 session is resumed on click) */
++.loan-draft-restored {
++    margin-top: 10px;
++    display: flex;
++    flex-direction: column;
++    gap: 6px;
++}
++.loan-draft-restored-row {
++    display: flex;
++    justify-content: space-between;
++    gap: 12px;
++    padding: 6px 10px;
++    border: 1px solid var(--border-color);
++    border-radius: var(--radius-sm);
++    background: var(--bg-primary);
++    font-size: var(--text-sm);
++}
++.loan-draft-restored-label { color: var(--text-muted); }
++.loan-draft-restored-value { font-weight: 600; text-align: right; }
 +
 +/* Two-per-row product grid inside the chat column */
 +.loan-product-grid.loan-inline-grid {
@@ -11092,80 +11313,6 @@ index 4be8751..5684459 100644
 +    .timeline-node-marker, .timeline-progress-fill { transition: none !important; }
 +    .timeline-node.is-current .timeline-node-marker { animation: none !important; }
 +}
-+
-+/* ---------- Function 5: Policy & Compliance Q&A modal ---------- */
-+.policy-qa-modal {
-+    width: min(760px, 94vw);
-+    max-height: 88vh;
-+    display: flex;
-+    flex-direction: column;
-+    background: var(--bg-primary, #fff);
-+    border: 1px solid var(--border-color, #e5e7eb);
-+    border-radius: 14px;
-+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-+    overflow: hidden;
-+}
-+.policy-qa-header {
-+    display: flex;
-+    align-items: flex-start;
-+    justify-content: space-between;
-+    gap: 12px;
-+    padding: 20px 22px 12px;
-+    border-bottom: 1px solid var(--border-color, #e5e7eb);
-+}
-+.policy-qa-heading h3 { margin: 0; font-size: 17px; font-weight: 650; }
-+.policy-qa-subtitle { margin: 4px 0 0; font-size: 12.5px; color: var(--text-secondary, #6b7280); }
-+.policy-qa-input-row { display: flex; gap: 10px; padding: 16px 22px 8px; }
-+.policy-qa-input {
-+    flex: 1;
-+    resize: vertical;
-+    min-height: 44px;
-+    padding: 10px 12px;
-+    font: inherit;
-+    color: var(--text-primary, #111827);
-+    background: var(--bg-secondary, #f9fafb);
-+    border: 1px solid var(--border-color, #e5e7eb);
-+    border-radius: 10px;
-+}
-+.policy-qa-ask-btn {
-+    flex: 0 0 auto;
-+    align-self: stretch;
-+    padding: 0 18px;
-+    font-weight: 600;
-+    color: #fff;
-+    background: var(--accent-color, #111827);
-+    border: none;
-+    border-radius: 10px;
-+    cursor: pointer;
-+    white-space: nowrap;
-+}
-+.policy-qa-ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-+.policy-qa-body { padding: 8px 22px 22px; overflow-y: auto; }
-+.policy-qa-empty, .policy-qa-no-sources { color: var(--text-secondary, #6b7280); font-size: 13.5px; padding: 14px 0; }
-+.policy-qa-error { color: #b91c1c; font-size: 13.5px; padding: 12px 0; }
-+.policy-qa-meta { display: flex; align-items: center; gap: 10px; margin: 6px 0 14px; }
-+.policy-qa-engine { font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
-+.policy-qa-engine.is-full { color: #065f46; background: #d1fae5; }
-+.policy-qa-engine.is-fallback { color: #92400e; background: #fef3c7; }
-+.policy-qa-elapsed { font-size: 11.5px; color: var(--text-secondary, #6b7280); }
-+.policy-qa-section-title { margin: 18px 0 8px; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary, #6b7280); }
-+.policy-qa-answer { font-size: 14.5px; line-height: 1.7; color: var(--text-primary, #111827); }
-+.policy-qa-answer :is(h1, h2, h3, h4) { font-size: 15px; margin: 14px 0 6px; }
-+.policy-qa-answer p { margin: 8px 0; }
-+.policy-qa-answer ul, .policy-qa-answer ol { margin: 8px 0; padding-left: 20px; }
-+.policy-qa-sources { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
-+.policy-qa-source { font-size: 13.5px; }
-+.policy-qa-source a { color: var(--accent-color, #2563eb); text-decoration: none; word-break: break-word; }
-+.policy-qa-source a:hover { text-decoration: underline; }
-+.policy-qa-tier {
-+    margin-left: 8px;
-+    font-size: 11px;
-+    color: var(--text-secondary, #6b7280);
-+    border: 1px solid var(--border-color, #e5e7eb);
-+    border-radius: 999px;
-+    padding: 1px 8px;
-+}
-+.policy-qa-disclaimer { margin: 20px 0 0; font-size: 12px; color: var(--text-secondary, #6b7280); border-top: 1px solid var(--border-color, #e5e7eb); padding-top: 12px; }
 diff --git a/backend/static/styles.min.css b/backend/static/styles.min.css
 index 063268d..ff7aba9 100644
 --- a/backend/static/styles.min.css
