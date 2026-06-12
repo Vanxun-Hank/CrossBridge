@@ -86,7 +86,8 @@ curl -X POST http://127.0.0.1:51111/api/models \
 # 改 brand
 curl -X POST http://127.0.0.1:51111/api/settings \
   -H 'Content-Type: application/json' \
-  -d '{"chat_settings":{"temperature":0.3,"stream":false},"ui_settings":{"logo_text":"CrossBridge AI","subtitle":"跨境普惠金融决策助手 · 每条答案附权威来源","theme_mode":"light"}}'
+  -d '{"chat_settings":{"temperature":0.3,"stream":false},"ui_settings":{"logo_text":"CrossBridge AI","theme_mode":"light"}}'
+# 注：欢迎页副标题已改为前端 i18n（i18n key crossbridgeSubtitle，随中/英语言切换），不再走 ui_settings.subtitle
 ```
 
 ### 反向代理（生产）

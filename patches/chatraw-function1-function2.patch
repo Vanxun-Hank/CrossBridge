@@ -481,10 +481,18 @@ index 79e7920..7c7221e 100644
  async def get_documents():
      return db.get_documents()
 diff --git a/backend/static/app.js b/backend/static/app.js
-index 17f8244..979eed0 100644
+index 17f8244..2d8fe05 100644
 --- a/backend/static/app.js
 +++ b/backend/static/app.js
-@@ -143,6 +143,7 @@ const i18n = {
+@@ -60,6 +60,7 @@ const i18n = {
+         expand: 'Expand',
+         collapse: 'Collapse',
+         defaultSubtitle: 'Minimalist AI Assistant, Ready to Use',
++        crossbridgeSubtitle: 'Cross-Border SME Finance Assistant · Authoritative sources for every answer',
+         fastResponse: 'Fast Response',
+         multiModel: 'Multi-Model',
+         knowledgeBase: 'Knowledge Base',
+@@ -143,6 +144,7 @@ const i18n = {
          settingsSaved: 'Settings saved',
          sendFailed: 'Send failed',
          stopGeneration: 'Stop',
@@ -492,7 +500,7 @@ index 17f8244..979eed0 100644
          createChatFailed: 'Failed to create chat',
          documentDeleted: 'Document deleted',
          logoName: 'Logo & Name',
-@@ -182,7 +183,286 @@ const i18n = {
+@@ -182,7 +184,286 @@ const i18n = {
          enterApiKey: 'Enter API Key',
          apiKeySet: 'API Key is already set. Clear and enter new key to change.',
          onlyZipSupported: 'Only .zip files are supported',
@@ -780,7 +788,15 @@ index 17f8244..979eed0 100644
      },
      zh: {
          newChat: '新对话',
-@@ -277,6 +557,7 @@ const i18n = {
+@@ -194,6 +475,7 @@ const i18n = {
+         expand: '展开',
+         collapse: '收起',
+         defaultSubtitle: '极简AI助手，开箱即用',
++        crossbridgeSubtitle: '跨境普惠金融决策助手 · 每条答案附权威来源',
+         fastResponse: '极速响应',
+         multiModel: '多模型支持',
+         knowledgeBase: '知识库',
+@@ -277,6 +559,7 @@ const i18n = {
          settingsSaved: '设置已保存',
          sendFailed: '发送失败',
          stopGeneration: '停止',
@@ -788,7 +804,7 @@ index 17f8244..979eed0 100644
          createChatFailed: '创建对话失败',
          documentDeleted: '文档已删除',
          logoName: 'Logo & 名称',
-@@ -316,7 +597,285 @@ const i18n = {
+@@ -316,7 +599,285 @@ const i18n = {
          enterApiKey: '输入 API Key',
          apiKeySet: 'API Key 已设置。清空后输入新密钥可更改。',
          onlyZipSupported: '仅支持 .zip 文件',
@@ -1075,7 +1091,7 @@ index 17f8244..979eed0 100644
      }
  };
  
-@@ -346,24 +905,43 @@ marked.setOptions({
+@@ -346,24 +907,43 @@ marked.setOptions({
  });
  
  const MOBILE_VIEW_MEDIA_QUERY = '(max-width: 768px), (max-height: 500px) and (max-width: 900px) and (pointer: coarse)';
@@ -1120,7 +1136,7 @@ index 17f8244..979eed0 100644
          showSettings: false,
          settingsTab: 'models',
          showSystemPrompt: false,
-@@ -373,6 +951,10 @@ function app() {
+@@ -373,6 +953,10 @@ function app() {
          useThinking: false,
          isGenerating: false,
          abortController: null,
@@ -1131,7 +1147,7 @@ index 17f8244..979eed0 100644
          uploadedImage: null,
          uploadedImageBase64: '',
          uploadProgress: { show: false, filename: '', progress: 0, status: '', current: 0, total: 0 },
-@@ -387,7 +969,97 @@ function app() {
+@@ -387,7 +971,97 @@ function app() {
          // Document attachment state
          attachedDocument: null,  // { filename, content }
          isUploadingDocument: false,
@@ -1230,7 +1246,7 @@ index 17f8244..979eed0 100644
          // Plugin state
          showPlugins: false,
          pluginTab: 'market',
-@@ -466,110 +1138,2074 @@ function app() {
+@@ -466,110 +1140,2074 @@ function app() {
                  assistant_avatar: ''
              }
          },
@@ -3392,7 +3408,7 @@ index 17f8244..979eed0 100644
          },
          
          // Apply theme
-@@ -658,13 +3294,31 @@ function app() {
+@@ -658,13 +3296,31 @@ function app() {
              }
          },
          
@@ -3425,7 +3441,7 @@ index 17f8244..979eed0 100644
              try {
                  const res = await fetch('/api/chats', { method: 'POST' });
                  if (res.ok) {
-@@ -680,9 +3334,10 @@ function app() {
+@@ -680,9 +3336,10 @@ function app() {
                  this.showToast(this.t('createChatFailed'), 'error');
              }
          },
@@ -3437,7 +3453,7 @@ index 17f8244..979eed0 100644
              this.currentChatId = chatId;
              await this.loadMessages(chatId);
              this.closeSidebarOnMobile();
-@@ -693,7 +3348,7 @@ function app() {
+@@ -693,7 +3350,7 @@ function app() {
              try {
                  const res = await fetch(`/api/chats/${chatId}/messages`);
                  if (res.ok) {
@@ -3446,7 +3462,7 @@ index 17f8244..979eed0 100644
                      this.$nextTick(() => this.scrollToBottom());
                  }
              } catch (e) {
-@@ -746,7 +3401,16 @@ function app() {
+@@ -746,7 +3403,16 @@ function app() {
          async sendMessage() {
              let message = this.inputMessage.trim();
              if (!message || this.isGenerating) return;
@@ -3464,7 +3480,7 @@ index 17f8244..979eed0 100644
              this.inputMessage = '';
              this.$nextTick(() => this.autoResize(this.$refs.inputBox));
              this.isGenerating = true;
-@@ -762,7 +3426,9 @@ function app() {
+@@ -762,7 +3428,9 @@ function app() {
                  role: 'user',
                  content: message
              });
@@ -3475,7 +3491,7 @@ index 17f8244..979eed0 100644
              
              try {
                  // Combine web content and document content
-@@ -789,7 +3455,8 @@ function app() {
+@@ -789,7 +3457,8 @@ function app() {
                      use_thinking: this.useThinking,
                      image_base64: this.uploadedImageBase64,
                      web_content: combinedContent,
@@ -3485,7 +3501,7 @@ index 17f8244..979eed0 100644
                  };
                  
                  // Call before_send hooks to allow plugins to modify the request
-@@ -817,7 +3484,6 @@ function app() {
+@@ -817,7 +3486,6 @@ function app() {
                          this.messages[this.messages.length - 1] = { ...lastMsg };
                      }
                  }
@@ -3493,7 +3509,7 @@ index 17f8244..979eed0 100644
                  await this.loadChats();
                  
              } catch (e) {
-@@ -828,6 +3494,7 @@ function app() {
+@@ -828,6 +3496,7 @@ function app() {
                      this.showToast(this.t('sendFailed') + ': ' + e.message, 'error');
                  }
              } finally {
@@ -3501,7 +3517,7 @@ index 17f8244..979eed0 100644
                  this.isGenerating = false;
                  this.abortController = null;
              }
-@@ -884,7 +3551,7 @@ function app() {
+@@ -884,7 +3553,7 @@ function app() {
                                  assistantMsg.thinking += parsed.thinking;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3510,7 +3526,7 @@ index 17f8244..979eed0 100644
                              }
                              
                              if (parsed.content) {
-@@ -893,7 +3560,7 @@ function app() {
+@@ -893,7 +3562,7 @@ function app() {
                                  assistantMsg.content += parsed.content;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3519,7 +3535,7 @@ index 17f8244..979eed0 100644
                              }
                              
                              if (parsed.references) {
-@@ -901,7 +3568,7 @@ function app() {
+@@ -901,7 +3570,7 @@ function app() {
                                  assistantMsg.references = parsed.references;
                                  assistantMsg.showThinking = currentShowThinking;
                                  this.messages[msgIndex] = { ...assistantMsg };
@@ -3528,7 +3544,7 @@ index 17f8244..979eed0 100644
                              }
                              
                              if (parsed.error) {
-@@ -930,12 +3597,15 @@ function app() {
+@@ -930,12 +3599,15 @@ function app() {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify(body)
              });
@@ -3548,7 +3564,7 @@ index 17f8244..979eed0 100644
              
              if (!this.currentChatId && data.chat_id) {
                  this.currentChatId = data.chat_id;
-@@ -947,7 +3617,7 @@ function app() {
+@@ -947,7 +3619,7 @@ function app() {
                  thinking: data.thinking || '',
                  references: data.references || []
              });
@@ -3557,7 +3573,7 @@ index 17f8244..979eed0 100644
          },
          
          // Handle file upload (documents) with progress
-@@ -1565,12 +4235,77 @@ function app() {
+@@ -1565,12 +4237,77 @@ function app() {
              return marked.parse(content);
          },
          
@@ -3637,7 +3653,7 @@ index 17f8244..979eed0 100644
          },
          
          // Auto resize textarea
-@@ -1579,6 +4314,132 @@ function app() {
+@@ -1579,6 +4316,132 @@ function app() {
              el.style.height = Math.min(el.scrollHeight, 200) + 'px';
          },
          
@@ -7818,7 +7834,7 @@ index 59132a0..154e9e9 100644
 +    };
 +}
 diff --git a/backend/static/index.html b/backend/static/index.html
-index 370c42e..6f07982 100644
+index 370c42e..b1f3ef6 100644
 --- a/backend/static/index.html
 +++ b/backend/static/index.html
 @@ -16,10 +16,10 @@
@@ -7829,8 +7845,8 @@ index 370c42e..6f07982 100644
 -    <link rel="preload" href="app.min.js?v=6.1" as="script">
 -    <link rel="preload" href="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js" as="script" crossorigin="anonymous">
 -    <link rel="preload" href="https://unpkg.com/marked@9.1.6/marked.min.js" as="script" crossorigin="anonymous">
-+    <link rel="preload" href="styles.css?v=cbdev36" as="style">
-+    <link rel="preload" href="app.js?v=cbdev36" as="script">
++    <link rel="preload" href="styles.css?v=cbdev37" as="style">
++    <link rel="preload" href="app.js?v=cbdev37" as="script">
 +    <link rel="preload" href="vendor/alpine.min.js?v=3.13.3" as="script">
 +    <link rel="preload" href="vendor/marked.min.js?v=9.1.6" as="script">
      
@@ -7849,7 +7865,7 @@ index 370c42e..6f07982 100644
      <!-- highlight.js is lazy-loaded in app.min.js when needed -->
      <link rel="stylesheet" href="fonts/remixicon/remixicon.css">
 -    <link rel="stylesheet" href="styles.min.css?v=6.0">
-+    <link rel="stylesheet" href="styles.css?v=cbdev36">
++    <link rel="stylesheet" href="styles.css?v=cbdev37">
  </head>
 -<body x-data="app()" x-init="init()" :data-theme="settings.ui_settings.theme_mode">
 +<body x-data="app()"
@@ -7952,7 +7968,7 @@ index 370c42e..6f07982 100644
          <!-- Mobile Header -->
          <div class="mobile-header" x-show="isMobileView">
              <button class="btn-icon" @click="openSidebar()">
-@@ -221,7 +298,7 @@
+@@ -221,33 +298,20 @@
              <span class="mobile-title">ChatRaw</span>
          </div>
  
@@ -7961,10 +7977,10 @@ index 370c42e..6f07982 100644
              <!-- Welcome - Pre-rendered for LCP optimization -->
              <div class="welcome" x-show="messages.length === 0">
                  <div class="welcome-logo">
-@@ -229,25 +306,12 @@
+                     <img x-show="settings.ui_settings.logo_data" :src="settings.ui_settings.logo_data" alt="Logo" class="welcome-logo-img" width="80" height="80">
                  </div>
                  <h1 x-text="settings.ui_settings.logo_text || 'ChatRaw'">ChatRaw</h1>
-                 <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
+-                <p class="welcome-subtitle" x-text="settings.ui_settings.subtitle || t('defaultSubtitle')">Your minimalist AI assistant</p>
 -                
 -                <div class="welcome-features">
 -                    <div class="feature">
@@ -7980,6 +7996,7 @@ index 370c42e..6f07982 100644
 -                        <span x-text="t('multiModel')">Multi-Model</span>
 -                    </div>
 -                </div>
++                <p class="welcome-subtitle" x-text="t('crossbridgeSubtitle')">Your minimalist AI assistant</p>
 +                <!-- CrossBridge: removed ChatRaw 默认 3 张 feature 卡片 (Fast Response / Plugin Market / Multi-Model)，
 +                     pitch demo 不需要展示 ChatRaw 自己的功能营销 -->
              </div>
@@ -8629,7 +8646,7 @@ index 370c42e..6f07982 100644
 +                    <!-- Embedded PDF.js viewer rendering the genuine official AcroForm. -->
 +                    <div class="doc-viewer-wrap" x-show="documentPreparation.viewerFormId">
 +                        <iframe class="doc-viewer-frame" x-ref="officialViewer" @load="flushViewerLoad()"
-+                                src="official-pdf-viewer.html?v=cbdev36" title="Official form viewer"></iframe>
++                                src="official-pdf-viewer.html?v=cbdev37" title="Official form viewer"></iframe>
 +                    </div>
 +                </section>
 +            </div>
@@ -9034,12 +9051,24 @@ index 370c42e..6f07982 100644
      <!-- New Settings Modal -->
      <div class="modal-overlay" x-show="showSettings" x-cloak @click.self="showSettings = false" @keydown.escape.window="showSettings && (showSettings = false)" x-transition role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
          <div class="settings-modal">
-@@ -949,6 +1975,6 @@
+@@ -619,11 +1645,6 @@
+                             </div>
+                         </div>
+ 
+-                        <div class="form-group form-group-lg">
+-                            <label class="form-label" x-text="t('subtitle')"></label>
+-                            <input type="text" x-model="settings.ui_settings.subtitle" :placeholder="t('defaultSubtitle')" class="input-minimal">
+-                        </div>
+-
+                         <div class="form-group form-group-lg">
+                             <label class="form-label" x-text="t('avatars')"></label>
+                             
+@@ -949,6 +1970,6 @@
      <!-- Toast -->
      <div class="toast" x-show="toast.show" x-text="toast.message" :class="toast.type" x-transition></div>
  
 -    <script src="app.min.js?v=6.1"></script>
-+    <script src="app.js?v=cbdev36"></script>
++    <script src="app.js?v=cbdev37"></script>
  </body>
  </html>
 diff --git a/backend/static/official-pdf-viewer.css b/backend/static/official-pdf-viewer.css
