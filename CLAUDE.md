@@ -5,7 +5,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 CrossBridge AI is an AI assistant for cross-border SME finance and individual loan/financing support.
 
 Core context:
-- `README.md`: product overview, demo, and pitch background.
 - `service_architecture.md`: authoritative architecture overview, service topology, proxy layer, DB isolation.
 - `function-workflow.md`: per-function workflow, data boundaries, cross-function handoffs, frontend conventions.
 - `verification.md`: local venv usage, service startup commands, Alembic migration notes, eval runners.
@@ -28,6 +27,8 @@ End every reply with `喵～` (on its own, after the final line).
 ## Frontend convention: cache-buster
 
 If editing `chatraw-fork/backend/static/{app.js,index.html,styles.css}` or the PDF viewer static assets, bump the `?v=cbdevNN` cache-buster in `index.html`. Static-only changes do not require restarting ChatRaw.
+
+**Source of truth is `patches/chatraw-function1-function2.patch`, not the git-ignored `chatraw-fork/` clone.** The deployed frontend is rebuilt from that patch; the patch is sometimes edited directly (e.g. PRs). Before editing the clone, re-sync it to the committed patch; after editing, regenerate the patch. Regenerating from a stale clone silently drops direct patch edits — this once wiped the F5 「合规问答」panel (`0e645a3`, restored in `5edbccc`). Full recipe: `function-workflow.md` → Frontend → Versioning.
 
 ## Deployment (production host)
 
