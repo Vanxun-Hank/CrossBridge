@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "benchmark_id": "smoke-mainland-v2-20260601T171857-0109cf1d",
+    "label": "smoke-mainland-v2",
+    "langsmith_project": "CrossBridge-RAG-Latency-Optimization",
+    "trace_source_of_truth": "LangSmith root trace duration",
+    "questions": 0,
+    "requested_repetitions_per_question": 1,
+    "minimum_acceptance_repetitions": 5,
+    "trace_runs": 0,
+    "trace_errors": 0,
+    "target_p95_sec": 35.0,
+    "overall_avg_sec": null,
+    "overall_p50_sec": null,
+    "overall_p95_sec": null,
+    "acceptance_ready": false,
+    "meets_target": false
+  },
+  "per_question": [],
+  "slowest_spans_by_total_time": [
+    {
+      "name": "GenerateAnswer",
+      "count": 1,
+      "total_sec": 19.6647,
+      "avg_sec": 19.6647,
+      "p95_sec": 19.6647,
+      "max_sec": 19.6647
+    },
+    {
+      "name": "ChatOpenAI",
+      "count": 1,
+      "total_sec": 19.6221,
+      "avg_sec": 19.6221,
+      "p95_sec": 19.6221,
+      "max_sec": 19.6221
+    },
+    {
+      "name": "Rerank",
+      "count": 2,
+      "total_sec": 0.7935,
+      "avg_sec": 0.3967,
+      "p95_sec": 0.3978,
+      "max_sec": 0.3978
+    },
+    {
+      "name": "SearchVariants",
+      "count": 1,
+      "total_sec": 0.7211,
+      "avg_sec": 0.7211,
+      "p95_sec": 0.7211,
+      "max_sec": 0.7211
+    },
+    {
+      "name": "ChromaSimilaritySearch",
+      "count": 3,
+      "total_sec": 0.6978,
+      "avg_sec": 0.2326,
+      "p95_sec": 0.319,
+      "max_sec": 0.319
+    },
+    {
+      "name": "BM25Search",
+      "count": 2,
+      "total_sec": 0.017,
+      "avg_sec": 0.0085,
+      "p95_sec": 0.0106,
+      "max_sec": 0.0106
+    },
+    {
+      "name": "MetadataScoring",
+      "count": 1,
+      "total_sec": 0.0013,
+      "avg_sec": 0.0013,
+      "p95_sec": 0.0013,
+      "max_sec": 0.0013
+    },
+    {
+      "name": "FormatOutput",
+      "count": 1,
+      "total_sec": 0.001,
+      "avg_sec": 0.001,
+      "p95_sec": 0.001,
+      "max_sec": 0.001
+    },
+    {
+      "name": "ValidateCitations",
+      "count": 1,
+      "total_sec": 0.0009,
+      "avg_sec": 0.0009,
+      "p95_sec": 0.0009,
+      "max_sec": 0.0009
+    },
+    {
+      "name": "BuildPrompt",
+      "count": 1,
+      "total_sec": 0.0006,
+      "avg_sec": 0.0006,
+      "p95_sec": 0.0006,
+      "max_sec": 0.0006
+    },
+    {
+      "name": "RRFFusion",
+      "count": 1,
+      "total_sec": 0.0006,
+      "avg_sec": 0.0006,
+      "p95_sec": 0.0006,
+      "max_sec": 0.0006
+    },
+    {
+      "name": "PrepareInput",
+      "count": 1,
+      "total_sec": 0.0005,
+      "avg_sec": 0.0005,
+      "p95_sec": 0.0005,
+      "max_sec": 0.0005
+    },
+    {
+      "name": "ParseStructuredQuery",
+      "count": 1,
+      "total_sec": 0.0002,
+      "avg_sec": 0.0002,
+      "p95_sec": 0.0002,
+      "max_sec": 0.0002
+    },
+    {
+      "name": "TransformQuery",
+      "count": 1,
+      "total_sec": 0.0001,
+      "avg_sec": 0.0001,
+      "p95_sec": 0.0001,
+      "max_sec": 0.0001
+    },
+    {
+      "name": "RouteQuery",
+      "count": 1,
+      "total_sec": 0.0001,
+      "avg_sec": 0.0001,
+      "p95_sec": 0.0001,
+      "max_sec": 0.0001
+    }
+  ],
+  "runs": []
+}

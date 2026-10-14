@@ -1,0 +1,23 @@
+# RAG Run Comparison
+
+- Baseline: `eval/reports/ragas_full_20260601_180627.json`
+- Candidate: `eval/reports/ragas_full_ids_q16_20260605_235255.json`
+- Common questions: 1
+- Acceptance gate: PASS
+- Improved metrics: id_based_context_precision
+- Regressions over 0.03: none
+
+## Metric Means
+
+| Metric | baseline | candidate | delta |
+|---|---:|---:|---:|
+| `faithfulness` | 0.6324 | None | None |
+| `answer_relevancy` | 0.0 | None | None |
+| `id_based_context_precision` | 0.3333 | 1.0 | 0.6667 |
+| `id_based_context_recall` | 1.0 | 1.0 | 0.0 |
+
+## Per-Question Context Movement
+
+| ID | scenario | metric deltas | off-target docs | missing expected docs | context changes |
+|---|---|---|---|---|---|
+| q16 | remittance_compare | id_based_context_precision:+0.6667 | 2 -> 0 (+0/-2) | 1 -> 0 (+0/-1) | +1/-2 |

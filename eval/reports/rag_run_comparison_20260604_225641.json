@@ -1,0 +1,123 @@
+{
+  "summary": {
+    "baseline_ragas": "eval/reports/ragas_full_20260601_180627.json",
+    "candidate_ragas": "eval/reports/ragas_full_ids_q19_20260604_225628.json",
+    "common_question_count": 1,
+    "metric_summary": {
+      "faithfulness": {
+        "baseline_mean": 0.5102,
+        "candidate_mean": 0.88,
+        "delta": 0.3698
+      },
+      "answer_relevancy": {
+        "baseline_mean": 0.9973,
+        "candidate_mean": 0.0,
+        "delta": -0.9973
+      },
+      "id_based_context_precision": {
+        "baseline_mean": 0.5,
+        "candidate_mean": 0.8,
+        "delta": 0.3
+      },
+      "id_based_context_recall": {
+        "baseline_mean": 0.4,
+        "candidate_mean": 0.8,
+        "delta": 0.4
+      }
+    },
+    "acceptance_gate": {
+      "max_metric_drop": 0.03,
+      "has_any_metric_improvement": true,
+      "improved_metrics": [
+        "faithfulness",
+        "id_based_context_precision",
+        "id_based_context_recall"
+      ],
+      "regressions_over_threshold": [
+        "answer_relevancy"
+      ],
+      "passes": false
+    }
+  },
+  "per_question": [
+    {
+      "id": "q19",
+      "scenario": "sme_loan",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.5102,
+          "candidate": 0.88,
+          "delta": 0.3698
+        },
+        "answer_relevancy": {
+          "baseline": 0.9973,
+          "candidate": 0.0,
+          "delta": -0.9973
+        },
+        "id_based_context_precision": {
+          "baseline": 0.5,
+          "candidate": 0.8,
+          "delta": 0.3
+        },
+        "id_based_context_recall": {
+          "baseline": 0.4,
+          "candidate": 0.8,
+          "delta": 0.4
+        }
+      },
+      "context_delta": {
+        "added": [
+          "bochk_loan_services",
+          "hkmc_sfgs_factsheet",
+          "hkmc_sfgs_overview"
+        ],
+        "removed": [
+          "enterprisesg_efs_fixed_assets",
+          "smelink_sfgs"
+        ],
+        "kept": [
+          "bochk_sfgs_product",
+          "bochk_sme_loan"
+        ]
+      },
+      "baseline_context_ids": [
+        "enterprisesg_efs_fixed_assets",
+        "smelink_sfgs",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "bochk_sme_loan"
+      ],
+      "candidate_context_ids": [
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "bochk_sfgs_product",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_overview"
+      ],
+      "off_target_delta": {
+        "added": [
+          "hkmc_sfgs_overview"
+        ],
+        "removed": [
+          "enterprisesg_efs_fixed_assets",
+          "smelink_sfgs"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "bochk_loan_services",
+          "hkmc_sfgs_factsheet"
+        ],
+        "kept": [
+          "hkma_sfgs_90_product"
+        ]
+      },
+      "baseline_off_target_count": 2,
+      "candidate_off_target_count": 1,
+      "baseline_missing_expected_count": 3,
+      "candidate_missing_expected_count": 1
+    }
+  ]
+}

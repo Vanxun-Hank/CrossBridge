@@ -1,0 +1,116 @@
+{
+  "summary": {
+    "baseline_ragas": "eval/reports/ragas_full_20260601_180627.json",
+    "candidate_ragas": "eval/reports/ragas_full_ids_q15_20260604_225252.json",
+    "common_question_count": 1,
+    "metric_summary": {
+      "faithfulness": {
+        "baseline_mean": 0.4426,
+        "candidate_mean": 0.8,
+        "delta": 0.3574
+      },
+      "answer_relevancy": {
+        "baseline_mean": 0.0,
+        "candidate_mean": 0.9843,
+        "delta": 0.9843
+      },
+      "id_based_context_precision": {
+        "baseline_mean": 0.3333,
+        "candidate_mean": 1.0,
+        "delta": 0.6667
+      },
+      "id_based_context_recall": {
+        "baseline_mean": 0.3333,
+        "candidate_mean": 1.0,
+        "delta": 0.6667
+      }
+    },
+    "acceptance_gate": {
+      "max_metric_drop": 0.03,
+      "has_any_metric_improvement": true,
+      "improved_metrics": [
+        "faithfulness",
+        "answer_relevancy",
+        "id_based_context_precision",
+        "id_based_context_recall"
+      ],
+      "regressions_over_threshold": [],
+      "passes": true
+    }
+  },
+  "per_question": [
+    {
+      "id": "q15",
+      "scenario": "vietnam_supplier",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.4426,
+          "candidate": 0.8,
+          "delta": 0.3574
+        },
+        "answer_relevancy": {
+          "baseline": 0.0,
+          "candidate": 0.9843,
+          "delta": 0.9843
+        },
+        "id_based_context_precision": {
+          "baseline": 0.3333,
+          "candidate": 1.0,
+          "delta": 0.6667
+        },
+        "id_based_context_recall": {
+          "baseline": 0.3333,
+          "candidate": 1.0,
+          "delta": 0.6667
+        }
+      },
+      "context_delta": {
+        "added": [
+          "hktdc_vietnam_manufacturing_background",
+          "hktdc_vietnam_manufacturing_partnership"
+        ],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "sbv_circular_20_2022_current_account_transfers"
+        ],
+        "kept": [
+          "fia_vietnam_taxation_customs"
+        ]
+      },
+      "baseline_context_ids": [
+        "fia_vietnam_taxation_customs",
+        "fia_vietnam_taxation_customs",
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "candidate_context_ids": [
+        "fia_vietnam_taxation_customs",
+        "fia_vietnam_taxation_customs",
+        "hktdc_vietnam_manufacturing_background",
+        "hktdc_vietnam_manufacturing_partnership",
+        "hktdc_vietnam_manufacturing_partnership"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "sbv_circular_20_2022_current_account_transfers"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "hktdc_vietnam_manufacturing_background",
+          "hktdc_vietnam_manufacturing_partnership"
+        ],
+        "kept": []
+      },
+      "baseline_off_target_count": 2,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 2,
+      "candidate_missing_expected_count": 0
+    }
+  ]
+}

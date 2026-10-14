@@ -1,0 +1,125 @@
+{
+  "summary": {
+    "label": "full_20260606_zero_relevancy",
+    "n_rows": 4,
+    "n_all_noncommittal": 4
+  },
+  "rows": [
+    {
+      "id": "q04",
+      "scenario": "compliance_cross_border_payment",
+      "question": "中国企业向越南供应商付汇的合规审核流程",
+      "answer_generation_mode": null,
+      "answer_length_chars": 511,
+      "generated_questions": [
+        {
+          "question": "What is the regulatory framework for Chinese enterprises making foreign exchange payments to Vietnamese suppliers?",
+          "noncommittal": 1
+        },
+        {
+          "question": "What is the regulatory framework for Chinese enterprises making foreign exchange payments to Vietnamese suppliers?",
+          "noncommittal": 1
+        },
+        {
+          "question": "What is the compliance framework for Chinese enterprises making foreign exchange payments to Vietnamese suppliers?",
+          "noncommittal": 1
+        }
+      ],
+      "all_noncommittal": true,
+      "cosine_scores": [
+        0.7497090450994174,
+        0.7497090450994174,
+        0.7515015571892953
+      ],
+      "mean_similarity": 0.7503065491293768,
+      "answer_relevancy_formula_score": 0.0
+    },
+    {
+      "id": "q20",
+      "scenario": "sme_loan",
+      "question": "申请 SME 贷款要提交哪些财务证明材料 公司账务文件",
+      "answer_generation_mode": null,
+      "answer_length_chars": 501,
+      "generated_questions": [
+        {
+          "question": "申请SME贷款需要提交哪些财务证明材料和公司账务文件？",
+          "noncommittal": 1
+        },
+        {
+          "question": "申请SME贷款需要提交哪些财务证明材料和公司账务文件？",
+          "noncommittal": 1
+        },
+        {
+          "question": "What financial documents and company accounting files are required to apply for an SME loan?",
+          "noncommittal": 1
+        }
+      ],
+      "all_noncommittal": true,
+      "cosine_scores": [
+        0.9419532994716369,
+        0.9419532994716369,
+        0.8258848587902152
+      ],
+      "mean_similarity": 0.9032638192444963,
+      "answer_relevancy_formula_score": 0.0
+    },
+    {
+      "id": "q22",
+      "scenario": "sme_loan",
+      "question": "我公司香港注册 年营业额 5000 万港币 去年利润 800 万 想申请 SFGS 担保贷款 大概能贷多少 还需要补充哪些财务证明文件",
+      "answer_generation_mode": null,
+      "answer_length_chars": 714,
+      "generated_questions": [
+        {
+          "question": "What is the exact loan amount my company will be approved for under the SFGS scheme, given our annual turnover of HK$50 million and last year's profit of HK$8 million?",
+          "noncommittal": 1
+        },
+        {
+          "question": "What is the exact loan amount my company will be approved for under the SFGS scheme, and what specific financial documents must I submit?",
+          "noncommittal": 1
+        },
+        {
+          "question": "What is the exact loan amount my company will be approved for under the SFGS scheme, given our annual turnover of HK$50 million and last year's profit of HK$8 million?",
+          "noncommittal": 1
+        }
+      ],
+      "all_noncommittal": true,
+      "cosine_scores": [
+        0.7985692464756452,
+        0.6826473465802644,
+        0.7985692464756452
+      ],
+      "mean_similarity": 0.759928613177185,
+      "answer_relevancy_formula_score": 0.0
+    },
+    {
+      "id": "q23",
+      "scenario": "sme_loan",
+      "question": "申请 SFGS 担保贷款的完整流程是什么 从提交申请到拿到钱大概要多久",
+      "answer_generation_mode": null,
+      "answer_length_chars": 928,
+      "generated_questions": [
+        {
+          "question": "申请SFGS担保贷款从提交到放款需要多长时间？",
+          "noncommittal": 1
+        },
+        {
+          "question": "申请SFGS担保贷款从提交到放款需要多长时间？",
+          "noncommittal": 1
+        },
+        {
+          "question": "申请SFGS担保贷款从提交到放款需要多长时间？",
+          "noncommittal": 1
+        }
+      ],
+      "all_noncommittal": true,
+      "cosine_scores": [
+        0.9595797267567501,
+        0.9595797267567501,
+        0.9595797267567501
+      ],
+      "mean_similarity": 0.9595797267567501,
+      "answer_relevancy_formula_score": 0.0
+    }
+  ]
+}

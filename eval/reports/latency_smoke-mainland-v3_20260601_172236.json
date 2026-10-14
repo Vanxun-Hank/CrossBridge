@@ -1,0 +1,164 @@
+{
+  "summary": {
+    "benchmark_id": "smoke-mainland-v3-20260601T172200-797ebe05",
+    "label": "smoke-mainland-v3",
+    "langsmith_project": "CrossBridge-RAG-Latency-Optimization",
+    "trace_source_of_truth": "LangSmith root trace duration",
+    "questions": 1,
+    "requested_repetitions_per_question": 1,
+    "minimum_acceptance_runs": 5,
+    "trace_runs": 1,
+    "trace_errors": 0,
+    "target_p95_sec": 35.0,
+    "overall_avg_sec": 21.0565,
+    "overall_p50_sec": 21.0565,
+    "overall_p95_sec": 21.0565,
+    "acceptance_ready": false,
+    "meets_target": false
+  },
+  "per_question": [
+    {
+      "question_id": "q01",
+      "runs": 1,
+      "avg_sec": 21.0565,
+      "p50_sec": 21.0565,
+      "p95_sec": 21.0565,
+      "max_sec": 21.0565,
+      "meets_target": true
+    }
+  ],
+  "slowest_spans_by_total_time": [
+    {
+      "name": "GenerateAnswer",
+      "count": 1,
+      "total_sec": 19.9035,
+      "avg_sec": 19.9035,
+      "p95_sec": 19.9035,
+      "max_sec": 19.9035
+    },
+    {
+      "name": "ChatOpenAI",
+      "count": 1,
+      "total_sec": 19.8594,
+      "avg_sec": 19.8594,
+      "p95_sec": 19.8594,
+      "max_sec": 19.8594
+    },
+    {
+      "name": "Rerank",
+      "count": 2,
+      "total_sec": 0.7632,
+      "avg_sec": 0.3816,
+      "p95_sec": 0.3824,
+      "max_sec": 0.3824
+    },
+    {
+      "name": "SearchVariants",
+      "count": 1,
+      "total_sec": 0.6727,
+      "avg_sec": 0.6727,
+      "p95_sec": 0.6727,
+      "max_sec": 0.6727
+    },
+    {
+      "name": "ChromaSimilaritySearch",
+      "count": 3,
+      "total_sec": 0.654,
+      "avg_sec": 0.218,
+      "p95_sec": 0.3003,
+      "max_sec": 0.3003
+    },
+    {
+      "name": "BM25Search",
+      "count": 2,
+      "total_sec": 0.0117,
+      "avg_sec": 0.0059,
+      "p95_sec": 0.0074,
+      "max_sec": 0.0074
+    },
+    {
+      "name": "RRFFusion",
+      "count": 1,
+      "total_sec": 0.001,
+      "avg_sec": 0.001,
+      "p95_sec": 0.001,
+      "max_sec": 0.001
+    },
+    {
+      "name": "ValidateCitations",
+      "count": 1,
+      "total_sec": 0.0009,
+      "avg_sec": 0.0009,
+      "p95_sec": 0.0009,
+      "max_sec": 0.0009
+    },
+    {
+      "name": "MetadataScoring",
+      "count": 1,
+      "total_sec": 0.0008,
+      "avg_sec": 0.0008,
+      "p95_sec": 0.0008,
+      "max_sec": 0.0008
+    },
+    {
+      "name": "FormatOutput",
+      "count": 1,
+      "total_sec": 0.0007,
+      "avg_sec": 0.0007,
+      "p95_sec": 0.0007,
+      "max_sec": 0.0007
+    },
+    {
+      "name": "BuildPrompt",
+      "count": 1,
+      "total_sec": 0.0007,
+      "avg_sec": 0.0007,
+      "p95_sec": 0.0007,
+      "max_sec": 0.0007
+    },
+    {
+      "name": "PrepareInput",
+      "count": 1,
+      "total_sec": 0.0004,
+      "avg_sec": 0.0004,
+      "p95_sec": 0.0004,
+      "max_sec": 0.0004
+    },
+    {
+      "name": "ParseStructuredQuery",
+      "count": 1,
+      "total_sec": 0.0002,
+      "avg_sec": 0.0002,
+      "p95_sec": 0.0002,
+      "max_sec": 0.0002
+    },
+    {
+      "name": "TransformQuery",
+      "count": 1,
+      "total_sec": 0.0001,
+      "avg_sec": 0.0001,
+      "p95_sec": 0.0001,
+      "max_sec": 0.0001
+    },
+    {
+      "name": "RouteQuery",
+      "count": 1,
+      "total_sec": 0.0001,
+      "avg_sec": 0.0001,
+      "p95_sec": 0.0001,
+      "max_sec": 0.0001
+    }
+  ],
+  "runs": [
+    {
+      "question_id": "q01",
+      "iteration": 1,
+      "trace_latency_sec": 21.0565,
+      "local_wall_clock_sec": 21.0621,
+      "trace_id": "019e827d-7bee-7601-b2cf-7cf368f83e28",
+      "run_id": "019e827d-7bee-7601-b2cf-7cf368f83e28",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e827d-7bee-7601-b2cf-7cf368f83e28?poll=true",
+      "error": null
+    }
+  ]
+}

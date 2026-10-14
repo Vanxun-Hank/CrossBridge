@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "variant": "full_ids_q24_id_only",
+    "n_questions": 1,
+    "id_based_context_precision_mean": 0.5,
+    "id_based_context_precision_n_valid": 1,
+    "id_based_context_precision_n_failed": 0,
+    "id_based_context_recall_mean": 0.2,
+    "id_based_context_recall_n_valid": 1,
+    "id_based_context_recall_n_failed": 0
+  },
+  "per_question": [
+    {
+      "id": "q24",
+      "scenario": "sme_loan",
+      "question": "公司在香港注册 在深圳和东莞各有一个工厂 想做跨境业务扩张融资 可以申请哪些贷款产品 有什么硬性资格要求",
+      "answer": "贵公司在香港注册、在深圳和东莞设有工厂，拟开展跨境业务扩张融资，可申请以下三类贷款产品：**创新科技与人才融资专项优惠计划（创科贷及人才贷）**、**抵押贷款**、**设备融资（Machinery and Equipment Financing）**。其中，“跨境业务扩张”在资料中被明确关联至**大湾区（GBA）拓展场景**，且有客户案例佐证。\n\n具体可申请产品及硬性资格要求如下：\n\n1. **创新科技与人才融资专项优惠计划（创科贷及人才贷）**  \n　　✅ 可申请：资料1明确列出该计划为面向中小企业的专项融资优惠，适用于支持科技创新与人才引进的经营需求；客户案例中KOLN 3D公司“ expanding our business into the GBA and building a new factory”即对应您在深圳/东莞设厂+拓展大湾区的模式。  \n　　⚠️ 硬性资格要求：现有资料未列明企业注册地、成立年限、营收规模、行业类型、纳税记录等具体准入门槛，也未说明是否接受内地运营实体作为用款主体或担保方。\n\n2. **抵押贷款（Mortgage Loan）**  \n　　✅ 可申请：资料2明确提供“An array of mortgage loan plans to match your needs”，属中小企业适用的常规融资工具。  \n　　⚠️ 硬性资格要求：资料未说明抵押物类型限制（如是否接受内地厂房抵押）、权属要求（如须为香港公司名下资产）、LTV比例下限、或跨境抵押登记流程要求。\n\n3. **设备融资（Machinery and Equipment Financing）**  \n　　✅ 可申请：资料2指出该产品支持“Financing percentage up to 90% of equipment cost, flexible repayment period of up to 5 years”，适用于工厂产能升级，契合您在深莞的制造场景。  \n　　⚠️ 硬性资格要求：资料未说明设备采购地（是否限于香港/内地/境外）、所有权归属要求（设备须登记在谁名下）、或是否支持跨境采购项下的分期付款融资安排。\n\n❌ 现有资料无法确认的三项关键信息（仅限用户直接所问）：  \n- 是否接受“香港注册+内地工厂”架构下的统一授信或集团合并报表评估；  \n- 各产品对跨境资金用途（如支付境外供应商、境外市场推广）是否有明确限制；  \n- 所有产品的实际利率、审批时效、所需申请文件清单（如需内地工厂环评/备案文件等）。\n\n请在正式申请前，向中银香港客户经理确认上述未明事项，并核实贵司是否符合各产品的最新准入标准。\n\n信息来源：[资料1]、[资料2]",
+      "contexts": [
+        "该 chunk 来自《Bank of China (Hong Kong) 贷款服务》文档的“无抵押贷款”主页面，聚焦于面向中小企业的创新科技与人才融资专项优惠计划及相关申请提示。\n\n# Loan Services\n\nLoan Services|~|/en/smeinone/loan/unsecured.html\n\nMore\nInnovation & Technology and Talent Financing Incentive Scheme\n\n創科貸及人才貸優惠計劃 | 貸款服務|~|123\n\n创科贷及人才贷优惠计划 | 贷款服务|~|123\n\nInnovation & Technology and Talent Financing Incentive Scheme | Loan Services|~|123\n\nReminder: To borrow or not to borrow? Borrow only if you can repay!\n\nAccount Opening Request\n\nBusiness Integrated Account Service Guide\n\nOnline Enquiry\n\nen",
+        "该chunk出自《中小企业融资担保计划》文档，属“其他贷款方案”板块，介绍抵押贷款、资产质押贷款及设备融资等非担保类信贷产品，并衔接客户案例与相关推广服务。\n\nMortgage Loan\n\nAn array of mortgage loan plans to match your needs\n\nAsset-Pledge Loan\n\nLoan amount up to 100% of the market value of pledged assets\n\nMachinery and Equipment Financing\n\nFinancing percentage up to 90% of equipment cost, flexible repayment period of up to 5 years\n\nNext\n\n1\n\n2\n\n3\n\n4\n\n5\n\nOnline appointment for other Loan Application Not applicable to SME Financing Guarantee Scheme, BOCHK Bill Merchant Loan Program and BOC \"Small Business Loan\" Unsecured Loan\n\nBook Appointment Now\n\nOnline appointment for other Loan Application Not applicable to SME Financing Guarantee Scheme, BOCHK Bill Merchant Loan Program and BOC \"Small Business Loan\" Unsecured Loan\n\nBook Appointment Now\n\nFlexible Loan Customer Cases\n\nPrevious\n\nSME Financing Guarantee Scheme\n\nFlexible financing is vital for business development\n\n“Over the past few years, our company has been expanding our business into the GBA and building a new factory. We are fortunate to have BOCHK as our trusted banking partner to support our funding needs.”\n\nKOLN 3D Founder Mr. Edmond Yau\n\nLearn More\n\nOvercoming business challenges with our trusted banking partner\n\n“The engineering business was severely hit by emergency situation over the past few years. BOCHK has supported us along the way in devising strategy for a more sustainable development. With collaborative efforts, we overcame the adversities with success.”\n\nGolden Leaf Founder & Chief Executive Director Mr. Kenny Ip\n\nLearn More\n\nNext\n\nFlexible Loan Customer Cases\n\nPrevious\n\nSME Financing Guarantee Scheme\n\nFlexible financing is vital for business development\n\n“Over the past few years, our company has been expanding our business into the GBA and building a new factory. We are fortunate to have BOCHK as our trusted banking partner to support our funding needs.”\n\nKOLN 3D Founder Mr. Edmond Yau\n\nLearn More\n\nOvercoming business challenges with our trusted banking partner\n\n“The engineering business was severely hit by emergency situation over the past few years. BOCHK has supported us along the way in devising strategy for a more sustainable development. With collaborative efforts, we overcame the adversities with success.”\n\nGolden Leaf Founder & Chief Executive Director Mr. Kenny Ip\n\nLearn More\n\nNext\n\n1\n\n2\n\nRelated Products & Promotional Offers\n\nPrevious\n\nDedicated 100% Loan Guarantee Scheme\n\nTo support speedy recovery of tourism and cross-boundary passenger transport industry\n\niGTB NET Corporate Internet Banking\n\nPowerful and secured online banking platform\n\nMobile Account Opening\n\nOpen account in 3 steps anytime anywhere\n\nBOC Commercial Card\n\nBetter control on spending, higher cash flow and various spending privileges\n\nInsurance\n\nOffer SME full protection so you can focus on expanding your business hassle free\n\nBoC Bill Integrated Billing Service\n\nIntegrated billing service for online and offline payments\n\nDedicated 100% Loan Guarantee Scheme\n\nTo support speedy recovery of tourism and cross-boundary passenger transport industry\n\niGTB NET Corporate Internet Banking\n\nPowerful and secured online banking platform\n\nMobile Account Opening\n\nOpen account in 3 steps anytime anywhere\n\nBOC Commercial Card\n\nBetter control on spending, higher cash flow and various spending privileges\n\nInsurance\n\nOffer SME full protection so you can focus on expanding your business hassle free\n\nBoC Bill Integrated Billing Service\n\nIntegrated billing service for online and offline payments\n\nDedicated 100% Loan Guarantee Scheme\n\nTo support speedy recovery of tourism and cross-boundary passenger transport industry\n\niGTB NET Corporate Internet Banking\n\nPowerful and secured online banking platform\n\nMobile Account Opening\n\nOpen account in 3 steps anytime anywhere\n\nNext\n\nPrevious\n\nMobile Account Opening\n\nOpen account in 3 steps anytime anywhere\n\nBOC Commercial Card\n\nBetter control on spending, higher cash flow and various spending privileges\n\nInsurance\n\nOffer SME full protection so you can focus on expanding your business hassle free\n\nBoC Bill Integrated Billing Service\n\nIntegrated billing service for online and offline payments"
+      ],
+      "context_ids": [
+        "bochk_loan_services",
+        "bochk_sfgs_product"
+      ],
+      "reference_context_ids": [
+        "hkmc_sfgs_factsheet",
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "bochk_trade_finance",
+        "boc_global_purchase_order_financing"
+      ],
+      "elapsed_sec": 17.11,
+      "id_based_context_precision": 0.5,
+      "id_based_context_recall": 0.2
+    }
+  ]
+}

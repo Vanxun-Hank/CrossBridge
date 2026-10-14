@@ -1,0 +1,601 @@
+{
+  "summary": {
+    "benchmark_id": "baseline-20260601T172315-fd24a0a1",
+    "label": "baseline",
+    "langsmith_project": "CrossBridge-RAG-Latency-Optimization",
+    "trace_source_of_truth": "LangSmith root trace duration",
+    "questions": 24,
+    "requested_repetitions_per_question": 1,
+    "minimum_acceptance_runs": 5,
+    "trace_runs": 24,
+    "trace_errors": 0,
+    "target_p95_sec": 35.0,
+    "overall_avg_sec": 21.1895,
+    "overall_p50_sec": 20.5713,
+    "overall_p95_sec": 30.4255,
+    "acceptance_ready": true,
+    "meets_target": true
+  },
+  "per_question": [
+    {
+      "question_id": "q01",
+      "runs": 1,
+      "avg_sec": 24.7835,
+      "p50_sec": 24.7835,
+      "p95_sec": 24.7835,
+      "max_sec": 24.7835,
+      "meets_target": true
+    },
+    {
+      "question_id": "q02",
+      "runs": 1,
+      "avg_sec": 24.2158,
+      "p50_sec": 24.2158,
+      "p95_sec": 24.2158,
+      "max_sec": 24.2158,
+      "meets_target": true
+    },
+    {
+      "question_id": "q03",
+      "runs": 1,
+      "avg_sec": 14.2777,
+      "p50_sec": 14.2777,
+      "p95_sec": 14.2777,
+      "max_sec": 14.2777,
+      "meets_target": true
+    },
+    {
+      "question_id": "q04",
+      "runs": 1,
+      "avg_sec": 30.4255,
+      "p50_sec": 30.4255,
+      "p95_sec": 30.4255,
+      "max_sec": 30.4255,
+      "meets_target": true
+    },
+    {
+      "question_id": "q05",
+      "runs": 1,
+      "avg_sec": 18.4489,
+      "p50_sec": 18.4489,
+      "p95_sec": 18.4489,
+      "max_sec": 18.4489,
+      "meets_target": true
+    },
+    {
+      "question_id": "q06",
+      "runs": 1,
+      "avg_sec": 12.4545,
+      "p50_sec": 12.4545,
+      "p95_sec": 12.4545,
+      "max_sec": 12.4545,
+      "meets_target": true
+    },
+    {
+      "question_id": "q07",
+      "runs": 1,
+      "avg_sec": 24.5987,
+      "p50_sec": 24.5987,
+      "p95_sec": 24.5987,
+      "max_sec": 24.5987,
+      "meets_target": true
+    },
+    {
+      "question_id": "q08",
+      "runs": 1,
+      "avg_sec": 18.0643,
+      "p50_sec": 18.0643,
+      "p95_sec": 18.0643,
+      "max_sec": 18.0643,
+      "meets_target": true
+    },
+    {
+      "question_id": "q09",
+      "runs": 1,
+      "avg_sec": 22.051,
+      "p50_sec": 22.051,
+      "p95_sec": 22.051,
+      "max_sec": 22.051,
+      "meets_target": true
+    },
+    {
+      "question_id": "q10",
+      "runs": 1,
+      "avg_sec": 23.9158,
+      "p50_sec": 23.9158,
+      "p95_sec": 23.9158,
+      "max_sec": 23.9158,
+      "meets_target": true
+    },
+    {
+      "question_id": "q11",
+      "runs": 1,
+      "avg_sec": 18.5649,
+      "p50_sec": 18.5649,
+      "p95_sec": 18.5649,
+      "max_sec": 18.5649,
+      "meets_target": true
+    },
+    {
+      "question_id": "q12",
+      "runs": 1,
+      "avg_sec": 19.7489,
+      "p50_sec": 19.7489,
+      "p95_sec": 19.7489,
+      "max_sec": 19.7489,
+      "meets_target": true
+    },
+    {
+      "question_id": "q13",
+      "runs": 1,
+      "avg_sec": 19.8401,
+      "p50_sec": 19.8401,
+      "p95_sec": 19.8401,
+      "max_sec": 19.8401,
+      "meets_target": true
+    },
+    {
+      "question_id": "q14",
+      "runs": 1,
+      "avg_sec": 23.381,
+      "p50_sec": 23.381,
+      "p95_sec": 23.381,
+      "max_sec": 23.381,
+      "meets_target": true
+    },
+    {
+      "question_id": "q15",
+      "runs": 1,
+      "avg_sec": 25.796,
+      "p50_sec": 25.796,
+      "p95_sec": 25.796,
+      "max_sec": 25.796,
+      "meets_target": true
+    },
+    {
+      "question_id": "q16",
+      "runs": 1,
+      "avg_sec": 21.3532,
+      "p50_sec": 21.3532,
+      "p95_sec": 21.3532,
+      "max_sec": 21.3532,
+      "meets_target": true
+    },
+    {
+      "question_id": "q17",
+      "runs": 1,
+      "avg_sec": 9.5288,
+      "p50_sec": 9.5288,
+      "p95_sec": 9.5288,
+      "max_sec": 9.5288,
+      "meets_target": true
+    },
+    {
+      "question_id": "q18",
+      "runs": 1,
+      "avg_sec": 19.9315,
+      "p50_sec": 19.9315,
+      "p95_sec": 19.9315,
+      "max_sec": 19.9315,
+      "meets_target": true
+    },
+    {
+      "question_id": "q19",
+      "runs": 1,
+      "avg_sec": 16.8615,
+      "p50_sec": 16.8615,
+      "p95_sec": 16.8615,
+      "max_sec": 16.8615,
+      "meets_target": true
+    },
+    {
+      "question_id": "q20",
+      "runs": 1,
+      "avg_sec": 20.045,
+      "p50_sec": 20.045,
+      "p95_sec": 20.045,
+      "max_sec": 20.045,
+      "meets_target": true
+    },
+    {
+      "question_id": "q21",
+      "runs": 1,
+      "avg_sec": 20.5713,
+      "p50_sec": 20.5713,
+      "p95_sec": 20.5713,
+      "max_sec": 20.5713,
+      "meets_target": true
+    },
+    {
+      "question_id": "q22",
+      "runs": 1,
+      "avg_sec": 26.7593,
+      "p50_sec": 26.7593,
+      "p95_sec": 26.7593,
+      "max_sec": 26.7593,
+      "meets_target": true
+    },
+    {
+      "question_id": "q23",
+      "runs": 1,
+      "avg_sec": 22.2336,
+      "p50_sec": 22.2336,
+      "p95_sec": 22.2336,
+      "max_sec": 22.2336,
+      "meets_target": true
+    },
+    {
+      "question_id": "q24",
+      "runs": 1,
+      "avg_sec": 30.6968,
+      "p50_sec": 30.6968,
+      "p95_sec": 30.6968,
+      "max_sec": 30.6968,
+      "meets_target": true
+    }
+  ],
+  "slowest_spans_by_total_time": [
+    {
+      "name": "ChatOpenAI",
+      "count": 29,
+      "total_sec": 482.705,
+      "avg_sec": 16.645,
+      "p95_sec": 27.4285,
+      "max_sec": 29.3456
+    },
+    {
+      "name": "GenerateAnswer",
+      "count": 24,
+      "total_sec": 474.1327,
+      "avg_sec": 19.7555,
+      "p95_sec": 27.43,
+      "max_sec": 29.3474
+    },
+    {
+      "name": "SearchVariants",
+      "count": 24,
+      "total_sec": 18.5888,
+      "avg_sec": 0.7745,
+      "p95_sec": 1.5675,
+      "max_sec": 1.8066
+    },
+    {
+      "name": "Rerank",
+      "count": 48,
+      "total_sec": 17.3687,
+      "avg_sec": 0.3618,
+      "p95_sec": 0.4239,
+      "max_sec": 0.4443
+    },
+    {
+      "name": "ChromaSimilaritySearch",
+      "count": 67,
+      "total_sec": 16.1559,
+      "avg_sec": 0.2411,
+      "p95_sec": 0.3491,
+      "max_sec": 0.4707
+    },
+    {
+      "name": "TransformQuery",
+      "count": 24,
+      "total_sec": 6.7153,
+      "avg_sec": 0.2798,
+      "p95_sec": 1.9787,
+      "max_sec": 2.8346
+    },
+    {
+      "name": "BM25Search",
+      "count": 43,
+      "total_sec": 0.3885,
+      "avg_sec": 0.009,
+      "p95_sec": 0.0134,
+      "max_sec": 0.0147
+    },
+    {
+      "name": "FormatOutput",
+      "count": 24,
+      "total_sec": 0.0239,
+      "avg_sec": 0.001,
+      "p95_sec": 0.0012,
+      "max_sec": 0.0013
+    },
+    {
+      "name": "MetadataScoring",
+      "count": 24,
+      "total_sec": 0.0222,
+      "avg_sec": 0.0009,
+      "p95_sec": 0.0014,
+      "max_sec": 0.0014
+    },
+    {
+      "name": "RRFFusion",
+      "count": 24,
+      "total_sec": 0.0214,
+      "avg_sec": 0.0009,
+      "p95_sec": 0.0013,
+      "max_sec": 0.0013
+    },
+    {
+      "name": "BuildPrompt",
+      "count": 24,
+      "total_sec": 0.016,
+      "avg_sec": 0.0007,
+      "p95_sec": 0.001,
+      "max_sec": 0.0011
+    },
+    {
+      "name": "ValidateCitations",
+      "count": 24,
+      "total_sec": 0.016,
+      "avg_sec": 0.0007,
+      "p95_sec": 0.0009,
+      "max_sec": 0.001
+    },
+    {
+      "name": "PrepareInput",
+      "count": 24,
+      "total_sec": 0.0115,
+      "avg_sec": 0.0005,
+      "p95_sec": 0.0007,
+      "max_sec": 0.0007
+    },
+    {
+      "name": "ParseStructuredQuery",
+      "count": 24,
+      "total_sec": 0.0113,
+      "avg_sec": 0.0005,
+      "p95_sec": 0.0006,
+      "max_sec": 0.0007
+    },
+    {
+      "name": "RouteQuery",
+      "count": 24,
+      "total_sec": 0.0087,
+      "avg_sec": 0.0004,
+      "p95_sec": 0.0006,
+      "max_sec": 0.0011
+    }
+  ],
+  "runs": [
+    {
+      "question_id": "q01",
+      "iteration": 1,
+      "trace_latency_sec": 24.7835,
+      "local_wall_clock_sec": 24.7887,
+      "trace_id": "019e827e-a09b-7700-a9d5-e58ac3b2d8de",
+      "run_id": "019e827e-a09b-7700-a9d5-e58ac3b2d8de",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e827e-a09b-7700-a9d5-e58ac3b2d8de?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q02",
+      "iteration": 1,
+      "trace_latency_sec": 24.2158,
+      "local_wall_clock_sec": 24.2169,
+      "trace_id": "019e827f-016d-7ca0-a8d1-c8c773314810",
+      "run_id": "019e827f-016d-7ca0-a8d1-c8c773314810",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e827f-016d-7ca0-a8d1-c8c773314810?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q03",
+      "iteration": 1,
+      "trace_latency_sec": 14.2777,
+      "local_wall_clock_sec": 14.2789,
+      "trace_id": "019e827f-6006-7043-b344-cd2f3a2e68b6",
+      "run_id": "019e827f-6006-7043-b344-cd2f3a2e68b6",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e827f-6006-7043-b344-cd2f3a2e68b6?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q04",
+      "iteration": 1,
+      "trace_latency_sec": 30.4255,
+      "local_wall_clock_sec": 30.4262,
+      "trace_id": "019e827f-97cd-7732-9bc5-ec8c3ddfcce6",
+      "run_id": "019e827f-97cd-7732-9bc5-ec8c3ddfcce6",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e827f-97cd-7732-9bc5-ec8c3ddfcce6?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q05",
+      "iteration": 1,
+      "trace_latency_sec": 18.4489,
+      "local_wall_clock_sec": 18.4498,
+      "trace_id": "019e8280-0ea8-77b3-80f2-17d588e0ea9e",
+      "run_id": "019e8280-0ea8-77b3-80f2-17d588e0ea9e",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8280-0ea8-77b3-80f2-17d588e0ea9e?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q06",
+      "iteration": 1,
+      "trace_latency_sec": 12.4545,
+      "local_wall_clock_sec": 12.4555,
+      "trace_id": "019e8280-56ba-70e3-b1ee-123c04498ec8",
+      "run_id": "019e8280-56ba-70e3-b1ee-123c04498ec8",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8280-56ba-70e3-b1ee-123c04498ec8?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q07",
+      "iteration": 1,
+      "trace_latency_sec": 24.5987,
+      "local_wall_clock_sec": 24.6016,
+      "trace_id": "019e8280-8761-7c21-aca6-c1990e1ac880",
+      "run_id": "019e8280-8761-7c21-aca6-c1990e1ac880",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8280-8761-7c21-aca6-c1990e1ac880?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q08",
+      "iteration": 1,
+      "trace_latency_sec": 18.0643,
+      "local_wall_clock_sec": 18.0651,
+      "trace_id": "019e8280-e77b-7280-b4bb-7d46f6efb0fc",
+      "run_id": "019e8280-e77b-7280-b4bb-7d46f6efb0fc",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8280-e77b-7280-b4bb-7d46f6efb0fc?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q19",
+      "iteration": 1,
+      "trace_latency_sec": 16.8615,
+      "local_wall_clock_sec": 16.8624,
+      "trace_id": "019e8281-2e0d-7943-924a-bba52b2a165b",
+      "run_id": "019e8281-2e0d-7943-924a-bba52b2a165b",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8281-2e0d-7943-924a-bba52b2a165b?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q20",
+      "iteration": 1,
+      "trace_latency_sec": 20.045,
+      "local_wall_clock_sec": 20.0462,
+      "trace_id": "019e8281-6feb-73b0-9fda-c1d4229de75e",
+      "run_id": "019e8281-6feb-73b0-9fda-c1d4229de75e",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8281-6feb-73b0-9fda-c1d4229de75e?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q21",
+      "iteration": 1,
+      "trace_latency_sec": 20.5713,
+      "local_wall_clock_sec": 20.5719,
+      "trace_id": "019e8281-be3a-72d0-a2ff-51537cf8552f",
+      "run_id": "019e8281-be3a-72d0-a2ff-51537cf8552f",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8281-be3a-72d0-a2ff-51537cf8552f?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q22",
+      "iteration": 1,
+      "trace_latency_sec": 26.7593,
+      "local_wall_clock_sec": 26.7601,
+      "trace_id": "019e8282-0e96-7e20-8830-d82a1fa7e363",
+      "run_id": "019e8282-0e96-7e20-8830-d82a1fa7e363",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8282-0e96-7e20-8830-d82a1fa7e363?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q23",
+      "iteration": 1,
+      "trace_latency_sec": 22.2336,
+      "local_wall_clock_sec": 22.2346,
+      "trace_id": "019e8282-771f-7613-9ef9-d4f9fc85818a",
+      "run_id": "019e8282-771f-7613-9ef9-d4f9fc85818a",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8282-771f-7613-9ef9-d4f9fc85818a?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q24",
+      "iteration": 1,
+      "trace_latency_sec": 30.6968,
+      "local_wall_clock_sec": 30.6978,
+      "trace_id": "019e8282-cdf9-7452-bae9-e2bdeca1ab12",
+      "run_id": "019e8282-cdf9-7452-bae9-e2bdeca1ab12",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8282-cdf9-7452-bae9-e2bdeca1ab12?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q09",
+      "iteration": 1,
+      "trace_latency_sec": 22.051,
+      "local_wall_clock_sec": 22.0515,
+      "trace_id": "019e8283-45e4-7ac2-a41f-b51bda5d5c67",
+      "run_id": "019e8283-45e4-7ac2-a41f-b51bda5d5c67",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8283-45e4-7ac2-a41f-b51bda5d5c67?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q10",
+      "iteration": 1,
+      "trace_latency_sec": 23.9158,
+      "local_wall_clock_sec": 23.9166,
+      "trace_id": "019e8283-9c07-7363-8a09-454eb698d6d4",
+      "run_id": "019e8283-9c07-7363-8a09-454eb698d6d4",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8283-9c07-7363-8a09-454eb698d6d4?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q11",
+      "iteration": 1,
+      "trace_latency_sec": 18.5649,
+      "local_wall_clock_sec": 18.5659,
+      "trace_id": "019e8283-f974-7f93-b86b-f3ee2c7f6d27",
+      "run_id": "019e8283-f974-7f93-b86b-f3ee2c7f6d27",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8283-f974-7f93-b86b-f3ee2c7f6d27?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q12",
+      "iteration": 1,
+      "trace_latency_sec": 19.7489,
+      "local_wall_clock_sec": 19.7495,
+      "trace_id": "019e8284-41fa-7810-a25b-a72cf41cb40c",
+      "run_id": "019e8284-41fa-7810-a25b-a72cf41cb40c",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8284-41fa-7810-a25b-a72cf41cb40c?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q13",
+      "iteration": 1,
+      "trace_latency_sec": 19.8401,
+      "local_wall_clock_sec": 19.841,
+      "trace_id": "019e8284-8f20-7e11-ae21-aaa4291f50cb",
+      "run_id": "019e8284-8f20-7e11-ae21-aaa4291f50cb",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8284-8f20-7e11-ae21-aaa4291f50cb?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q14",
+      "iteration": 1,
+      "trace_latency_sec": 23.381,
+      "local_wall_clock_sec": 23.3818,
+      "trace_id": "019e8284-dca2-70d1-a343-98e898c79c24",
+      "run_id": "019e8284-dca2-70d1-a343-98e898c79c24",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8284-dca2-70d1-a343-98e898c79c24?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q15",
+      "iteration": 1,
+      "trace_latency_sec": 25.796,
+      "local_wall_clock_sec": 25.797,
+      "trace_id": "019e8285-37f8-7190-a6c6-f5845aeb7080",
+      "run_id": "019e8285-37f8-7190-a6c6-f5845aeb7080",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8285-37f8-7190-a6c6-f5845aeb7080?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q16",
+      "iteration": 1,
+      "trace_latency_sec": 21.3532,
+      "local_wall_clock_sec": 21.354,
+      "trace_id": "019e8285-9cbd-7492-8531-6262552ea267",
+      "run_id": "019e8285-9cbd-7492-8531-6262552ea267",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8285-9cbd-7492-8531-6262552ea267?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q17",
+      "iteration": 1,
+      "trace_latency_sec": 9.5288,
+      "local_wall_clock_sec": 9.5297,
+      "trace_id": "019e8285-f027-7762-8263-d19ef5622a12",
+      "run_id": "019e8285-f027-7762-8263-d19ef5622a12",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8285-f027-7762-8263-d19ef5622a12?poll=true",
+      "error": null
+    },
+    {
+      "question_id": "q18",
+      "iteration": 1,
+      "trace_latency_sec": 19.9315,
+      "local_wall_clock_sec": 19.9324,
+      "trace_id": "019e8286-1561-7f41-a66c-b43c65f8c30d",
+      "run_id": "019e8286-1561-7f41-a66c-b43c65f8c30d",
+      "trace_url": "https://smith.langchain.com/o/785d85f4-3d25-401b-a1ea-7d68bfce2ca9/projects/p/e4aeeafb-778c-4e4d-b346-c3d39d7cca1e/r/019e8286-1561-7f41-a66c-b43c65f8c30d?poll=true",
+      "error": null
+    }
+  ]
+}

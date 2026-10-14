@@ -1,0 +1,1057 @@
+{
+  "summary": {
+    "ragas_report": "/Users/zhangxun/Documents/BOCHK/eval/reports/ragas_full_20260601_180627.json",
+    "n_questions": 24,
+    "n_weak_questions": 24,
+    "targets": {
+      "faithfulness": 0.85,
+      "answer_relevancy": 0.85,
+      "id_based_context_precision": 0.8,
+      "id_based_context_recall": 0.8
+    },
+    "root_cause_counts": {
+      "incomplete_answer_synthesis": 23,
+      "insufficient_chunk_granularity": 22,
+      "wrong_source_retrieved": 22,
+      "hallucinated_claim": 14,
+      "poor_query_expansion": 2,
+      "overly_technical_explanation": 1
+    }
+  },
+  "weak_samples": [
+    {
+      "id": "q01",
+      "scenario": "compliance_cross_border_payment",
+      "question": "香港银行接收跨境付款时反洗钱审核的核心要求是什么",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.45,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: hkicl_hkd_fps_rules_2025, safe_capital_account_fx_guideline_2024",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "faithfulness below target despite at least one expected context"
+      ],
+      "expected_doc_ids": [
+        "hkma_aml_cft_guideline"
+      ],
+      "context_ids": [
+        "hkicl_hkd_fps_rules_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q02",
+      "scenario": "compliance_cross_border_payment",
+      "question": "客户尽职调查 EDD 强化版具体要做哪些步骤",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.4024,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.7461,
+          "target": 0.85
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity"
+      ],
+      "evidence": [
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hkma_aml_cft_guideline"
+      ],
+      "context_ids": [
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline",
+        "hkma_aml_cft_guideline"
+      ],
+      "next_action": "adjust_chunk_or_prompt_context_selection"
+    },
+    {
+      "id": "q03",
+      "scenario": "compliance_cross_border_payment",
+      "question": "汇发〔2023〕28号 文件内容",
+      "metric_gaps": {
+        "answer_relevancy": {
+          "value": 0.5361,
+          "target": 0.85
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity"
+      ],
+      "evidence": [
+        "duplicate parent doc IDs in prompt contexts: 3",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation"
+      ],
+      "context_ids": [
+        "safe_trade_investment_facilitation",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_investment_facilitation"
+      ],
+      "next_action": "adjust_chunk_or_prompt_context_selection"
+    },
+    {
+      "id": "q04",
+      "scenario": "compliance_cross_border_payment",
+      "question": "中国企业向越南供应商付汇的合规审核流程",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.3671,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.802,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.25,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: safe_trade_fx_optimization_2024, safe_trade_investment_facilitation",
+        "off-target prompt docs: safe_current_account_fx_guideline_2020, sbv_circular_20_2022_current_account_transfers, sbv_cross_border_payments_vi",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "safe_trade_investment_facilitation",
+        "safe_trade_fx_optimization_2024",
+        "sbv_export_payment_risk"
+      ],
+      "context_ids": [
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_current_account_fx_guideline_2020",
+        "sbv_export_payment_risk",
+        "safe_current_account_fx_guideline_2020",
+        "sbv_cross_border_payments_vi"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q05",
+      "scenario": "sme_loan",
+      "question": "SFGS 80% 担保产品申请条件有哪些",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.5455,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.8137,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.5,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: hkma_sfgs_extension_2024, hkma_sfgs_insight_2025",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product"
+      ],
+      "context_ids": [
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product",
+        "hkma_sfgs_extension_2024"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q06",
+      "scenario": "sme_loan",
+      "question": "SFGS_09/2024 文件编号对应的政策是什么",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.7778,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.4,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.5,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: hkmc_sfgs_application_procedures_lender, hkmc_sfgs_factsheet",
+        "off-target prompt docs: safe_capital_account_fx_guideline_2024, safe_trade_fx_optimization_2024, safe_trade_investment_facilitation",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025"
+      ],
+      "context_ids": [
+        "hkma_sfgs_insight_2025",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_trade_fx_optimization_2024",
+        "hkmc_sfgs_application_procedures",
+        "safe_trade_investment_facilitation"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q07",
+      "scenario": "sme_loan",
+      "question": "SFGS 80% 担保和 90% 担保产品的区别",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.5875,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.8444,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.6667,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: hkma_sfgs_insight_2025",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hkma_sfgs_90_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "context_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q08",
+      "scenario": "sme_loan",
+      "question": "中银香港的 SME 贷款产品有哪些",
+      "metric_gaps": {
+        "id_based_context_precision": {
+          "value": 0.6,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: hkma_cdi_research_2026, hkmc_sfgs_factsheet"
+      ],
+      "expected_doc_ids": [
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "bochk_sfgs_product"
+      ],
+      "context_ids": [
+        "bochk_sfgs_product",
+        "bochk_loan_services",
+        "hkma_cdi_research_2026",
+        "bochk_sme_loan",
+        "hkmc_sfgs_factsheet"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q19",
+      "scenario": "sme_loan",
+      "question": "申请 SME 贷款需要拿什么资产做抵押 有没有无抵押的选项",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.5102,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.5,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.4,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: bochk_loan_services, hkma_sfgs_90_product, hkmc_sfgs_factsheet",
+        "off-target prompt docs: enterprisesg_efs_fixed_assets, smelink_sfgs",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "hkma_sfgs_90_product",
+        "bochk_sfgs_product"
+      ],
+      "context_ids": [
+        "enterprisesg_efs_fixed_assets",
+        "smelink_sfgs",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "bochk_sme_loan"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q20",
+      "scenario": "sme_loan",
+      "question": "申请 SME 贷款要提交哪些财务证明材料 公司账务文件",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.4167,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.7112,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.25,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: bochk_loan_services, hkmc_sfgs_factsheet",
+        "off-target prompt docs: bochk_sfgs_product, hkmc_sfgs_application_procedures, smelink_sfgs",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target",
+        "off-target bank/product source regions: {'bochk_sfgs_product': ['Hong Kong'], 'hkmc_sfgs_application_procedures': ['Hong Kong'], 'smelink_sfgs': ['Hong Kong']}"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "bochk_sme_loan",
+        "bochk_loan_services"
+      ],
+      "context_ids": [
+        "bochk_sfgs_product",
+        "smelink_sfgs",
+        "bochk_sme_loan",
+        "hkmc_sfgs_application_procedures",
+        "smelink_sfgs"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q21",
+      "scenario": "sme_loan",
+      "question": "中小企业最高可以申请多少贷款额度 担保产品上限是多少",
+      "metric_gaps": {
+        "answer_relevancy": {
+          "value": 0.6364,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: bochk_sme_loan, hkma_sfgs_90_product",
+        "off-target prompt docs: safe_capital_account_fx_guideline_2024, smelink_sfgs",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product",
+        "bochk_sme_loan"
+      ],
+      "context_ids": [
+        "smelink_sfgs",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_factsheet",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q22",
+      "scenario": "sme_loan",
+      "question": "我公司香港注册 年营业额 5000 万港币 去年利润 800 万 想申请 SFGS 担保贷款 大概能贷多少 还需要补充哪些财务证明文件",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.3934,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.25,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.25,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: bochk_sfgs_product, bochk_sme_loan, hkma_sfgs_90_product",
+        "off-target prompt docs: hkma_sfgs_insight_2025, hkmc_sfgs_application_procedures, hkmc_sfgs_application_procedures_lender",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product",
+        "bochk_sme_loan",
+        "bochk_sfgs_product"
+      ],
+      "context_ids": [
+        "hkmc_sfgs_application_procedures",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q23",
+      "scenario": "sme_loan",
+      "question": "申请 SFGS 担保贷款的完整流程是什么 从提交申请到拿到钱大概要多久",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.76,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.7999,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.25,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.25,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "poor_query_expansion",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: bochk_sfgs_product, hkma_sfgs_extension_2024, smelink_sfgs",
+        "off-target prompt docs: hkma_sfgs_insight_2025, hkmc_sfgs_application_procedures, hkmc_sfgs_application_procedures_lender",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target",
+        "fee/time query retrieved regulatory source families"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_extension_2024",
+        "bochk_sfgs_product",
+        "smelink_sfgs"
+      ],
+      "context_ids": [
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q24",
+      "scenario": "sme_loan",
+      "question": "公司在香港注册 在深圳和东莞各有一个工厂 想做跨境业务扩张融资 可以申请哪些贷款产品 有什么硬性资格要求",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.1795,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.25,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.2,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "overly_technical_explanation",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: boc_global_purchase_order_financing, bochk_sme_loan, bochk_trade_finance, hkmc_sfgs_factsheet",
+        "off-target prompt docs: boc_singapore_corporate_loans, bochk_sfgs_product, safe_capital_account_fx_guideline_2024",
+        "duplicate parent doc IDs in prompt contexts: 1",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "long answer contains dense regulatory jargon",
+        "off-target bank/product source regions: {'boc_singapore_corporate_loans': ['Singapore', 'ASEAN'], 'bochk_sfgs_product': ['Hong Kong'], 'safe_capital_account_fx_guideline_2024': ['Mainland China', 'cross-border']}"
+      ],
+      "expected_doc_ids": [
+        "hkmc_sfgs_factsheet",
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "bochk_trade_finance",
+        "boc_global_purchase_order_financing"
+      ],
+      "context_ids": [
+        "boc_singapore_corporate_loans",
+        "bochk_loan_services",
+        "bochk_sfgs_product",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q09",
+      "scenario": "gba_market_entry",
+      "question": "深圳前海企业税收优惠政策",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.5806,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.8269,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.5,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: gogba_enterprise_income_tax_vat",
+        "duplicate parent doc IDs in prompt contexts: 3",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "gogba_qianhai_policy"
+      ],
+      "context_ids": [
+        "gogba_qianhai_policy",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q10",
+      "scenario": "gba_market_entry",
+      "question": "在大湾区开公司银行账户的流程和需要的资料",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.3725,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.6667,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: gogba_qianhai_policy",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context"
+      ],
+      "expected_doc_ids": [
+        "gogba_bank_accounts",
+        "gogba_business_registration"
+      ],
+      "context_ids": [
+        "gogba_bank_accounts",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_qianhai_policy"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q11",
+      "scenario": "gba_market_entry",
+      "question": "大湾区企业所得税和增值税适用税率",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.7667,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.7085,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: gogba_bank_accounts, gogba_qianhai_policy",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "gogba_enterprise_income_tax_vat"
+      ],
+      "context_ids": [
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_enterprise_income_tax_vat",
+        "gogba_qianhai_policy",
+        "gogba_bank_accounts"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q12",
+      "scenario": "gba_market_entry",
+      "question": "GoGBA 企业 business registration 流程",
+      "metric_gaps": {
+        "answer_relevancy": {
+          "value": 0.6892,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: gogba_bank_accounts, gogba_qianhai_policy",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "gogba_business_registration"
+      ],
+      "context_ids": [
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_business_registration",
+        "gogba_bank_accounts",
+        "gogba_qianhai_policy"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q13",
+      "scenario": "vietnam_supplier",
+      "question": "越南央行 SBV 对信贷机构的监管要求",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.5057,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.8266,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: sbv_circular_15_2024_payment_services, sbv_payment_system_supervision_circular_20_2018",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "sbv_credit_institutions"
+      ],
+      "context_ids": [
+        "sbv_payment_system_supervision_circular_20_2018",
+        "sbv_credit_institutions",
+        "sbv_circular_15_2024_payment_services",
+        "sbv_credit_institutions",
+        "sbv_payment_system_supervision_circular_20_2018"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q14",
+      "scenario": "vietnam_supplier",
+      "question": "向越南供应商付款的外汇合规要求",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.569,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.0,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.2,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: sbv_circular_15_2024_payment_services, sbv_credit_institutions, sbv_cross_border_payments_vi, sbv_export_payment_risk",
+        "off-target prompt docs: safe_capital_account_fx_guideline_2024, safe_current_account_fx_guideline_2020",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "sbv_export_payment_risk",
+        "sbv_credit_institutions",
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_cross_border_payments_vi",
+        "sbv_circular_15_2024_payment_services"
+      ],
+      "context_ids": [
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q15",
+      "scenario": "vietnam_supplier",
+      "question": "在越南投资合作建厂的合规要点",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.4426,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.0,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: hktdc_vietnam_manufacturing_background, hktdc_vietnam_manufacturing_partnership",
+        "off-target prompt docs: safe_capital_account_fx_guideline_2024, sbv_circular_20_2022_current_account_transfers",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hktdc_vietnam_manufacturing_partnership",
+        "hktdc_vietnam_manufacturing_background",
+        "fia_vietnam_taxation_customs"
+      ],
+      "context_ids": [
+        "fia_vietnam_taxation_customs",
+        "fia_vietnam_taxation_customs",
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q16",
+      "scenario": "remittance_compare",
+      "question": "电汇 TT 汇款的费用和到账时间",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.6324,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.0,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.3333,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "hallucinated_claim",
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "poor_query_expansion",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: safe_capital_account_fx_guideline_2024, safe_current_account_fx_guideline_2020",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer contains unsupported-claim cue words or examples",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target",
+        "fee/time query retrieved regulatory source families"
+      ],
+      "expected_doc_ids": [
+        "bochk_remittance_charges"
+      ],
+      "context_ids": [
+        "bochk_remittance_charges",
+        "bochk_remittance_charges",
+        "bochk_remittance_charges",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q17",
+      "scenario": "remittance_compare",
+      "question": "Faster Payment System FPS 转账的特点和限额",
+      "metric_gaps": {
+        "answer_relevancy": {
+          "value": 0.0,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.6667,
+          "target": 0.8
+        },
+        "id_based_context_recall": {
+          "value": 0.6667,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "missing expected docs in prompt contexts: hkma_payment_systems",
+        "off-target prompt docs: hkicl_hkd_clearing_house_rules_2026",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "hkma_fps",
+        "hkma_payment_systems",
+        "hkicl_hkd_fps_rules_2025"
+      ],
+      "context_ids": [
+        "hkma_fps",
+        "hkicl_hkd_fps_rules_2025",
+        "hkma_fps",
+        "hkicl_hkd_clearing_house_rules_2026",
+        "hkicl_hkd_fps_rules_2025"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    },
+    {
+      "id": "q18",
+      "scenario": "remittance_compare",
+      "question": "CIPS 跨境人民币清算系统的功能和参与机构",
+      "metric_gaps": {
+        "faithfulness": {
+          "value": 0.6981,
+          "target": 0.85
+        },
+        "answer_relevancy": {
+          "value": 0.7252,
+          "target": 0.85
+        },
+        "id_based_context_precision": {
+          "value": 0.6667,
+          "target": 0.8
+        }
+      },
+      "root_causes": [
+        "incomplete_answer_synthesis",
+        "insufficient_chunk_granularity",
+        "wrong_source_retrieved"
+      ],
+      "evidence": [
+        "off-target prompt docs: hkicl_hkd_fps_rules_2025",
+        "duplicate parent doc IDs in prompt contexts: 2",
+        "faithfulness below target despite at least one expected context",
+        "answer relevancy below target"
+      ],
+      "expected_doc_ids": [
+        "cips_introduction",
+        "cips_indirect_participant_guide_2025"
+      ],
+      "context_ids": [
+        "cips_indirect_participant_guide_2025",
+        "cips_indirect_participant_guide_2025",
+        "hkicl_hkd_fps_rules_2025",
+        "cips_introduction",
+        "cips_introduction"
+      ],
+      "next_action": "tune_retrieval_rerank_or_prompt_source_filter"
+    }
+  ]
+}

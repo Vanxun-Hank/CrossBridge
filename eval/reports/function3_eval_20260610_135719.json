@@ -1,0 +1,127 @@
+{
+  "generated_at": "2026-06-10T13:57:19",
+  "passed": 24,
+  "total": 24,
+  "cases": [
+    {
+      "name": "SSE diff emits new+changed applications only",
+      "passed": true,
+      "detail": "{\"first\": [[\"a\", \"t1\"], [\"b\", \"t1\"]], \"second\": [], \"third\": [[\"a\", \"t2\"]]}"
+    },
+    {
+      "name": "migrations run repeatably",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "GET /healthz ok",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unready materials are rejected with 422 + blocking reasons",
+      "passed": true,
+      "detail": "{\"detail\": {\"ready\": false, \"blocking\": [{\"code\": \"swift_bic\"}], \"warnings\": []}}"
+    },
+    {
+      "name": "ready submission creates application (201)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "six fixed nodes initialised (submitted=completed, material_review=in_progress)",
+      "passed": true,
+      "detail": "{\"submitted\": \"completed\", \"material_review\": \"in_progress\", \"credit_assessment\": \"pending\", \"approval_result\": \"pending\", \"signing\": \"pending\", \"disbursement\": \"pending\"}"
+    },
+    {
+      "name": "SME serialization never exposes internal_note",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "second submit of the same package is idempotent",
+      "passed": true,
+      "detail": "{\"status\": 200, \"resumed\": true}"
+    },
+    {
+      "name": "GET /applications lists the SME's application",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "GET /applications/{id} returns 200",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "advancing a non-current node is rejected (409)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "completing the current node advances to the next",
+      "passed": true,
+      "detail": "{\"submitted\": \"completed\", \"material_review\": \"completed\", \"credit_assessment\": \"in_progress\", \"approval_result\": \"pending\", \"signing\": \"pending\", \"disbursement\": \"pending\"}"
+    },
+    {
+      "name": "admin serialization includes internal_note",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "internal_note written by admin is absent from the SME view",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "an admin update bumps application.updated_at (drives SSE)",
+      "passed": true,
+      "detail": "{\"before\": \"2026-06-10T05:57:19.613042\", \"after\": \"2026-06-10T05:57:19.617580\"}"
+    },
+    {
+      "name": "rejecting without bilingual customer notes is rejected (422)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rejecting with bilingual notes sets application status rejected",
+      "passed": true,
+      "detail": "\"rejected\""
+    },
+    {
+      "name": "supplement_required without bilingual notes is rejected (422)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "supplement_required keeps the node current and application in progress",
+      "passed": true,
+      "detail": "{\"current\": \"material_review\", \"status\": \"in_progress\"}"
+    },
+    {
+      "name": "completing the last node marks the application completed",
+      "passed": true,
+      "detail": "{\"submitted\": \"completed\", \"material_review\": \"completed\", \"credit_assessment\": \"completed\", \"approval_result\": \"completed\", \"signing\": \"completed\", \"disbursement\": \"completed\"}"
+    },
+    {
+      "name": "reset restores initial node states and status",
+      "passed": true,
+      "detail": "{\"submitted\": \"completed\", \"material_review\": \"in_progress\", \"credit_assessment\": \"pending\", \"approval_result\": \"pending\", \"signing\": \"pending\", \"disbursement\": \"pending\"}"
+    },
+    {
+      "name": "hidden admin page is served",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "admin list returns all applications with internal_note",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "audit events recorded for create, node update and reset",
+      "passed": true,
+      "detail": "[\"timeline_application_created\", \"timeline_application_reset\", \"timeline_node_updated\"]"
+    }
+  ]
+}

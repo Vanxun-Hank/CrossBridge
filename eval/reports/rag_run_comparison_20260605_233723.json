@@ -1,0 +1,579 @@
+{
+  "summary": {
+    "baseline_ragas": "eval/reports/ragas_full_20260601_180627.json",
+    "candidate_ragas": "eval/reports/ragas_full_ids_q16-q20-q22-q19-q04-q14-q24_20260605_233706.json",
+    "common_question_count": 7,
+    "metric_summary": {
+      "faithfulness": {
+        "baseline_mean": 0.4383,
+        "candidate_mean": 0.5918,
+        "delta": 0.1535
+      },
+      "answer_relevancy": {
+        "baseline_mean": 0.6126,
+        "candidate_mean": 0.2851,
+        "delta": -0.3275
+      },
+      "id_based_context_precision": {
+        "baseline_mean": 0.3095,
+        "candidate_mean": 0.8476,
+        "delta": 0.5381
+      },
+      "id_based_context_recall": {
+        "baseline_mean": 0.3881,
+        "candidate_mean": 0.8429,
+        "delta": 0.4548
+      }
+    },
+    "acceptance_gate": {
+      "max_metric_drop": 0.03,
+      "has_any_metric_improvement": true,
+      "improved_metrics": [
+        "faithfulness",
+        "id_based_context_precision",
+        "id_based_context_recall"
+      ],
+      "regressions_over_threshold": [
+        "answer_relevancy"
+      ],
+      "passes": false
+    }
+  },
+  "per_question": [
+    {
+      "id": "q04",
+      "scenario": "compliance_cross_border_payment",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.3671,
+          "candidate": 0.3226,
+          "delta": -0.0445
+        },
+        "answer_relevancy": {
+          "baseline": 0.802,
+          "candidate": 0.0,
+          "delta": -0.802
+        },
+        "id_based_context_precision": {
+          "baseline": 0.25,
+          "candidate": 1.0,
+          "delta": 0.75
+        },
+        "id_based_context_recall": {
+          "baseline": 0.3333,
+          "candidate": 1.0,
+          "delta": 0.6667
+        }
+      },
+      "context_delta": {
+        "added": [
+          "safe_trade_fx_optimization_2024",
+          "safe_trade_investment_facilitation"
+        ],
+        "removed": [
+          "safe_current_account_fx_guideline_2020",
+          "sbv_circular_20_2022_current_account_transfers",
+          "sbv_cross_border_payments_vi"
+        ],
+        "kept": [
+          "sbv_export_payment_risk"
+        ]
+      },
+      "baseline_context_ids": [
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_current_account_fx_guideline_2020",
+        "sbv_export_payment_risk",
+        "safe_current_account_fx_guideline_2020",
+        "sbv_cross_border_payments_vi"
+      ],
+      "candidate_context_ids": [
+        "sbv_export_payment_risk",
+        "safe_trade_investment_facilitation",
+        "safe_trade_fx_optimization_2024",
+        "sbv_export_payment_risk",
+        "safe_trade_investment_facilitation"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "safe_current_account_fx_guideline_2020",
+          "sbv_circular_20_2022_current_account_transfers",
+          "sbv_cross_border_payments_vi"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "safe_trade_fx_optimization_2024",
+          "safe_trade_investment_facilitation"
+        ],
+        "kept": []
+      },
+      "baseline_off_target_count": 3,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 2,
+      "candidate_missing_expected_count": 0
+    },
+    {
+      "id": "q14",
+      "scenario": "vietnam_supplier",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.569,
+          "candidate": 0.5227,
+          "delta": -0.0463
+        },
+        "answer_relevancy": {
+          "baseline": 0.0,
+          "candidate": null,
+          "delta": null
+        },
+        "id_based_context_precision": {
+          "baseline": 0.3333,
+          "candidate": 1.0,
+          "delta": 0.6667
+        },
+        "id_based_context_recall": {
+          "baseline": 0.2,
+          "candidate": 0.8,
+          "delta": 0.6
+        }
+      },
+      "context_delta": {
+        "added": [
+          "sbv_credit_institutions",
+          "sbv_cross_border_payments_vi",
+          "sbv_export_payment_risk"
+        ],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "safe_current_account_fx_guideline_2020"
+        ],
+        "kept": [
+          "sbv_circular_20_2022_current_account_transfers"
+        ]
+      },
+      "baseline_context_ids": [
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_circular_20_2022_current_account_transfers",
+        "safe_current_account_fx_guideline_2020",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "candidate_context_ids": [
+        "sbv_circular_20_2022_current_account_transfers",
+        "sbv_cross_border_payments_vi",
+        "sbv_export_payment_risk",
+        "sbv_credit_institutions",
+        "sbv_cross_border_payments_vi"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "safe_current_account_fx_guideline_2020"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "sbv_credit_institutions",
+          "sbv_cross_border_payments_vi",
+          "sbv_export_payment_risk"
+        ],
+        "kept": [
+          "sbv_circular_15_2024_payment_services"
+        ]
+      },
+      "baseline_off_target_count": 2,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 4,
+      "candidate_missing_expected_count": 1
+    },
+    {
+      "id": "q16",
+      "scenario": "remittance_compare",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.6324,
+          "candidate": 0.6842,
+          "delta": 0.0518
+        },
+        "answer_relevancy": {
+          "baseline": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0
+        },
+        "id_based_context_precision": {
+          "baseline": 0.3333,
+          "candidate": 0.3333,
+          "delta": 0.0
+        },
+        "id_based_context_recall": {
+          "baseline": 1.0,
+          "candidate": 0.5,
+          "delta": -0.5
+        }
+      },
+      "context_delta": {
+        "added": [
+          "bochk_fps_limit_notice_20251224",
+          "bochk_trade_finance_tariffs"
+        ],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "safe_current_account_fx_guideline_2020"
+        ],
+        "kept": [
+          "bochk_remittance_charges"
+        ]
+      },
+      "baseline_context_ids": [
+        "bochk_remittance_charges",
+        "bochk_remittance_charges",
+        "bochk_remittance_charges",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_current_account_fx_guideline_2020"
+      ],
+      "candidate_context_ids": [
+        "bochk_remittance_charges",
+        "bochk_fps_limit_notice_20251224",
+        "bochk_remittance_charges",
+        "bochk_trade_finance_tariffs",
+        "bochk_trade_finance_tariffs"
+      ],
+      "off_target_delta": {
+        "added": [
+          "bochk_fps_limit_notice_20251224",
+          "bochk_trade_finance_tariffs"
+        ],
+        "removed": [
+          "safe_capital_account_fx_guideline_2024",
+          "safe_current_account_fx_guideline_2020"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [],
+        "kept": [
+          "bochk_outward_tt_quick_guide"
+        ]
+      },
+      "baseline_off_target_count": 2,
+      "candidate_off_target_count": 2,
+      "baseline_missing_expected_count": 1,
+      "candidate_missing_expected_count": 1
+    },
+    {
+      "id": "q19",
+      "scenario": "sme_loan",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.5102,
+          "candidate": 0.4583,
+          "delta": -0.0519
+        },
+        "answer_relevancy": {
+          "baseline": 0.9973,
+          "candidate": 0.8772,
+          "delta": -0.1201
+        },
+        "id_based_context_precision": {
+          "baseline": 0.5,
+          "candidate": 1.0,
+          "delta": 0.5
+        },
+        "id_based_context_recall": {
+          "baseline": 0.4,
+          "candidate": 1.0,
+          "delta": 0.6
+        }
+      },
+      "context_delta": {
+        "added": [
+          "bochk_loan_services",
+          "hkma_sfgs_90_product",
+          "hkmc_sfgs_factsheet"
+        ],
+        "removed": [
+          "enterprisesg_efs_fixed_assets",
+          "smelink_sfgs"
+        ],
+        "kept": [
+          "bochk_sfgs_product",
+          "bochk_sme_loan"
+        ]
+      },
+      "baseline_context_ids": [
+        "enterprisesg_efs_fixed_assets",
+        "smelink_sfgs",
+        "bochk_sfgs_product",
+        "bochk_sfgs_product",
+        "bochk_sme_loan"
+      ],
+      "candidate_context_ids": [
+        "bochk_sme_loan",
+        "bochk_loan_services",
+        "bochk_sfgs_product",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "enterprisesg_efs_fixed_assets",
+          "smelink_sfgs"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "bochk_loan_services",
+          "hkma_sfgs_90_product",
+          "hkmc_sfgs_factsheet"
+        ],
+        "kept": []
+      },
+      "baseline_off_target_count": 2,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 3,
+      "candidate_missing_expected_count": 0
+    },
+    {
+      "id": "q20",
+      "scenario": "sme_loan",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.4167,
+          "candidate": 0.8571,
+          "delta": 0.4404
+        },
+        "answer_relevancy": {
+          "baseline": 0.7112,
+          "candidate": 0.0,
+          "delta": -0.7112
+        },
+        "id_based_context_precision": {
+          "baseline": 0.25,
+          "candidate": 0.6,
+          "delta": 0.35
+        },
+        "id_based_context_recall": {
+          "baseline": 0.3333,
+          "candidate": 1.0,
+          "delta": 0.6667
+        }
+      },
+      "context_delta": {
+        "added": [
+          "bochk_loan_services",
+          "hkmc_sfgs_factsheet"
+        ],
+        "removed": [
+          "smelink_sfgs"
+        ],
+        "kept": [
+          "bochk_sfgs_product",
+          "bochk_sme_loan",
+          "hkmc_sfgs_application_procedures"
+        ]
+      },
+      "baseline_context_ids": [
+        "bochk_sfgs_product",
+        "smelink_sfgs",
+        "bochk_sme_loan",
+        "hkmc_sfgs_application_procedures",
+        "smelink_sfgs"
+      ],
+      "candidate_context_ids": [
+        "bochk_sme_loan",
+        "hkmc_sfgs_factsheet",
+        "bochk_sfgs_product",
+        "bochk_loan_services",
+        "hkmc_sfgs_application_procedures"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "smelink_sfgs"
+        ],
+        "kept": [
+          "bochk_sfgs_product",
+          "hkmc_sfgs_application_procedures"
+        ]
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "bochk_loan_services",
+          "hkmc_sfgs_factsheet"
+        ],
+        "kept": []
+      },
+      "baseline_off_target_count": 3,
+      "candidate_off_target_count": 2,
+      "baseline_missing_expected_count": 2,
+      "candidate_missing_expected_count": 0
+    },
+    {
+      "id": "q22",
+      "scenario": "sme_loan",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.3934,
+          "candidate": 0.7059,
+          "delta": 0.3125
+        },
+        "answer_relevancy": {
+          "baseline": 0.8707,
+          "candidate": 0.0,
+          "delta": -0.8707
+        },
+        "id_based_context_precision": {
+          "baseline": 0.25,
+          "candidate": 1.0,
+          "delta": 0.75
+        },
+        "id_based_context_recall": {
+          "baseline": 0.25,
+          "candidate": 1.0,
+          "delta": 0.75
+        }
+      },
+      "context_delta": {
+        "added": [
+          "bochk_sfgs_product",
+          "bochk_sme_loan",
+          "hkma_sfgs_90_product"
+        ],
+        "removed": [
+          "hkma_sfgs_insight_2025",
+          "hkmc_sfgs_application_procedures",
+          "hkmc_sfgs_application_procedures_lender"
+        ],
+        "kept": [
+          "hkmc_sfgs_factsheet"
+        ]
+      },
+      "baseline_context_ids": [
+        "hkmc_sfgs_application_procedures",
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_factsheet"
+      ],
+      "candidate_context_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkma_sfgs_90_product",
+        "bochk_sme_loan",
+        "bochk_sfgs_product",
+        "hkmc_sfgs_factsheet"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "hkma_sfgs_insight_2025",
+          "hkmc_sfgs_application_procedures",
+          "hkmc_sfgs_application_procedures_lender"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [],
+        "removed": [
+          "bochk_sfgs_product",
+          "bochk_sme_loan",
+          "hkma_sfgs_90_product"
+        ],
+        "kept": []
+      },
+      "baseline_off_target_count": 3,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 3,
+      "candidate_missing_expected_count": 0
+    },
+    {
+      "id": "q24",
+      "scenario": "sme_loan",
+      "metric_deltas": {
+        "faithfulness": {
+          "baseline": 0.1795,
+          "candidate": null,
+          "delta": null
+        },
+        "answer_relevancy": {
+          "baseline": 0.9067,
+          "candidate": 0.8334,
+          "delta": -0.0733
+        },
+        "id_based_context_precision": {
+          "baseline": 0.25,
+          "candidate": 1.0,
+          "delta": 0.75
+        },
+        "id_based_context_recall": {
+          "baseline": 0.2,
+          "candidate": 0.6,
+          "delta": 0.4
+        }
+      },
+      "context_delta": {
+        "added": [
+          "boc_global_purchase_order_financing",
+          "bochk_trade_finance",
+          "hkmc_sfgs_factsheet"
+        ],
+        "removed": [
+          "boc_singapore_corporate_loans",
+          "bochk_loan_services",
+          "bochk_sfgs_product",
+          "safe_capital_account_fx_guideline_2024"
+        ],
+        "kept": []
+      },
+      "baseline_context_ids": [
+        "boc_singapore_corporate_loans",
+        "bochk_loan_services",
+        "bochk_sfgs_product",
+        "safe_capital_account_fx_guideline_2024",
+        "safe_capital_account_fx_guideline_2024"
+      ],
+      "candidate_context_ids": [
+        "boc_global_purchase_order_financing",
+        "hkmc_sfgs_factsheet",
+        "boc_global_purchase_order_financing",
+        "bochk_trade_finance"
+      ],
+      "off_target_delta": {
+        "added": [],
+        "removed": [
+          "boc_singapore_corporate_loans",
+          "bochk_sfgs_product",
+          "safe_capital_account_fx_guideline_2024"
+        ],
+        "kept": []
+      },
+      "missing_expected_delta": {
+        "added": [
+          "bochk_loan_services"
+        ],
+        "removed": [
+          "boc_global_purchase_order_financing",
+          "bochk_trade_finance",
+          "hkmc_sfgs_factsheet"
+        ],
+        "kept": [
+          "bochk_sme_loan"
+        ]
+      },
+      "baseline_off_target_count": 3,
+      "candidate_off_target_count": 0,
+      "baseline_missing_expected_count": 4,
+      "candidate_missing_expected_count": 2
+    }
+  ]
+}

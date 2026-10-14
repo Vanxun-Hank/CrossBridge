@@ -1,0 +1,47 @@
+{
+  "summary": {
+    "variant": "full_ids_q06",
+    "n_questions": 1,
+    "faithfulness_mean": 1.0,
+    "faithfulness_n_valid": 1,
+    "faithfulness_n_failed": 0,
+    "answer_relevancy_mean": 0.0,
+    "answer_relevancy_n_valid": 1,
+    "answer_relevancy_n_failed": 0,
+    "id_based_context_precision_mean": 1.0,
+    "id_based_context_precision_n_valid": 1,
+    "id_based_context_precision_n_failed": 0,
+    "id_based_context_recall_mean": 0.75,
+    "id_based_context_recall_n_valid": 1,
+    "id_based_context_recall_n_failed": 0
+  },
+  "per_question": [
+    {
+      "id": "q06",
+      "scenario": "sme_loan",
+      "question": "SFGS_09/2024 文件编号对应的政策是什么",
+      "answer": "SFGS_09/2024 文件编号在提供的【参考资料】中未被提及，现有资料无法确认该编号对应的具体政策。\n\n- 所有【参考资料】（[资料1]、[资料2]、[资料3]）均未出现“SFGS_09/2024”这一文件编号；\n- 资料中仅引用了政策名称（如《中小企融资担保计划》SFGS）、两类已终止的专项计划（Special 100% Loan Guarantee、PLGS），以及常规的80%和90%担保产品，但未以“SFGS_XX/XXXX”格式标注任何文件；\n- 也无任何资料说明SFGS文件编号的编制规则、发布机制或历史版本体系。\n\n信息来源：[资料1]、[资料2]、[资料3]",
+      "contexts": [
+        "该chunk出自香港金融管理局（HKMA）发布的《中小企融资担保计划》文件，位于正文首段及后续政策实施与配套措施说明部分，重点介绍SFGS常规产品安排、两类已终止的100%担保专项计划的成效与后续债务管理机制。\n\n# The SME Financing Guarantee Scheme\n\nthe SME Financing Guarantee Scheme (SFGS) and a further one-year extension of the principal moratorium arrangement. HKMC Insurance Limited (HKMCI) 1 , which is responsible for implementing and administering the SFGS, has completed the preparatory work with participating lending institutions and launched the relevant new measures in November.\n\nThe application periods for the 80% and 90% Guarantee Products under the SFGS will end on 31 March 2028 and 31 March 2026 respectively. As at the end of November 2025, these two products have benefited around 25,000 enterprises and around 400,000 employees. Borrowing enterprises may submit loan applications to the lending institutions according to their business needs. While processing times vary depending on the specific circumstances of each case, data in recent years show that after the HKMCI received complete application documents from the lending institutions, more than 80% of applications were approved within 10 working days, and over 60% could even be approved within 3 working days, thus effectively helping SMEs cope with cash-flow pressures.\n\nThe Special 100% Loan Guarantee for SMEs and the 100% Personal Loan Guarantee Scheme (PLGS) for individuals who have lost their main recurring incomes from employment in Hong Kong during the epidemic were both time-limited special support measures. Their application periods ended on 31 March 2024 and 30 April 2023 respectively, and the two measures provided timely and effective support to SMEs and individuals who had lost their jobs and income, benefiting approximately 40,000 enterprises (involving more than 400,000 employees) and over 59,000 applicants respectively.\n\nRegarding the SFGS, beneficiary SMEs span a wide range of industrial and business segments, including retail, catering, services, and even innovative technology. Whether family-run small businesses, long-established brands, start-ups, or relatively large-scale enterprises, they are able to weather the challenges of an economic downturn through the support of guaranteed loans.\n\nAlthough the application periods for the Special 100% Loan Guarantee and the PLGS have ended, substantial debt repayment and recovery work remains as a substantial portion of loans remains within a total repayment period of up to 10 years. The HKMCI has been working closely with lending institutions to manage default cases appropriately. Specifically, lending institutions would first follow up with the borrowing enterprises/borrowers to understand their overall financial and funding conditions, and discuss feasible repayment plans with those borrowing enterprises/borrowers who are willing and able to repay so that they can continue to operate/maintain a normal life as soon as possible under the debt restructuring arrangement and gradually resume normal repayments.\n\nAt the same time, lending institutions would assess the asset positions of both the borrowing enterprises/borrowers and the relevant guarantors. Where repayment agreements cannot be reached, the borrowing enterprises/borrowers refuse to cooperate, or there are reasonable grounds to believe the borrowing enterprises/borrowers are deliberately evading repayment obligations, such as making asset transfers, lending institutions will, in accordance with their policies and usual commercial practices, consider taking appropriate recovery or legal actions against the borrowers and guarantors, with the objective of recovering debts in the most effective way to minimise losses to the Government.",
+        "该chunk出自HKMC Insurance Limited发布的《中小企业融资担保计划申请程序》全文，对应文档第1页主体内容，涵盖SFGS申请流程的全部步骤（含直通审批与常规审批双路径）及关键操作节点。\n\n# SME Financing Guarantee Scheme Application Procedures\n\n## Page 1\n\nSME Financing Guarantee Scheme (SFGS)\n\nApplication Procedures\n\nStep 1 – Application\nThe participating Lende r (“PL”) assesses the application of the\nBorrower and, if the PL supports the application, it completes the\napplication forms with the Borrower. The PL submits the duly\nsigned application forms, a copy of the proposed facility letterNote 1 and\nall necessa ry supporting documents to HKMC Insurance Limited\n(“HKMCI”).\nStep 2 – Approval and issuance of Guarantee\nIf the application is approved, all the\napplication form(s) are duly completed and\nsigned and supporting doc uments are\nprovided to the satisfaction of the HKMC I,\nthe HKMCI issues a Guarantee to the PL by\naround 3 business days in general.\nLast Step – Guarantee Fee Payment and Effective of GuaranteeNote 2\nThe PL collects the guarantee fee and remits to the HKMC. In the event that the\nSingle Upfront guarantee fee is financed by the PL, the PL deducts the guarantee\nfee from the loan proceeds for remitting to the HKMC.\nThe relevant Guarantee in favour of the PL will take effect only until the guarantee\nfee is received by the HKMC.\n\nStep 2 – Approval-in-Principle\nThe HKMCI issues a Notification of Result to\nthe PL by around 3 business days in general.\nIf the applicat ion is approved by the\nHKMCI, the PL prepares necessary\ndocuments for the borrower to sign and\naccept.\n\nStraight-Through Approval Route Normal Approval Route\nStep 3 – Confirmation and issuance of\nGuarantee\nThe PL submits the signed documents and\nnecessary supporting documents to the\nHKMCI for the issuance of the\nGuarantee by\naround 2 business days in general.\n04/2020 P. 1/2\n\n## Page 2\n\nSME Financing Guarantee Scheme (SFGS)\n\nApplication Procedures\n\nNotes\n1. Submission of facility letter is not required for the Special 100% Loan\nGuarantee.\n2. Last Step is not applicable to the Special 100% Loan Guarantee.\n\nRemarks\n\nThe SME Financing Guarantee Scheme is operated by the HKMCI. The copyright\nto the contents of this document is owned by the HKMCI.\n04/2020 P. 2/2",
+        "该chunk出自HKMC Insurance Limited发布的《授权机构成为参与贷款机构的申请程序》文件，对应文档首页及“申请程序”主体内容，涵盖SFGS计划下AI成为PL的三步流程（表达意向、信息交换、签署协议）。\n\n# Application Procedures for an Authorized Institution to become a Participating Lender\n\n## Page 1\n\n05/2018 P. 1/1\nSME Financing Guarantee Scheme (“Scheme” or “SFGS”)\n\nApplication Procedures for an Authorized Institution1 (“AI”) to\nbecome a Participating Lender (“PL”)\n\nRemarks\n\nThis Scheme is operated by the HKMCI. The copyright to the contents of this\ndocument is owned by the HKMCI.\n\n1 “Authorized institution” means an \"authorized institution\" within the meaning of s.2 of the Banking\nOrdinance which is authorised to carry on a banking business or a business of taking deposits being a\nbank, a restricted license bank or a deposit-taking company.\nStep 1 – Application\n\nAn AI approaches HKMC Insurance Limited (“HKMCI”) via one of the\nfollowing channels to express their interest to become a PL under the\nSFGS:\n\nSFGS Support Hotline : (852) 2536 0392\nSFGS Support Email Address : sfgs_enquiry@hkmci. hk\nStep 2 – Submission of Information\n\nTo enhance mutual understanding, the HKMCI provides information such\nas its background, the latest financial statements, the eligibility criteria and\nfeatures of the Scheme to the AI. In return, the HKMCI requests the AI to\nprovide to the HKMCI information such as its experience in commercial\nand SME lending and the related policies and procedures.\nStep 3 – Execution of the Deed\n\nTo become a PL, an AI should duly sign the Master Deed of Guarantee for\nthe SFGS (“Deed”) and the agreements relating to the usage of a web-\nbased integrated information delivery system for doing business with the\nHKMCI."
+      ],
+      "context_ids": [
+        "hkma_sfgs_insight_2025",
+        "hkmc_sfgs_application_procedures",
+        "hkmc_sfgs_application_procedures_lender"
+      ],
+      "reference_context_ids": [
+        "hkmc_sfgs_factsheet",
+        "hkmc_sfgs_application_procedures_lender",
+        "hkmc_sfgs_application_procedures",
+        "hkma_sfgs_insight_2025"
+      ],
+      "elapsed_sec": 7.23,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "id_based_context_precision": 1.0,
+      "id_based_context_recall": 0.75
+    }
+  ]
+}
